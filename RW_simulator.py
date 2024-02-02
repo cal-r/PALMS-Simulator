@@ -88,50 +88,18 @@ def run_group_experiments(g, experiment):
     as_strengths = []
 
     for trial, phase in enumerate(experiment):
-        V = g.runPhaseInParts(phase)
+        V = g.runPhase(phase)
         as_strengths.append(V)
 
-        # print(V)
-        # for k, v in V.items():
-        #     print(f'{g.name} group, phase [{"/".join(x[0] + x[1] for x in phase)}], Cue ({k}) ⟶  (+):')
-        #     for e, q in enumerate(v):
-        #         print(f'\tV_{e} = {q:g}')
+        print(V)
+        for k, v in V.items():
+            print(f'{g.name} group, phase [{"/".join(x[0] + x[1] for x in phase)}], Cue ({k}) ⟶  (+):')
+            for e, q in enumerate(v):
+                print(f'\tV_{e} = {q:g}')
 
     return as_strengths
 
-def plot_graphs(groups_strengths, group_names, plot_stimuli = None):
-    seaborn.set()
-    pyplot.ion()
-    # Iterate through phases
-    min_y = 0 
-    for i in range(len(groups_strengths[0])):
-        pyplot.figure(figsize = (8, 3))
-
-        # Iterate through groups
-        for j in range(len(groups_strengths)):
-            #for e in range(len(phase_group)-1):
-            for stimuli in groups_strengths[j][i]:
-                for k, v in stimuli.items():
-                    if plot_stimuli is not None and k not in plot_stimuli:
-                        continue
-
-                    indices = list(range(len(v)))
-                    min_y = min(min_y, min(v))
-                    pyplot.plot(indices, v, label=f'{group_names[j]} {k}', marker = 'D', markersize = 4)
-
-        pyplot.xlabel('Trial Number')
-        pyplot.ylabel('Associative Strength')
-        pyplot.ylim(min_y - .1, 1.1)
-        pyplot.gca().xaxis.set_major_formatter(StrMethodFormatter('{x:.0f}'))
-        pyplot.title(f'Phase {i+1}') 
-
-        pyplot.subplots_adjust(bottom=0.40)
-        pyplot.legend(loc='upper center', bbox_to_anchor=(.5, -.37), ncol = 3)
-        pyplot.show()
-
-    input('Press any key to continue...')
-
-def plot_graphs_new(data : list[dict[str, list[int]]]):
+def plot_graphs(data : list[dict[str, list[int]]]):
     seaborn.set()
     pyplot.ion()
 
@@ -180,8 +148,7 @@ def main():
                    (args.plot_stimuli is None or k in args.plot_stimuli)
             }
 
-    # pprint.pp(groups_strengths)
-    plot_graphs_new(groups_strengths)
+    plot_graphs(groups_strengths)
 
 if __name__ == '__main__':
     main()

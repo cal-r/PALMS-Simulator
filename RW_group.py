@@ -68,7 +68,7 @@ class Group:
 
         return compounds
 
-    def runPhaseInParts(self, parts : List[str]):
+    def runPhase(self, parts : List[str]):
         V = dict()
         for part, plus in parts:
             beta = self.betap
