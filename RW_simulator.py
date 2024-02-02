@@ -1,12 +1,14 @@
 import argparse
+import pprint
 import re
 import sys
-import matplotlib.pyplot as plt
+from matplotlib import pyplot
 import seaborn
 import random
 from collections import defaultdict
-from matplotlib.ticker import StrMethodFormatter
+from matplotlib.ticker import StrMethodFormatter, MaxNLocator
 from RW_group import Group
+from typing import List
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -21,6 +23,8 @@ def parse_args():
 
     parser.add_argument("--use-configurals", type = bool, action = argparse.BooleanOptionalAction, help = 'Use compound stimuli with configural cues')
     parser.add_argument("--use-adaptive", type = bool, action = argparse.BooleanOptionalAction, help = 'Use adaptive attention mode')
+
+    parser.add_argument("--plot-experiments", nargs = '*', help = 'List of experiments to plot. By default plot everything')
     parser.add_argument("--plot-stimuli", nargs = '*', help = 'List of stimuli, compound and simple, to plot. By default plot everything')
 
 
@@ -56,72 +60,52 @@ def parse_args():
 
     return args
 
+def parse_parts(phase : str) -> List[str]:
+    rand = False
+    parts_str = phase.strip().split('/')
+    if parts_str[0] == 'rand':
+        rand = True
+        parts_str = parts_str[1:]
+
+    parts = []
+    for part in parts_str:
+        num, cs, sign = re.fullmatch('([0-9]*)([A-Z]+)([+-]?)', part).groups()
+
+        if num is None:
+            num = '1'
+
+        if sign == '':
+            sign = '+'
+
+        parts += int(num) * [(cs, sign)]
+
+    if rand:
+        random.shuffle(parts)
+
+    return parts
+
 def run_group_experiments(g, experiment):
     as_strengths = []
 
     for trial, phase in enumerate(experiment):
-        if trial == 0 and len(phase) == 1 and re.fullmatch('([0-9]*)([A-Z]+)([+-]?)', phase[0]) is None:
-            # If this is the leftmost element of the experiment and it doesn't
-            # match our regex, it's likely a group name.
-            g.name = phase[0]
-            continue
-        
-        if len(phase) > 1 and phase[0].lower() == 'rand':
-            value = run_random_phase(g, phase[1:])
-        else:
-            value = run_sequential_phase(g, phase)
+        V = g.runPhaseInParts(phase)
+        as_strengths.append(V)
 
-        as_strengths.append(value)
+        # print(V)
+        # for k, v in V.items():
+        #     print(f'{g.name} group, phase [{"/".join(x[0] + x[1] for x in phase)}], Cue ({k}) ⟶  (+):')
+        #     for e, q in enumerate(v):
+        #         print(f'\tV_{e} = {q:g}')
 
     return as_strengths
 
-def run_random_phase(g, phase):
-    matches = [re.fullmatch('([0-9]*)([A-Z]+)([+-]?)', part).groups() for part in phase]
-    parts = sum((int(steps) * [(1, conds, plus == '+')] for steps, conds, plus in matches), [])
-    random.shuffle(parts)
-
-    phase_value = [[] for _ in parts]
-    for e, (steps, conds, plus) in enumerate(parts):
-        V = g.runPhase(steps, conds, plus, ret_V = True)
-        phase_value[e].append(V)
-
-        print(V)
-        for k, v in V.items():
-            print(f'{g.name} group, phase [{"/".join(phase)}], Cue ({k}) ⟶  (+):')
-            for e, q in enumerate(v):
-                print(f'\tV_{e} = {q:g}')
-
-    return phase_value
-
-def run_sequential_phase(g, phase):
-    phase_value = []
-    for part_num, part in enumerate(phase):
-        match = re.fullmatch('([0-9]*)([A-Z]+)([+-]?)', part)
-        if match is None:
-            raise ValueError(f'Part of phase "{match}" not understood')
-
-        steps = int(match.group(1)) if match.group(1) else 0
-        conds = match.group(2)
-        plus = match.group(3) == '+'
-
-        V = g.runPhase(steps, conds, plus, ret_V = True)
-        phase_value.append(V)
-
-        print(V)
-        for k, v in V.items():
-            print(f'{g.name} group, phase [{"/".join(phase)}], Cue ({k}) ⟶  (+):')
-            for e, q in enumerate(v):
-                print(f'\tV_{e} = {q:g}')
-
-    return phase_value
-
 def plot_graphs(groups_strengths, group_names, plot_stimuli = None):
     seaborn.set()
-    plt.ion()
+    pyplot.ion()
     # Iterate through phases
     min_y = 0 
     for i in range(len(groups_strengths[0])):
-        plt.figure(figsize = (8, 3))
+        pyplot.figure(figsize = (8, 3))
 
         # Iterate through groups
         for j in range(len(groups_strengths)):
@@ -133,32 +117,71 @@ def plot_graphs(groups_strengths, group_names, plot_stimuli = None):
 
                     indices = list(range(len(v)))
                     min_y = min(min_y, min(v))
-                    plt.plot(indices, v, label=f'{group_names[j]} {k}', marker = 'D', markersize = 4)
+                    pyplot.plot(indices, v, label=f'{group_names[j]} {k}', marker = 'D', markersize = 4)
 
-        plt.xlabel('Trial Number')
-        plt.ylabel('Associative Strength')
-        plt.ylim(min_y - .1, 1.1)
-        plt.gca().xaxis.set_major_formatter(StrMethodFormatter('{x:.0f}'))
-        plt.title(f'Phase {i+1}') 
+        pyplot.xlabel('Trial Number')
+        pyplot.ylabel('Associative Strength')
+        pyplot.ylim(min_y - .1, 1.1)
+        pyplot.gca().xaxis.set_major_formatter(StrMethodFormatter('{x:.0f}'))
+        pyplot.title(f'Phase {i+1}') 
 
-        plt.subplots_adjust(bottom=0.40)
-        plt.legend(loc='upper center', bbox_to_anchor=(.5, -.37), ncol = 3)
-        plt.show()
+        pyplot.subplots_adjust(bottom=0.40)
+        pyplot.legend(loc='upper center', bbox_to_anchor=(.5, -.37), ncol = 3)
+        pyplot.show()
+
+    input('Press any key to continue...')
+
+def plot_graphs_new(data : list[dict[str, list[int]]]):
+    seaborn.set()
+    pyplot.ion()
+
+    for e, lines in enumerate(data, start = 1):
+        pyplot.figure(figsize = (8, 3))
+
+        for val, points in lines.items():
+            pyplot.plot(points, label = val, marker = 'D', markersize = 4)
+
+        pyplot.xlabel('Trial Number')
+        pyplot.ylabel('Associative Strength')
+
+        pyplot.gca().set_xticks(range(max(len(x) for x in lines.values())))
+
+        pyplot.gca().xaxis.set_major_locator(MaxNLocator(integer = True, nbins = 'auto'))
+        # pyplot.gca().xaxis.set_major_formatter(StrMethodFormatter('{x:.0f}'))
+        pyplot.title(f'Phase {e}') 
+
+        pyplot.subplots_adjust(bottom=0.40)
+        pyplot.legend(loc='upper center', bbox_to_anchor=(.5, -.37), ncol = 3)
+        # pyplot.tight_layout()
+        pyplot.show()
 
     input('Press any key to continue...')
 
 def main():
     args = parse_args()
 
-    experiments = [[y.strip().split('/') for y in x.strip().split('|')] for x in args.experiment_file.readlines()]
     groups_strengths = []
-    group_names = ['Control', 'Test']
-    for e, group in enumerate(experiments):
-        cs = set(re.findall('[A-Z]', ''.join(y for y in sum(group, []) if y.upper() == y)))
-        g = Group(args.alphas, args.beta_neg, args.beta, args.lamda_neg, args.lamda, cs, args.use_configurals, args.use_adaptive)
-        group_strength = run_group_experiments(g, group)
-        groups_strengths.append(group_strength)
+    for e, experiment in enumerate(args.experiment_file.readlines()):
+        name, *phases = experiment.split('|')
+        name = name.strip()
+        phases = [parse_parts(phase) for phase in phases]
 
-    plot_graphs(groups_strengths, group_names, args.plot_stimuli)
+        cs = set(''.join(y[0] for x in phases for y in x))
+        g = Group(name, args.alphas, args.beta_neg, args.beta, args.lamda_neg, args.lamda, cs, args.use_configurals, args.use_adaptive)
+
+        for e, strengths in enumerate(run_group_experiments(g, phases)):
+            if len(groups_strengths) <= e:
+                groups_strengths.append({})
+
+            groups_strengths[e] |= {
+                f'{name} - {k}': v
+                for k, v in strengths.items()
+                if (args.plot_experiments is None or name in args.plot_experiments) and
+                   (args.plot_stimuli is None or k in args.plot_stimuli)
+            }
+
+    # pprint.pp(groups_strengths)
+    plot_graphs_new(groups_strengths)
+
 if __name__ == '__main__':
     main()

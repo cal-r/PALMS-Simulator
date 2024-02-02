@@ -1,12 +1,14 @@
 import math
+from typing import List
 from itertools import combinations
 
 class Group:
-    def __init__(self, alphas, betan, betap, lamdan, lamdap, cs = None, use_configurals = False, use_adaptive = False):
+    def __init__(self, name, alphas, betan, betap, lamdan, lamdap, cs = None, use_configurals = False, use_adaptive = False):
         # If some alphas don't appear, set their alpha to 0.2.
         if cs is not None:
             alphas = {k: alphas.get(k, 0.2) for k in cs | alphas.keys()}
 
+        self.name = name
         self.alphas_copy = alphas.copy()
         self.alphas = self.alphas_copy
         self.betan = betan
@@ -59,43 +61,36 @@ class Group:
 
         return h
 
-    # Run a single phase of the experiment consisting of `steps` steps of
-    # certain CS `conds`, either with the associated US `plus` or not `not plus`.
-    # Its return value is the `V` dict of arrays corresponding to each element
-    # in `conds` if `ret_V`, and `self` otherwise.
-    def runPhase(self, steps, conds, plus = True, ret_V = False):
-        beta = self.betan
-        lamda = self.lamdan
-        if plus:
+    def compounds(self, part : str):
+        compounds = set(part)
+        if self.use_configurals:
+            compounds.add(part)
+
+        return compounds
+
+    def runPhaseInParts(self, parts : List[str]):
+        V = dict()
+        for part, plus in parts:
             beta = self.betap
             lamda = self.lamdap
+            sign = 1
+            if not plus == '+':
+                beta = self.betan
+                lamda = self.lamdan
+                sign = -1
 
-        # If `not use_configurals`, we only care about the individual compounds.
-        # Otherwise, we also care about the configural cue of the final compound.
-        compounds = list(conds)
-        if self.use_configurals:
-            compounds.append(conds)
-
-        try:
-            V = {x: [self.assoc[x]] for x in compounds}
-        except KeyError as exc:
-            exc.add_note(f'Not all stimuli in {compounds} have an associative value. Did you forget to add an --alpha?')
-            raise exc
-
-        for step in range(steps):
-            # `sigma` is the global error at this stage.            
+            compounds = self.compounds(part)
             sigma = sum(self.assoc[x] for x in compounds)
             for cs in compounds:
+                # Revise what happens in cases of negative self.alpha[cs] here.
                 if self.use_adaptive:
-                    if not plus and self.alphas[cs] > 0:
-                        self.alphas[cs] -= self.alphas[cs]*0.05
-                    else:
-                        self.alphas[cs] += self.alphas[cs]*0.05
+                    self.alphas[cs] *= 1 + sign * 0.05
+
+                if cs not in V:
+                    V[cs] = [self.assoc[cs]]
 
                 self.assoc[cs] += self.alphas[cs] * beta * (lamda - sigma)
                 V[cs].append(self.assoc[cs])
 
-        if ret_V:
-            return self.combine(V)
+        return self.combine(V)
 
-        return self
