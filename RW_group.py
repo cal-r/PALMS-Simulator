@@ -93,4 +93,3 @@ class Group:
                 V[cs].append(self.assoc[cs])
 
         return self.combine(V)
-

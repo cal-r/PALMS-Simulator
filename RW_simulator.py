@@ -107,7 +107,7 @@ def plot_graphs(data : list[dict[str, list[int]]]):
         pyplot.figure(figsize = (8, 3))
 
         for val, points in lines.items():
-            pyplot.plot(points, label = val, marker = 'D', markersize = 4)
+            pyplot.plot(points, label = val, marker = 'D', markersize = 4, alpha = .5)
 
         pyplot.xlabel('Trial Number')
         pyplot.ylabel('Associative Strength')
