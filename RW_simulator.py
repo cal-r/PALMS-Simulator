@@ -22,7 +22,10 @@ def parse_args():
     parser.add_argument("--lamda-neg", type = float, default = None, help="Asymptote of the absence of US +. 0 by default.")
 
     parser.add_argument("--use-configurals", type = bool, action = argparse.BooleanOptionalAction, help = 'Use compound stimuli with configural cues')
-    parser.add_argument("--use-adaptive", type = bool, action = argparse.BooleanOptionalAction, help = 'Use adaptive attention mode')
+
+    # parser.add_argument("--use-adaptive", type = bool, action = argparse.BooleanOptionalAction, help = 'Use adaptive attention mode')
+    parser.add_argument("--adaptive-type", choices = ['linear', 'exponential'], help = 'Type of adaptive attention mode to use')
+    parser.add_argument("--window-size", type = int, default = None, help = 'Size of sliding window for adaptive learning')
 
     parser.add_argument("--plot-experiments", nargs = '*', help = 'List of experiments to plot. By default plot everything')
     parser.add_argument("--plot-stimuli", nargs = '*', help = 'List of stimuli, compound and simple, to plot. By default plot everything')
@@ -55,8 +58,7 @@ def parse_args():
     if args.use_configurals is None:
         args.use_configurals = False
 
-    if args.use_adaptive is None:
-        args.use_adaptive = False
+    args.use_adaptive = args.adaptive_type is not None
 
     return args
 
@@ -91,11 +93,11 @@ def run_group_experiments(g, experiment):
         V = g.runPhase(phase)
         as_strengths.append(V)
 
-        print(V)
-        for k, v in V.items():
-            print(f'{g.name} group, phase [{"/".join(x[0] + x[1] for x in phase)}], Cue ({k}) ⟶  (+):')
-            for e, q in enumerate(v):
-                print(f'\tV_{e} = {q:g}')
+        # print(V)
+        # for k, v in V.items():
+        #     print(f'{g.name} group, phase [{"/".join(x[0] + x[1] for x in phase)}], Cue ({k}) ⟶  (+):')
+        #     for e, q in enumerate(v):
+        #         print(f'\tV_{e} = {q:g}')
 
     return as_strengths
 
@@ -135,7 +137,7 @@ def main():
         phases = [parse_parts(phase) for phase in phases]
 
         cs = set(''.join(y[0] for x in phases for y in x))
-        g = Group(name, args.alphas, args.beta_neg, args.beta, args.lamda_neg, args.lamda, cs, args.use_configurals, args.use_adaptive)
+        g = Group(name, args.alphas, args.beta_neg, args.beta, args.lamda_neg, args.lamda, cs, args.use_configurals, args.adaptive_type, args.window_size)
 
         for e, strengths in enumerate(run_group_experiments(g, phases)):
             if len(groups_strengths) <= e:
