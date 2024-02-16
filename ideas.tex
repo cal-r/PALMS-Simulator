@@ -3,6 +3,7 @@
 \usepackage{microtype}
 \usepackage{geometry}
 \usepackage{amsmath}
+\usepackage{xfrac}
 
 \newcommand{\alphamack}{\alpha _{\text{Mack}}}
 \newcommand{\alphahall}{\alpha _{\text{Hall}}}
@@ -16,17 +17,20 @@
 \subsection{Updating $\alpha$}
 
 \subsubsection{\textbf{Alternative}: Double $\alpha$}
-\begin{gather*}
-	\begin{aligned}
+\begin{align*}
 	\alpha ^{n + 1}
 		&= \alpha ^n + \Delta \alpha ^n \\
-		&= \alpha ^n + \left[ \lambda \alphamack ^n + (1 - \lambda) \alphahall ^n \right]
-	\end{aligned} \\[1em]
+		&= \alpha ^n + \left[ \lambda \alphamack ^n + (1 - \lambda) \alphahall ^n \right] \\[1em]
 	%
-	\begin{aligned}
 		\alphamack ^n &= f ( \lambda - V ) \\
-		\alphahall ^n &= - \alpha ^n \delta \cdot e^{- \frac{(\nabla_1 [ f ] ( n ) ) ^2 }{2}} = - \alpha ^n \delta e ^ {- \frac{(V^n_{\text{MA}} - V^{n - 1}_{MA}) ^2}{2}}
-	\end{aligned}
+		\alphahall ^n &= - \alpha ^n \cdot \delta \cdot e^{- \frac{1}{2} \cdot 
+		\displaystyle{ \left( \nabla_1 [ f ] ( n ) \right) ^2 }} \\
+		&= - \alpha ^n \cdot \delta e ^ {- \frac{1}{2} \cdot \displaystyle{\left(V^n_{\text{MA}} - V^{n - 1}_{MA} \right) ^2}} \\
+	\text{\where} \\
+	\delta &\in ( 0, 1 ) \\
+	V ^n _{\text{MA}} (k) &= \frac{1}{k} \sum ^n _{i = n - k + 1} V ^i \\
 \end{gather*}
+
+	$\alphahall$ should reflect the Hall and Pearce phenomenon
 
 \end{document}
