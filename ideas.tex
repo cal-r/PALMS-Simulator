@@ -1,0 +1,32 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{microtype}
+\usepackage{geometry}
+\usepackage{amsmath}
+
+\newcommand{\alphamack}{\alpha _{\text{Mack}}}
+\newcommand{\alphahall}{\alpha _{\text{Hall}}}
+
+\renewcommand{\thesubsection}{\arabic{subsection}}
+
+\begin{document}
+
+\section*{Changes to the Rescorla-Warner Modified Model}
+
+\subsection{Updating $\alpha$}
+
+\subsubsection{\textbf{Alternative}: Double $\alpha$}
+\begin{gather*}
+	\begin{aligned}
+	\alpha ^{n + 1}
+		&= \alpha ^n + \Delta \alpha ^n \\
+		&= \alpha ^n + \left[ \lambda \alphamack ^n + (1 - \lambda) \alphahall ^n \right]
+	\end{aligned} \\[1em]
+	%
+	\begin{aligned}
+		\alphamack ^n &= f ( \lambda - V ) \\
+		\alphahall ^n &= - \alpha ^n \delta \cdot e^{- \frac{(\nabla_1 [ f ] ( n ) ) ^2 }{2}} = - \alpha ^n \delta e ^ {- \frac{(V^n_{\text{MA}} - V^{n - 1}_{MA}) ^2}{2}}
+	\end{aligned}
+\end{gather*}
+
+\end{document}
