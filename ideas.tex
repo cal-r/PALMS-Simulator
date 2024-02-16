@@ -9,28 +9,56 @@
 \newcommand{\alphahall}{\alpha _{\text{Hall}}}
 
 \renewcommand{\thesubsection}{\arabic{subsection}}
+\renewcommand{\thesubsubsection}{\quad{} \alph{subsubsection}}
 
 \begin{document}
 
-\section*{Changes to the Rescorla-Warner Modified Model}
+\section*{Changes to the Rescorla-Wagner Modified Model}
 
 \subsection{Updating $\alpha$}
 
-\subsubsection{\textbf{Alternative}: Double $\alpha$}
-\begin{align*}
-	\alpha ^{n + 1}
-		&= \alpha ^n + \Delta \alpha ^n \\
-		&= \alpha ^n + \left[ \lambda \alphamack ^n + (1 - \lambda) \alphahall ^n \right] \\[1em]
-	%
-		\alphamack ^n &= f ( \lambda - V ) \\
+We hereby present 3 alternatives.
+
+\subsubsection{Double $\alpha$}
+\begin{equation}
+	\begin{aligned}
+		\alpha ^{n + 1}
+			&= \alpha ^n + \Delta \alpha ^n \\
+			&= \alpha ^n + \left[ \lambda \alphamack ^n + (1 - \lambda) \alphahall ^n \right] 
+	\end{aligned}
+\end{equation}
+
+$\alphamack$ reflects the Mackintosh formulation of attention for the Rescorla-Wagner model.
+\begin{equation}
+	\alphamack ^n = f ( \lambda - V ) \\
+\end{equation}
+
+$\alphahall$ reflect the Hall and Pearce phenomenon.
+\begin{gather}
+	\begin{aligned}
 		\alphahall ^n &= - \alpha ^n \cdot \delta \cdot e^{- \frac{1}{2} \cdot 
 		\displaystyle{ \left( \nabla_1 [ f ] ( n ) \right) ^2 }} \\
-		&= - \alpha ^n \cdot \delta e ^ {- \frac{1}{2} \cdot \displaystyle{\left(V^n_{\text{MA}} - V^{n - 1}_{MA} \right) ^2}} \\
-	\text{\where} \\
-	\delta &\in ( 0, 1 ) \\
-	V ^n _{\text{MA}} (k) &= \frac{1}{k} \sum ^n _{i = n - k + 1} V ^i \\
-\end{gather*}
+		&= - \alpha ^n \cdot \delta e ^ {- \frac{1}{2} \cdot \displaystyle{\left(V^n_{\text{MA}} - V^{n - 1}_{MA} \right) ^2}}
+	\end{aligned} \\[1em]
+	\begin{aligned}
+		\delta &\in ( 0, 1 ) \\
+		V ^n _{\text{MA}} (k) &= \frac{1}{k} \sum ^n _{i = n - k + 1} V ^i
+	\end{aligned} \notag{}
+\end{gather}
 
-	$\alphahall$ should reflect the Hall and Pearce phenomenon
+\subsubsection{Maximum of both}
+
+\begin{equation}
+	\alpha ^{n + 1} = \max { \left( \alphamack ^n, \alphahall ^n \right) } 
+\end{equation}
+
+\subsubsection{Thresholding}
+
+\begin{equation}
+	\alpha ^{n + 1} = \begin{cases}
+		\alphamack ^n & \text{if } V^n > \tau \\
+		\alphahall ^n & \text{otherwise}
+	\end{cases}
+\end{equation}
 
 \end{document}
