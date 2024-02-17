@@ -87,11 +87,17 @@ def parse_parts(phase : str) -> List[str]:
     return parts
 
 def run_group_experiments(g, experiment):
-    as_strengths = []
+    #as_strengths = []
+    #alpha_values = []
+
+    results = []
 
     for trial, phase in enumerate(experiment):
-        V = g.runPhase(phase)
-        as_strengths.append(V)
+        V, alphas = g.runPhase(phase)
+        #as_strengths.append(V)
+        #alpha_values.append(alphas)
+
+        results.append((V, alphas))
 
         # print(V)
         # for k, v in V.items():
@@ -99,8 +105,10 @@ def run_group_experiments(g, experiment):
         #     for e, q in enumerate(v):
         #         print(f'\tV_{e} = {q:g}')
 
-    return as_strengths
+    #return as_strengths, alpha_values
+    return results
 
+'''
 def plot_graphs(data : list[dict[str, list[int]]]):
     seaborn.set()
     pyplot.ion()
@@ -126,11 +134,44 @@ def plot_graphs(data : list[dict[str, list[int]]]):
         pyplot.show()
 
     input('Press any key to continue...')
+'''
+def plot_graphs(data: list[dict[str, list[int]]], alpha_data: list[dict[str, list[float]]]):
+    seaborn.set()
+    pyplot.ion()
+
+    for e, (lines, alpha_lines) in enumerate(zip(data, alpha_data), start=1):
+        pyplot.figure(figsize=(16, 6))
+
+        # Plot for associative strengths
+        ax1 = pyplot.subplot(1, 2, 1)
+        for val, points in lines.items():
+            ax1.plot(points, label=val, marker='D', markersize=4, alpha=.5)
+        ax1.set_xlabel('Trial Number')
+        ax1.set_ylabel('Associative Strength')
+        ax1.set_title(f'Phase {e} Associative Strengths')
+        ax1.legend()
+
+        # Plot for alpha values
+        ax2 = pyplot.subplot(1, 2, 2)
+        for val, points in alpha_lines.items():
+            ax2.plot(points, label=f'Alpha - {val}', linestyle='--', marker='o', markersize=4, alpha=.5)
+        ax2.set_xlabel('Trial Number')
+        ax2.set_ylabel('Alpha Value')
+        ax2.set_title(f'Phase {e} Alpha Values')
+        ax2.legend()
+
+        pyplot.tight_layout()
+        pyplot.show()
+
+    input('Press any key to continue...')
+
 
 def main():
     args = parse_args()
 
     groups_strengths = []
+    alpha_values = []
+
     for e, experiment in enumerate(args.experiment_file.readlines()):
         name, *phases = experiment.split('|')
         name = name.strip()
@@ -139,7 +180,7 @@ def main():
         cs = set(''.join(y[0] for x in phases for y in x))
         g = Group(name, args.alphas, args.beta_neg, args.beta, args.lamda_neg, args.lamda, cs, args.use_configurals, args.adaptive_type, args.window_size)
 
-        for e, strengths in enumerate(run_group_experiments(g, phases)):
+        for e, (strengths, alphas) in enumerate(run_group_experiments(g, phases)):
             if len(groups_strengths) <= e:
                 groups_strengths.append({})
 
@@ -150,7 +191,18 @@ def main():
                    (args.plot_stimuli is None or k in args.plot_stimuli)
             }
 
-    plot_graphs(groups_strengths)
+            if len(alpha_values) <= e:
+                alpha_values.append({})
+
+            alpha_values[e] |= {
+                f'{name} - {k}': v
+                for k, v in alphas.items()
+                if (args.plot_experiments is None or name in args.plot_experiments) and
+                   (args.plot_stimuli is None or k in args.plot_stimuli)
+            }
+
+    #plot_graphs(groups_strengths)
+    plot_graphs(groups_strengths, alpha_values)
 
 if __name__ == '__main__':
     main()

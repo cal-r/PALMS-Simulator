@@ -107,4 +107,5 @@ class Group:
                 else:
                     V[cs].append(self.assoc[cs])
 
-        return self.combine(V)
+        alphas = {cs: self.alphas[cs] for cs in self.cs}
+        return self.combine(V), alphas
