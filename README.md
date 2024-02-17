@@ -33,14 +33,14 @@ python RW_simulator.py --experiment_file [path to your experiment file]
 ```
 
 ### Advanced Options
- -h, --help: Shows help message and exit
---beta: Set the associativity of the US (Unconditioned Stimulus) positive reinforcement. Default is 1.
---beta-neg: Set the associativity of the absence of US positive reinforcement. Default is equal to --beta value.
---lamda: Set the asymptote of learning for positive reinforcement. Default is 1.
---lamda-neg: Set the asymptote for the absence of US positive reinforcement. Default is 0.
---use-configurals: Enable the use of compound stimuli with configural cues.
---adaptive-type: Set the type of adaptive attention mode (linear or exponential).
---window-size: Set the size of the sliding window for adaptive learning.
+- -h, --help: Shows help message and exit
+- --beta: Set the associativity of the US (Unconditioned Stimulus) positive reinforcement. Default is 1.
+- --beta-neg: Set the associativity of the absence of US positive reinforcement. Default is equal to --beta value.
+- --lamda: Set the asymptote of learning for positive reinforcement. Default is 1.
+- --lamda-neg: Set the asymptote for the absence of US positive reinforcement. Default is 0.
+- --use-configurals: Enable the use of compound stimuli with configural cues.
+- --adaptive-type: Set the type of adaptive attention mode (linear or exponential).
+- --window-size: Set the size of the sliding window for adaptive learning.
 
 ### Example
 ```bash
