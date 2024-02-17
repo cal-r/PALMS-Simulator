@@ -29,7 +29,7 @@ cd Rescorla-Wagner-Simulator
 To run the simulator, use the RW_simulator.py script. This script accepts various command-line arguments to customize the simulation parameters.
 
 ```bash
-python RW_simulator.py --experiment_file [path to your experiment file]
+python RW_simulator.py [path to your experiment file]
 ```
 
 ### Advanced Options
