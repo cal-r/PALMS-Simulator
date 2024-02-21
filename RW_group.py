@@ -4,7 +4,7 @@ from typing import List
 from itertools import combinations
 
 class Group:
-    def __init__(self, name, alphas, betan, betap, lamdan, lamdap, cs = None, use_configurals = False, adaptive_type = None, window_size = None):
+    def __init__(self, name, alphas, betan, betap, lamdan, lamdap, cs = None, use_configurals = False, adaptive_type = None, window_size = None, xi_hall = None):
         # If some alphas don't appear, set their alpha to 0.2.
         if cs is not None:
             alphas = {k: alphas.get(k, 0.2) for k in cs | alphas.keys()}
@@ -12,8 +12,14 @@ class Group:
         self.name = name
         self.alphas_copy = alphas.copy()
         self.alphas = self.alphas_copy
-        self.alpha_mack = {k: [0] for k in cs}
-        self.alpha_hall = {k: [0] for k in cs}
+
+        self.alpha_mack = {k: 0 for k in cs}
+        self.alpha_hall = {k: 0 for k in cs}
+
+        # self.delta_ma_hall is the difference of the moving averages used for Hall.
+        # self.delta_ma_hall^n = V^n_{MA} - V^{n - 1}_{MA}
+        self.delta_ma_hall = {k: None for k in cs}
+        self.xi_hall = xi_hall
 
         self.betan = betan
         self.betap = betap
@@ -68,6 +74,20 @@ class Group:
 
         return h
 
+    def get_alpha_mack(self, cs):
+        big_mack_error = sum(self.assoc.values()) / len(self.assoc) - self.assoc[cs]
+        return self.alpha_mack[cs] - big_mack_error
+
+    def get_alpha_hall(self, cs):
+        if self.window_size is None:
+            return None
+
+        if self.delta_ma_hall[cs] is None:
+            return 0
+
+        error = self.xi_hall * self.alpha_hall[cs] * math.exp(-self.delta_ma_hall[cs] ** 2 / 2)
+        return self.alpha_hall[cs] + error
+
     def compounds(self, part : str):
         compounds = set(part)
         if self.use_configurals:
@@ -78,6 +98,9 @@ class Group:
     def runPhase(self, parts : List[str]):
         V = dict()
         A = dict()
+
+        A_mack = dict()
+        A_hall = dict()
 
         for part, plus in parts:
             beta = self.betap
@@ -95,6 +118,8 @@ class Group:
                     V[cs] = [self.assoc[cs]]
                     A[cs] = [self.alphas[cs]]
 
+                self.alpha_mack[cs] = self.get_alpha_mack(cs)
+                self.alpha_hall[cs] = self.get_alpha_hall(cs)
                 
                 match self.adaptive_type:
                     case 'linear':
@@ -110,7 +135,11 @@ class Group:
                         self.window[cs].popleft()
 
                     self.window[cs].append(self.assoc[cs])
-                    V[cs].append(sum(self.window[cs]) / len(self.window[cs]))
+
+                    window_avg = sum(self.window[cs]) / len(self.window[cs])
+
+                    self.delta_ma_hall[cs] = window_avg - V[cs][-1]
+                    V[cs].append(window_avg)
                 else:
                     V[cs].append(self.assoc[cs])
 

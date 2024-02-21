@@ -27,6 +27,8 @@ def parse_args():
     parser.add_argument("--adaptive-type", choices = ['linear', 'exponential'], help = 'Type of adaptive attention mode to use')
     parser.add_argument("--window-size", type = int, default = None, help = 'Size of sliding window for adaptive learning')
 
+    parser.add_argument("--xi-hall", type = float, default = 0.8, help = 'Xi parameter for Hall alpha calculation')
+
     parser.add_argument("--plot-experiments", nargs = '*', help = 'List of experiments to plot. By default plot everything')
     parser.add_argument("--plot-stimuli", nargs = '*', help = 'List of stimuli, compound and simple, to plot. By default plot everything')
     parser.add_argument('--plot-alphas', type = bool, action = argparse.BooleanOptionalAction, help = 'Whether to plot the alphas of all CS.')
@@ -176,7 +178,7 @@ def main():
         phases = [parse_parts(phase) for phase in phases]
 
         cs = set(''.join(y[0] for x in phases for y in x))
-        g = Group(name, args.alphas, args.beta_neg, args.beta, args.lamda_neg, args.lamda, cs, args.use_configurals, args.adaptive_type, args.window_size)
+        g = Group(name, args.alphas, args.beta_neg, args.beta, args.lamda_neg, args.lamda, cs, args.use_configurals, args.adaptive_type, args.window_size, args.xi_hall)
 
         for e, (strengths, alphas) in enumerate(run_group_experiments(g, phases)):
             if len(groups_strengths) <= e:
