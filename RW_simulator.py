@@ -32,7 +32,7 @@ def parse_args():
 
 
     parser.add_argument(
-        "--experiment_file",
+        "experiment_file",
         nargs='?',
         type = argparse.FileType('r'),
         default = sys.stdin,
