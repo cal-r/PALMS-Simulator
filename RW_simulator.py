@@ -26,7 +26,7 @@ def parse_args():
     parser.add_argument("--adaptive-type", choices = ['linear', 'exponential', 'macknhall'], help = 'Type of adaptive attention mode to use')
     parser.add_argument("--window-size", type = int, default = None, help = 'Size of sliding window for adaptive learning')
 
-    parser.add_argument("--xi-hall", type = float, default = 0.8, help = 'Xi parameter for Hall alpha calculation')
+    parser.add_argument("--xi-hall", type = float, default = 0.2, help = 'Xi parameter for Hall alpha calculation')
 
     parser.add_argument("--plot-experiments", nargs = '*', help = 'List of experiments to plot. By default plot everything')
     parser.add_argument("--plot-stimuli", nargs = '*', help = 'List of stimuli, compound and simple, to plot. By default plot everything')
@@ -57,6 +57,9 @@ def parse_args():
         args.use_configurals = False
 
     args.use_adaptive = args.adaptive_type is not None
+
+    if args.adaptive_type == 'macknhall' and args.window_size is None:
+        args.window_size = 3
 
     return args
 
