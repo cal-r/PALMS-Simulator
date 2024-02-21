@@ -4,7 +4,7 @@ from typing import List
 from itertools import combinations
 
 class Group:
-    def __init__(self, name, alphas, betan, betap, lamdan, lamdap, cs = None, use_configurals = False, adaptive_type = None, window_size = None, xi_hall = None):
+    def __init__(self, name, alphas, betan, betap, lamda, cs = None, use_configurals = False, adaptive_type = None, window_size = None, xi_hall = None):
         # If some alphas don't appear, set their alpha to 0.2.
         if cs is not None:
             alphas = {k: alphas.get(k, 0.2) for k in cs | alphas.keys()}
@@ -23,8 +23,7 @@ class Group:
 
         self.betan = betan
         self.betap = betap
-        self.lamdan = lamdan
-        self.lamdap = lamdap
+        self.lamda = lamda
         self.use_configurals = use_configurals
         self.adaptive_type = adaptive_type
         self.window_size = window_size
@@ -104,11 +103,11 @@ class Group:
 
         for part, plus in parts:
             beta = self.betap
-            lamda = self.lamdap
+            lamda = self.lamda
             sign = 1
             if not plus == '+':
                 beta = self.betan
-                lamda = self.lamdan
+                lamda = 0
                 sign = -1
 
             compounds = self.compounds(part)

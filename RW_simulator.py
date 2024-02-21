@@ -19,12 +19,11 @@ def parse_args():
     parser.add_argument("--beta", type = float, default = 1, help="Associativity of the US +.")
     parser.add_argument("--beta-neg", type = float, default = None, help="Associativity of the absence of US +. Equal to beta by default.")
     parser.add_argument("--lamda", type = float, default = 1, help="Asymptote of learning.")
-    parser.add_argument("--lamda-neg", type = float, default = None, help="Asymptote of the absence of US +. 0 by default.")
 
     parser.add_argument("--use-configurals", type = bool, action = argparse.BooleanOptionalAction, help = 'Use compound stimuli with configural cues')
 
     # parser.add_argument("--use-adaptive", type = bool, action = argparse.BooleanOptionalAction, help = 'Use adaptive attention mode')
-    parser.add_argument("--adaptive-type", choices = ['linear', 'exponential'], help = 'Type of adaptive attention mode to use')
+    parser.add_argument("--adaptive-type", choices = ['linear', 'exponential', 'macknhall'], help = 'Type of adaptive attention mode to use')
     parser.add_argument("--window-size", type = int, default = None, help = 'Size of sliding window for adaptive learning')
 
     parser.add_argument("--xi-hall", type = float, default = 0.8, help = 'Xi parameter for Hall alpha calculation')
@@ -53,9 +52,6 @@ def parse_args():
 
     if args.beta_neg is None:
         args.beta_neg = args.beta
-
-    if args.lamda_neg is None:
-        args.lamda_neg = 0
 
     if args.use_configurals is None:
         args.use_configurals = False
@@ -151,7 +147,7 @@ def main():
         phases = [parse_parts(phase) for phase in phases]
 
         cs = set(''.join(y[0] for x in phases for y in x))
-        g = Group(name, args.alphas, args.beta_neg, args.beta, args.lamda_neg, args.lamda, cs, args.use_configurals, args.adaptive_type, args.window_size, args.xi_hall)
+        g = Group(name, args.alphas, args.beta_neg, args.beta, args.lamda, cs, args.use_configurals, args.adaptive_type, args.window_size, args.xi_hall)
 
         for e, (strengths, alphas) in enumerate(run_group_experiments(g, phases)):
             if len(groups_strengths) <= e:
