@@ -74,6 +74,8 @@ class Group:
 
     def runPhase(self, parts : List[str]):
         V = dict()
+        A = dict()
+
         for part, plus in parts:
             beta = self.betap
             lamda = self.lamdap
@@ -86,15 +88,16 @@ class Group:
             compounds = self.compounds(part)
             sigma = sum(self.assoc[x] for x in compounds)
             for cs in compounds:
+                if cs not in V:
+                    V[cs] = [self.assoc[cs]]
+                    A[cs] = [self.alphas[cs]]
+
                 match self.adaptive_type:
                     case 'linear':
                         self.alphas[cs] *= 1 + sign * 0.05
                     case 'exponential':
                         if sign == 1:
                             self.alphas[cs] *= (self.alphas[cs] ** 0.05) ** sign
-
-                if cs not in V:
-                    V[cs] = [self.assoc[cs]]
 
                 self.assoc[cs] += self.alphas[cs] * beta * (lamda - sigma)
 
@@ -107,5 +110,6 @@ class Group:
                 else:
                     V[cs].append(self.assoc[cs])
 
-        alphas = {cs: self.alphas[cs] for cs in self.cs}
-        return self.combine(V), alphas
+                A[cs].append(self.alphas[cs])
+
+        return self.combine(V), A

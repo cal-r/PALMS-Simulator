@@ -87,25 +87,12 @@ def parse_parts(phase : str) -> List[str]:
     return parts
 
 def run_group_experiments(g, experiment):
-    #as_strengths = []
-    #alpha_values = []
-
     results = []
 
     for trial, phase in enumerate(experiment):
-        V, alphas = g.runPhase(phase)
-        #as_strengths.append(V)
-        #alpha_values.append(alphas)
+        V, A = g.runPhase(phase)
+        results.append((V, A))
 
-        results.append((V, alphas))
-
-        # print(V)
-        # for k, v in V.items():
-        #     print(f'{g.name} group, phase [{"/".join(x[0] + x[1] for x in phase)}], Cue ({k}) ⟶  (+):')
-        #     for e, q in enumerate(v):
-        #         print(f'\tV_{e} = {q:g}')
-
-    #return as_strengths, alpha_values
     return results
 
 '''
