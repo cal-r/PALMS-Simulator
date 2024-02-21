@@ -97,33 +97,6 @@ def run_group_experiments(g, experiment):
 
     return results
 
-'''
-def plot_graphs(data : list[dict[str, list[int]]]):
-    seaborn.set()
-    pyplot.ion()
-
-    for e, lines in enumerate(data, start = 1):
-        pyplot.figure(figsize = (8, 3))
-
-        for val, points in lines.items():
-            pyplot.plot(points, label = val, marker = 'D', markersize = 4, alpha = .5)
-
-        pyplot.xlabel('Trial Number')
-        pyplot.ylabel('Associative Strength')
-
-        pyplot.gca().set_xticks(range(max(len(x) for x in lines.values())))
-
-        pyplot.gca().xaxis.set_major_locator(MaxNLocator(integer = True, nbins = 'auto'))
-        # pyplot.gca().xaxis.set_major_formatter(StrMethodFormatter('{x:.0f}'))
-        pyplot.title(f'Phase {e}') 
-
-        pyplot.subplots_adjust(bottom=0.40)
-        pyplot.legend(loc='upper center', bbox_to_anchor=(.5, -.37), ncol = 3)
-        # pyplot.tight_layout()
-        pyplot.show()
-
-    input('Press any key to continue...')
-'''
 def plot_graphs(data: list[dict[str, list[int]]], alpha_data: list[dict[str, list[float]]], plot_alphas = False):
     seaborn.set()
     pyplot.ion()
