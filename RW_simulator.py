@@ -32,7 +32,7 @@ def parse_args():
 
 
     parser.add_argument(
-        "experiment_file",
+        "--experiment_file",
         nargs='?',
         type = argparse.FileType('r'),
         default = sys.stdin,
@@ -43,7 +43,7 @@ def parse_args():
     args, rest = parser.parse_known_args()
     args.alphas = dict()
     for arg in rest:
-        match = re.fullmatch('--alpha-([A-Z])\s*=?\s*([0-9]*\.?[0-9]*)', arg)
+        match = re.fullmatch('--alpha_([A-Z])\s*=?\s*([0-9]*\.?[0-9]*)', arg)
         if not match:
             parser.error(f'Option not understood: {arg}')
 
