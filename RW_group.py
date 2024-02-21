@@ -12,6 +12,9 @@ class Group:
         self.name = name
         self.alphas_copy = alphas.copy()
         self.alphas = self.alphas_copy
+        self.alpha_mack = {k: [0] for k in cs}
+        self.alpha_hall = {k: [0] for k in cs}
+
         self.betan = betan
         self.betap = betap
         self.lamdan = lamdan
@@ -92,6 +95,7 @@ class Group:
                     V[cs] = [self.assoc[cs]]
                     A[cs] = [self.alphas[cs]]
 
+                
                 match self.adaptive_type:
                     case 'linear':
                         self.alphas[cs] *= 1 + sign * 0.05
