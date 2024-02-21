@@ -29,7 +29,7 @@ def parse_args():
 
     parser.add_argument("--plot-experiments", nargs = '*', help = 'List of experiments to plot. By default plot everything')
     parser.add_argument("--plot-stimuli", nargs = '*', help = 'List of stimuli, compound and simple, to plot. By default plot everything')
-
+    parser.add_argument('--plot-alphas', type = bool, action = argparse.BooleanOptionalAction, help = 'Whether to plot the alphas of all CS.')
 
     parser.add_argument(
         "experiment_file",
@@ -122,30 +122,41 @@ def plot_graphs(data : list[dict[str, list[int]]]):
 
     input('Press any key to continue...')
 '''
-def plot_graphs(data: list[dict[str, list[int]]], alpha_data: list[dict[str, list[float]]]):
+def plot_graphs(data: list[dict[str, list[int]]], alpha_data: list[dict[str, list[float]]], plot_alphas = False):
     seaborn.set()
     pyplot.ion()
 
     for e, (lines, alpha_lines) in enumerate(zip(data, alpha_data), start=1):
-        pyplot.figure(figsize=(16, 6))
+        if plot_alphas:
+            pyplot.figure(figsize=(16, 6))
 
-        # Plot for associative strengths
-        ax1 = pyplot.subplot(1, 2, 1)
-        for val, points in lines.items():
-            ax1.plot(points, label=val, marker='D', markersize=4, alpha=.5)
-        ax1.set_xlabel('Trial Number')
-        ax1.set_ylabel('Associative Strength')
-        ax1.set_title(f'Phase {e} Associative Strengths')
-        ax1.legend()
+            # Plot for associative strengths
+            ax1 = pyplot.subplot(1, 2, 1)
+            for val, points in lines.items():
+                ax1.plot(points, label=val, marker='D', markersize=4, alpha=.5)
+            ax1.set_xlabel('Trial Number')
+            ax1.set_ylabel('Associative Strength')
+            ax1.set_title(f'Phase {e} Associative Strengths')
+            ax1.legend()
 
-        # Plot for alpha values
-        ax2 = pyplot.subplot(1, 2, 2)
-        for val, points in alpha_lines.items():
-            ax2.plot(points, label=f'Alpha - {val}', linestyle='--', marker='o', markersize=4, alpha=.5)
-        ax2.set_xlabel('Trial Number')
-        ax2.set_ylabel('Alpha Value')
-        ax2.set_title(f'Phase {e} Alpha Values')
-        ax2.legend()
+            # Plot for alpha values
+            ax2 = pyplot.subplot(1, 2, 2)
+            for val, points in alpha_lines.items():
+                ax2.plot(points, label=f'Alpha - {val}', linestyle='--', marker='o', markersize=4, alpha=.5)
+            ax2.set_xlabel('Trial Number')
+            ax2.set_ylabel('Alpha Value')
+            ax2.set_title(f'Phase {e} Alpha Values')
+            ax2.legend()
+        else:
+            pyplot.figure(figsize=(8, 6))
+
+            # Plot for associative strengths
+            for val, points in lines.items():
+                pyplot.plot(points, label=val, marker='D', markersize=4, alpha=.5)
+            pyplot.gca().set_xlabel('Trial Number')
+            pyplot.gca().set_ylabel('Associative Strength')
+            pyplot.gca().set_title(f'Phase {e} Associative Strengths')
+            pyplot.legend()
 
         pyplot.tight_layout()
         pyplot.show()
@@ -188,8 +199,7 @@ def main():
                    (args.plot_stimuli is None or k in args.plot_stimuli)
             }
 
-    #plot_graphs(groups_strengths)
-    plot_graphs(groups_strengths, alpha_values)
+    plot_graphs(groups_strengths, alpha_values, args.plot_alphas)
 
 if __name__ == '__main__':
     main()
