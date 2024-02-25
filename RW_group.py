@@ -2,6 +2,7 @@ import math
 from collections import deque, defaultdict
 from typing import List
 from itertools import combinations
+import numpy as np
 
 class Group:
     def __init__(self, name, alphas, betan, betap, lamda, cs = None, use_configurals = False, adaptive_type = None, window_size = None, xi_hall = None):
@@ -78,7 +79,16 @@ class Group:
         # This overflows -- ask Esther.
         # big_mack_error = sum(self.assoc.values()) / len(self.assoc) - self.assoc[cs]
         # return self.alpha_mack[cs] - big_mack_error
-        return 0
+        #return 0
+        """if len(self.assoc) > 1:
+            big_mack_error = ( sum(self.assoc[x] for x in self.assoc if x!=cs)/ (len(self.assoc)-1) ) - self.assoc[cs]
+        else:
+            big_mack_error = - self.assoc[cs]
+        return self.alpha_mack[cs] - 0.2*big_mack_error"""
+        
+        #return self.alpha_mack[cs] + 0.01*self.assoc[cs]
+
+        return self.alpha_mack[cs] + 0.01*(2*self.assoc[cs] - sum(self.assoc.values()))
 
     def get_alpha_hall(self, cs):
         assert self.window_size is not None
@@ -87,7 +97,11 @@ class Group:
         if delta_ma_hall is None:
             delta_ma_hall = 0
 
-        error = self.xi_hall * self.alpha_hall[cs] * math.exp(-delta_ma_hall ** 2 / 2)
+        try:
+            error = self.xi_hall * self.alpha_hall[cs] * math.exp(- delta_ma_hall**2 / 2)
+        except:
+            error = 0.0000001
+        print(f"alpha_hall: {error}")
         return error
 
     def compounds(self, part : str):
@@ -119,6 +133,8 @@ class Group:
                 if cs not in V:
                     V[cs] = [self.assoc[cs]]
                     A[cs] = [self.alphas[cs]]
+                    A_mack[cs] = [self.alpha_mack[cs]]
+                    A_hall[cs] = [self.alpha_hall[cs]]
 
                 self.alpha_mack[cs] = self.get_alpha_mack(cs)
                 self.alpha_hall[cs] = self.get_alpha_hall(cs)
@@ -130,9 +146,13 @@ class Group:
                         if sign == 1:
                             self.alphas[cs] *= (self.alphas[cs] ** 0.05) ** sign
                     case 'macknhall':
-                        print(lamda)
-                        self.alphas[cs] = lamda * self.alpha_mack[cs] + (1 - lamda) * self.alpha_hall[cs]
+                        #print(lamda)
+                        self.alphas[cs] = (1-lamda+self.assoc[cs]) * self.alpha_mack[cs] + (lamda-self.assoc[cs]) * self.alpha_hall[cs]
+                        """delta_v_n = self.alpha_hall[cs] * beta * (lamda - sigma)
+                        v_n = self.alpha_mack[cs] * self.assoc[cs]
+                        self.assoc[cs] = v_n + delta_v_n"""
 
+                print(f"DV: {self.alphas[cs] * beta * (lamda - sigma)}, Alpha: {self.alphas[cs]}, sigma: {sigma}")
                 self.assoc[cs] += self.alphas[cs] * beta * (lamda - sigma)
 
                 if self.window_size is not None:
@@ -149,5 +169,7 @@ class Group:
                     V[cs].append(self.assoc[cs])
 
                 A[cs].append(self.alphas[cs])
+                A_mack[cs].append(self.alpha_mack[cs])
+                A_hall[cs].append(self.alpha_hall[cs])
 
-        return self.combine(V), A
+        return self.combine(V), A_mack
