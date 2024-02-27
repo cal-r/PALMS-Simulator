@@ -91,16 +91,16 @@ def run_group_experiments(g, experiment):
     results = []
 
     for trial, phase in enumerate(experiment):
-        V, A = g.runPhase(phase)
-        results.append((V, A))
+        V, A, A_mack, A_hall = g.runPhase(phase)
+        results.append((V, A, A_mack, A_hall))
 
     return results
 
-def plot_graphs(data: list[dict[str, list[int]]], alpha_data: list[dict[str, list[float]]], plot_alphas = False):
+def plot_graphs(data: list[dict[str, list[int]]], alpha_data: list[dict[str, list[float]]], alpha_mack_data: list[dict[str, list[float]]], alpha_hall_data: list[dict[str, list[float]]], plot_alphas = False):
     seaborn.set()
     pyplot.ion()
 
-    for e, (lines, alpha_lines) in enumerate(zip(data, alpha_data), start=1):
+    for e, (lines, alpha_lines, alpha_mack_lines, alpha_hall_lines) in enumerate(zip(data, alpha_data, alpha_mack_data, alpha_hall_data), start=1):
         if plot_alphas:
             pyplot.figure(figsize=(16, 6))
 
@@ -115,10 +115,14 @@ def plot_graphs(data: list[dict[str, list[int]]], alpha_data: list[dict[str, lis
 
             # Plot for alpha values
             ax2 = pyplot.subplot(1, 2, 2)
-            for val, points in alpha_lines.items():
-                ax2.plot(points, label=f'Alpha - {val}', linestyle='--', marker='o', markersize=4, alpha=.5)
+            for val, points_alpha in alpha_lines.items():
+                ax2.plot(points_alpha, label=f'Alpha_tot -- {val}', linestyle='--', marker='o', markersize=4, alpha=.5)
+            for val_mack, points_alpha_mack in alpha_mack_lines.items():
+                ax2.plot(points_alpha_mack, label=f'Alpha_mack -- {val_mack}', linestyle='--', marker='o', markersize=4, alpha=.5)
+            for val_hall, points_alpha_hall in alpha_hall_lines.items():
+                ax2.plot(points_alpha_hall, label=f'Alpha_hall -- {val_hall}', linestyle='--', marker='o', markersize=4, alpha=.5)
             ax2.set_xlabel('Trial Number')
-            ax2.set_ylabel('Alpha Value')
+            ax2.set_ylabel('Alpha Values')
             ax2.set_title(f'Phase {e} Alpha Values')
             ax2.legend()
         else:
@@ -143,6 +147,8 @@ def main():
 
     groups_strengths = []
     alpha_values = []
+    alpha_mack_values = []
+    alpha_hall_values = []
 
     for e, experiment in enumerate(args.experiment_file.readlines()):
         name, *phases = experiment.split('|')
@@ -152,7 +158,7 @@ def main():
         cs = set(''.join(y[0] for x in phases for y in x))
         g = Group(name, args.alphas, args.beta_neg, args.beta, args.lamda, cs, args.use_configurals, args.adaptive_type, args.window_size, args.xi_hall)
 
-        for e, (strengths, alphas) in enumerate(run_group_experiments(g, phases)):
+        for e, (strengths, alphas, alphas_mack, alphas_hall) in enumerate(run_group_experiments(g, phases)):
             if len(groups_strengths) <= e:
                 groups_strengths.append({})
 
@@ -166,6 +172,12 @@ def main():
             if len(alpha_values) <= e:
                 alpha_values.append({})
 
+            if len(alpha_mack_values) <= e:
+                alpha_mack_values.append({})            
+
+            if len(alpha_hall_values) <= e:
+                alpha_hall_values.append({})
+
             alpha_values[e] |= {
                 f'{name} - {k}': v
                 for k, v in alphas.items()
@@ -173,7 +185,21 @@ def main():
                    (args.plot_stimuli is None or k in args.plot_stimuli)
             }
 
-    plot_graphs(groups_strengths, alpha_values, args.plot_alphas)
+            alpha_mack_values[e] |= {
+                f'{name} - {k}': v
+                for k, v in alphas_mack.items()
+                if (args.plot_experiments is None or name in args.plot_experiments) and
+                   (args.plot_stimuli is None or k in args.plot_stimuli)
+            }
+
+            alpha_hall_values[e] |= {
+                f'{name} - {k}': v
+                for k, v in alphas_hall.items()
+                if (args.plot_experiments is None or name in args.plot_experiments) and
+                   (args.plot_stimuli is None or k in args.plot_stimuli)
+            }
+
+    plot_graphs(groups_strengths, alpha_values, alpha_mack_values, alpha_hall_values, args.plot_alphas)
 
 if __name__ == '__main__':
     main()

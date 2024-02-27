@@ -172,4 +172,4 @@ class Group:
                 A_mack[cs].append(self.alpha_mack[cs])
                 A_hall[cs].append(self.alpha_hall[cs])
 
-        return self.combine(V), A_mack
+        return self.combine(V), A, A_mack, A_hall
