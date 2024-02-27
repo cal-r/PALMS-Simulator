@@ -6,9 +6,9 @@ import numpy as np
 
 class Group:
     def __init__(self, name, alphas, betan, betap, lamda, cs = None, use_configurals = False, adaptive_type = None, window_size = None, xi_hall = None):
-        # If some alphas don't appear, set their alpha to 0.2.
+        # If some alphas don't appear, set their alpha to 0.
         if cs is not None:
-            alphas = {k: alphas.get(k, 0.2) for k in cs | alphas.keys()}
+            alphas = {k: alphas.get(k, 0) for k in cs | alphas.keys()}
 
         self.name = name
         self.alphas_copy = alphas.copy()
@@ -48,8 +48,12 @@ class Group:
             self.cs = self.alphas.keys()
 
         # Initially, alpha_mack and alpha_hall are identical.
-        self.alpha_mack = alphas.copy()
-        self.alpha_hall = alphas.copy()
+        if cs is not None:
+            self.alpha_mack = {k: 0.2 for k in cs}
+            self.alpha_hall = {k: 0.2 for k in cs}
+        else:
+            self.alpha_mack = {k: 0.2 for k in alphas.keys()}
+            self.alpha_hall = {k: 0.2 for k in alphas.keys()}
 
         # The initial associative strength for all stimuli is 0.
         self.assoc = {c: 0. for c in self.cs}

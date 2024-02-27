@@ -13,7 +13,7 @@ from typing import List
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Behold! My Rescorla-Wagnerinator!",
-        epilog = '--alpha_[A-Z] ALPHA\tAssociative strength of CS A..Z. By default 0.2',
+        epilog = '--alpha_[A-Z] ALPHA\tAssociative strength of CS A..Z. By default 0',
     )
 
     parser.add_argument("--beta", type = float, default = 1, help="Associativity of the US +.")
@@ -118,9 +118,9 @@ def plot_graphs(data: list[dict[str, list[int]]], alpha_data: list[dict[str, lis
             for val, points_alpha in alpha_lines.items():
                 ax2.plot(points_alpha, label=f'Alpha_tot -- {val}', linestyle='--', marker='o', markersize=4, alpha=.5)
             for val_mack, points_alpha_mack in alpha_mack_lines.items():
-                ax2.plot(points_alpha_mack, label=f'Alpha_mack -- {val_mack}', linestyle='--', marker='o', markersize=4, alpha=.5)
+                ax2.plot(points_alpha_mack, label=f'Alpha_mack -- {val_mack}', linestyle='--', marker='^', markersize=4, alpha=.5)
             for val_hall, points_alpha_hall in alpha_hall_lines.items():
-                ax2.plot(points_alpha_hall, label=f'Alpha_hall -- {val_hall}', linestyle='--', marker='o', markersize=4, alpha=.5)
+                ax2.plot(points_alpha_hall, label=f'Alpha_hall -- {val_hall}', linestyle='--', marker='s', markersize=4, alpha=.5)
             ax2.set_xlabel('Trial Number')
             ax2.set_ylabel('Alpha Values')
             ax2.set_title(f'Phase {e} Alpha Values')
