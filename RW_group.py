@@ -95,7 +95,8 @@ class Group:
         return self.alpha_mack[cs] + 0.01*(2*self.assoc[cs] - sum(self.assoc.values()))
 
     def get_alpha_hall(self, cs):
-        assert self.window_size is not None
+        if self.window_size is None:
+            return None
 
         delta_ma_hall = self.delta_ma_hall[cs]
         if delta_ma_hall is None:
