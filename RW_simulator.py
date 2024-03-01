@@ -1,13 +1,15 @@
 import argparse
-import pprint
-import re
-import sys
-from matplotlib import pyplot
-import seaborn
 import random
+import re
+import seaborn
+import sys
 from collections import defaultdict
+from dataclasses import dataclass
+from matplotlib import pyplot
 from matplotlib.ticker import StrMethodFormatter, MaxNLocator
 from RW_group import Group
+from RW_strengths import Strengths, History
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -21,11 +23,12 @@ def parse_args() -> argparse.Namespace:
 
     parser.add_argument("--use-configurals", type = bool, action = argparse.BooleanOptionalAction, help = 'Use compound stimuli with configural cues')
 
-    # parser.add_argument("--use-adaptive", type = bool, action = argparse.BooleanOptionalAction, help = 'Use adaptive attention mode')
     parser.add_argument("--adaptive-type", choices = ['linear', 'exponential', 'macknhall'], help = 'Type of adaptive attention mode to use')
     parser.add_argument("--window-size", type = int, default = None, help = 'Size of sliding window for adaptive learning')
 
     parser.add_argument("--xi-hall", type = float, default = 0.2, help = 'Xi parameter for Hall alpha calculation')
+
+    parser.add_argument("--num-trials", type = int, default = 1000, help = 'Amount of trials done in randomised phases')
 
     parser.add_argument("--plot-experiments", nargs = '*', help = 'List of experiments to plot. By default plot everything')
     parser.add_argument("--plot-stimuli", nargs = '*', help = 'List of stimuli, compound and simple, to plot. By default plot everything')
@@ -43,7 +46,7 @@ def parse_args() -> argparse.Namespace:
     args, rest = parser.parse_known_args()
     args.alphas = dict()
     for arg in rest:
-        match = re.fullmatch('--alpha_([A-Z])\s*=?\s*([0-9]*\.?[0-9]*)', arg)
+        match = re.fullmatch('--alpha[-_]([A-Z])\s*=?\s*([0-9]*\.?[0-9]*)', arg)
         if not match:
             parser.error(f'Option not understood: {arg}')
 
@@ -62,76 +65,94 @@ def parse_args() -> argparse.Namespace:
 
     return args
 
+class Phase:
+    # elems contains a list of ([CS], US) of an experiment.
+    elems : list[tuple[str, str]]
 
-def parse_parts(phase : str) -> tuple[list[tuple[str, str]], None | float]:
-    rand = False
-    lamda = None
+    # Whether this phase should be randomised.
+    rand : bool
 
-    parts = []
-    for part in phase.strip().split('/'):
-        if part == 'rand':
-            rand = True
-        elif (match := re.fullmatch(r'lamb?da *= *([0-9]*(?:\.[0-9]*)?)', part)) is not None:
-            lamda = float(match.group(1))
-        elif (match := re.fullmatch(r'([0-9]*)([A-Z]+)([+-]?)', part)) is not None:
-            num, cs, sign = match.groups()
-            parts += int(num or '1') * [(cs, sign or '+')]
-        else:
-            raise ValueError(f'Part not understood: {part}')
+    # The lamda for this phase.
+    lamda : None | float
 
-    if rand:
-        random.shuffle(parts)
+    # Return the set of single (one-character) CS.
+    def cs(self):
+        return set.union(*[set(x[0]) for x in self.elems])
 
-    return parts, lamda
+    def __init__(self, phase_str : str):
+        self.rand = False
+        self.lamda = None
+        self.elems = []
 
-def run_group_experiments(g : Group, experiment : list[tuple[list[tuple[str, str]], None | float]]) -> list[tuple[dict[str, list[float]], dict[str, list[float]], dict[str, list[float]], dict[str,list[float]]]]:
+        for part in phase_str.strip().split('/'):
+            if part == 'rand':
+                self.rand = True
+            elif (match := re.fullmatch(r'lamb?da *= *([0-9]*(?:\.[0-9]*)?)', part)) is not None:
+                self.lamda = float(match.group(1))
+            elif (match := re.fullmatch(r'([0-9]*)([A-Z]+)([+-]?)', part)) is not None:
+                num, cs, sign = match.groups()
+                self.elems += int(num or '1') * [(cs, sign or '+')]
+            else:
+                raise ValueError(f'Part not understood: {part}')
+
+def run_group_experiments(g : Group, experiment : list[Phase], num_trials : int) -> list[list[Strengths]]:
     results = []
 
-    for trial, (phase, phase_lamda) in enumerate(experiment):
-        V, A, A_mack, A_hall = g.runPhase(phase, phase_lamda)
-        results.append((V, A, A_mack, A_hall))
+    for trial, phase in enumerate(experiment):
+        if not phase.rand:
+            strength_hist = g.runPhase(phase.elems, phase.lamda)
+            results.append(strength_hist)
+        else:
+            initial_strengths = g.s.copy()
+            final_strengths = []
+            hist = []
+
+            for trial in range(num_trials):
+                random.shuffle(phase.elems)
+
+                g.s = initial_strengths.copy()
+                hist.append(g.runPhase(phase.elems, phase.lamda))
+                final_strengths.append(g.s.copy())
+
+            results.append([
+                Strengths.avg([h[x] for h in hist if x < len(h)])
+                for x in range(max(len(h) for h in hist))
+            ])
+
+            g.s = Strengths.avg(final_strengths)
 
     return results
 
-def plot_graphs(data: list[dict[str, list[int]]], alpha_data: list[dict[str, list[float]]], alpha_mack_data: list[dict[str, list[float]]], alpha_hall_data: list[dict[str, list[float]]], plot_alphas = False):
+def plot_graphs(data: list[dict[str, History]], plot_alphas = False):
     seaborn.set()
     pyplot.ion()
 
-    for e, (lines, alpha_lines, alpha_mack_lines, alpha_hall_lines) in enumerate(zip(data, alpha_data, alpha_mack_data, alpha_hall_data), start=1):
-        if plot_alphas:
-            pyplot.figure(figsize=(16, 6))
-
-            # Plot for associative strengths
-            ax1 = pyplot.subplot(1, 2, 1)
-            for val, points in lines.items():
-                ax1.plot(points, label=val, marker='D', markersize=4, alpha=.5)
-            ax1.set_xlabel('Trial Number')
-            ax1.set_ylabel('Associative Strength')
-            ax1.set_title(f'Phase {e} Associative Strengths')
-            ax1.legend()
-
-            # Plot for alpha values
-            ax2 = pyplot.subplot(1, 2, 2)
-            for val, points_alpha in alpha_lines.items():
-                ax2.plot(points_alpha, label=f'Alpha_tot -- {val}', linestyle='--', marker='o', markersize=4, alpha=.5)
-            for val_mack, points_alpha_mack in alpha_mack_lines.items():
-                ax2.plot(points_alpha_mack, label=f'Alpha_mack -- {val_mack}', linestyle='--', marker='^', markersize=4, alpha=.5)
-            for val_hall, points_alpha_hall in alpha_hall_lines.items():
-                ax2.plot(points_alpha_hall, label=f'Alpha_hall -- {val_hall}', linestyle='--', marker='s', markersize=4, alpha=.5)
-            ax2.set_xlabel('Trial Number')
-            ax2.set_ylabel('Alpha Values')
-            ax2.set_title(f'Phase {e} Alpha Values')
-            ax2.legend()
+    for phase_num, experiments in enumerate(data, start = 1):
+        if not plot_alphas:
+            fig, axes = pyplot.subplots(1, 1, figsize = (8, 6))
+            axes = [axes]
         else:
-            pyplot.figure(figsize=(8, 6))
+            fig, axes = pyplot.subplots(1, 2, figsize = (16, 6))
 
-            # Plot for associative strengths
-            for val, points in lines.items():
-                pyplot.plot(points, label=val, marker='D', markersize=4, alpha=.5)
-            pyplot.gca().set_xlabel('Trial Number')
-            pyplot.gca().set_ylabel('Associative Strength')
-            pyplot.gca().set_title(f'Phase {e} Associative Strengths')
-            pyplot.legend()
+        colors = dict(zip(experiments.keys(), seaborn.color_palette('husl', len(experiments))))
+        for key, hist in experiments.items():
+            axes[0].plot(hist.assoc, label=key, marker='D', color = colors[key], markersize=4, alpha=.5)
+
+            if plot_alphas:
+                axes[1].plot(hist.alpha, label=key + r' - $\alpha$', color = colors[key], marker='D', markersize=8, alpha=.5)
+                axes[1].plot(hist.alpha_mack, label=key + r' - $\alpha_{MACK}$', color = colors[key], marker='$M$', markersize=8, alpha=.5)
+                axes[1].plot(hist.alpha_hall, label=key + r' - $\alpha_{HALL}$', color = colors[key], marker='$H$', markersize=8, alpha=.5)
+
+        axes[0].set_xlabel('Trial Number')
+        axes[0].set_ylabel('Associative Strength')
+        axes[0].set_title(f'Phase {phase_num} Associative Strengths')
+        axes[0].legend()
+
+        if plot_alphas:
+            axes[1].set_xlabel('Trial Number')
+            axes[1].set_ylabel('Alpha')
+            axes[1].set_title(f'Phase {phase_num} Alphas')
+            axes[1].legend()
 
         pyplot.tight_layout()
         pyplot.show()
@@ -143,60 +164,30 @@ def main():
     args = parse_args()
 
     groups_strengths = []
-    alpha_values = []
-    alpha_mack_values = []
-    alpha_hall_values = []
 
     for e, experiment in enumerate(args.experiment_file.readlines()):
         name, *phases = experiment.split('|')
         name = name.strip()
-        phases = [parse_parts(phase) for phase in phases]
+        phases = [Phase(phase_str) for phase_str in phases]
 
-        cs = set(''.join(y[0] for x in phases for y in x[0]))
+        if name not in (args.plot_experiments or [name]):
+            continue
+
+        cs = set.union(*[x.cs() for x in phases])
         g = Group(name, args.alphas, args.beta_neg, args.beta, args.lamda, cs, args.use_configurals, args.adaptive_type, args.window_size, args.xi_hall)
 
-        for e, (strengths, alphas, alphas_mack, alphas_hall) in enumerate(run_group_experiments(g, phases)):
-            if len(groups_strengths) <= e:
-                groups_strengths.append({})
+        for phase_num, strength_hist in enumerate(run_group_experiments(g, phases, args.num_trials)):
+            while len(groups_strengths) <= phase_num:
+                groups_strengths.append(defaultdict(lambda: History()))
 
-            groups_strengths[e] |= {
-                f'{name} - {k}': v
-                for k, v in strengths.items()
-                if (args.plot_experiments is None or name in args.plot_experiments) and
-                   (args.plot_stimuli is None or k in args.plot_stimuli)
-            }
+            for strengths in strength_hist:
+                for cs in strengths.combined_cs():
+                    if cs not in (args.plot_stimuli or [cs]):
+                        continue
 
-            if len(alpha_values) <= e:
-                alpha_values.append({})
+                    groups_strengths[phase_num][f'{name} - {cs}'].add(strengths[cs])
 
-            if len(alpha_mack_values) <= e:
-                alpha_mack_values.append({})            
-
-            if len(alpha_hall_values) <= e:
-                alpha_hall_values.append({})
-
-            alpha_values[e] |= {
-                f'{name} - {k}': v
-                for k, v in alphas.items()
-                if (args.plot_experiments is None or name in args.plot_experiments) and
-                   (args.plot_stimuli is None or k in args.plot_stimuli)
-            }
-
-            alpha_mack_values[e] |= {
-                f'{name} - {k}': v
-                for k, v in alphas_mack.items()
-                if (args.plot_experiments is None or name in args.plot_experiments) and
-                   (args.plot_stimuli is None or k in args.plot_stimuli)
-            }
-
-            alpha_hall_values[e] |= {
-                f'{name} - {k}': v
-                for k, v in alphas_hall.items()
-                if (args.plot_experiments is None or name in args.plot_experiments) and
-                   (args.plot_stimuli is None or k in args.plot_stimuli)
-            }
-
-    plot_graphs(groups_strengths, alpha_values, alpha_mack_values, alpha_hall_values, args.plot_alphas)
+    plot_graphs(groups_strengths, args.plot_alphas)
 
 if __name__ == '__main__':
     main()
