@@ -7,7 +7,8 @@ class Group:
     def __init__(self, name, alphas, betan, betap, lamda, cs = None, use_configurals = False, adaptive_type = None, window_size = None, xi_hall = None):
         # If some alphas don't appear, set their alpha to 0.
         if cs is not None:
-            alphas = {k: alphas.get(k, 0) for k in cs | alphas.keys()}
+            initial_alpha = 0.2 if adaptive_type is not 'macknhall' else 0
+            alphas = {k: alphas.get(k, initial_alpha) for k in cs | alphas.keys()}
 
         self.name = name
         self.alphas_copy = alphas.copy()
