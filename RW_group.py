@@ -1,6 +1,5 @@
 import math
 from collections import deque, defaultdict
-from typing import List
 from itertools import combinations
 import numpy as np
 
@@ -62,7 +61,7 @@ class Group:
     # If we are using configural cues, then these are added to the value and
     # returned separately.
     @staticmethod
-    def combine(V):
+    def combine(V : dict[str, list[float]]) -> dict[str, list[float]]:
         h = dict()
 
         simples = {k: v for k, v in V.items() if len(k) == 1}
@@ -79,7 +78,7 @@ class Group:
 
         return h
 
-    def get_alpha_mack(self, cs):
+    def get_alpha_mack(self, cs : str) -> float:
         # This overflows -- ask Esther.
         # big_mack_error = sum(self.assoc.values()) / len(self.assoc) - self.assoc[cs]
         # return self.alpha_mack[cs] - big_mack_error
@@ -94,7 +93,7 @@ class Group:
 
         return self.alpha_mack[cs] + 0.01*(2*self.assoc[cs] - sum(self.assoc.values()))
 
-    def get_alpha_hall(self, cs):
+    def get_alpha_hall(self, cs : str) -> None | float:
         if self.window_size is None:
             return None
 
@@ -109,14 +108,14 @@ class Group:
         print(f"alpha_hall: {error}")
         return error
 
-    def compounds(self, part : str):
+    def compounds(self, part : str) -> set[str]:
         compounds = set(part)
         if self.use_configurals:
             compounds.add(part)
 
         return compounds
 
-    def runPhase(self, parts : List[str]):
+    def runPhase(self, parts : list[tuple[str, str]]) -> tuple[dict[str, list[float]], dict[str, list[float]], dict[str, list[float]], dict[str,list[float]]]:
         V = dict()
         A = dict()
 

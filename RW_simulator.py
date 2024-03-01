@@ -8,9 +8,8 @@ import random
 from collections import defaultdict
 from matplotlib.ticker import StrMethodFormatter, MaxNLocator
 from RW_group import Group
-from typing import List
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Behold! My Rescorla-Wagnerinator!",
         epilog = '--alpha_[A-Z] ALPHA\tAssociative strength of CS A..Z. By default 0',
@@ -63,7 +62,7 @@ def parse_args():
 
     return args
 
-def parse_parts(phase : str) -> List[str]:
+def parse_parts(phase : str) -> list[tuple[str, str]]:
     rand = False
     parts_str = phase.strip().split('/')
     if parts_str[0] == 'rand':
@@ -72,7 +71,11 @@ def parse_parts(phase : str) -> List[str]:
 
     parts = []
     for part in parts_str:
-        num, cs, sign = re.fullmatch('([0-9]*)([A-Z]+)([+-]?)', part).groups()
+        matches = re.fullmatch('([0-9]*)([A-Z]+)([+-]?)', part)
+        if matches is None:
+            raise ValueError(f'Part not understood: {part}')
+
+        num, cs, sign = matches.groups()
 
         if num is None:
             num = '1'
@@ -87,7 +90,7 @@ def parse_parts(phase : str) -> List[str]:
 
     return parts
 
-def run_group_experiments(g, experiment):
+def run_group_experiments(g : Group, experiment : list[list[tuple[str, str]]]) -> list[tuple[dict[str, list[float]], dict[str, list[float]], dict[str, list[float]], dict[str,list[float]]]]:
     results = []
 
     for trial, phase in enumerate(experiment):
