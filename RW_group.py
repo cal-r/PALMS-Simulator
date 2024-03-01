@@ -116,7 +116,7 @@ class Group:
 
         return compounds
 
-    def runPhase(self, parts : list[tuple[str, str]]) -> tuple[dict[str, list[float]], dict[str, list[float]], dict[str, list[float]], dict[str,list[float]]]:
+    def runPhase(self, parts : list[tuple[str, str]], phase_lamda : None | float) -> tuple[dict[str, list[float]], dict[str, list[float]], dict[str, list[float]], dict[str,list[float]]]:
         V = dict()
         A = dict()
 
@@ -125,7 +125,7 @@ class Group:
 
         for part, plus in parts:
             beta = self.betap
-            lamda = self.lamda
+            lamda = phase_lamda or self.lamda
             sign = 1
             if not plus == '+':
                 beta = self.betan

@@ -62,39 +62,33 @@ def parse_args() -> argparse.Namespace:
 
     return args
 
-def parse_parts(phase : str) -> list[tuple[str, str]]:
+
+def parse_parts(phase : str) -> tuple[list[tuple[str, str]], None | float]:
     rand = False
-    parts_str = phase.strip().split('/')
-    if parts_str[0] == 'rand':
-        rand = True
-        parts_str = parts_str[1:]
+    lamda = None
 
     parts = []
-    for part in parts_str:
-        matches = re.fullmatch('([0-9]*)([A-Z]+)([+-]?)', part)
-        if matches is None:
+    for part in phase.strip().split('/'):
+        if part == 'rand':
+            rand = True
+        elif (match := re.fullmatch(r'lamb?da *= *([0-9]*(?:\.[0-9]*)?)', part)) is not None:
+            lamda = float(match.group(1))
+        elif (match := re.fullmatch(r'([0-9]*)([A-Z]+)([+-]?)', part)) is not None:
+            num, cs, sign = match.groups()
+            parts += int(num or '1') * [(cs, sign or '+')]
+        else:
             raise ValueError(f'Part not understood: {part}')
-
-        num, cs, sign = matches.groups()
-
-        if num is None:
-            num = '1'
-
-        if sign == '':
-            sign = '+'
-
-        parts += int(num) * [(cs, sign)]
 
     if rand:
         random.shuffle(parts)
 
-    return parts
+    return parts, lamda
 
-def run_group_experiments(g : Group, experiment : list[list[tuple[str, str]]]) -> list[tuple[dict[str, list[float]], dict[str, list[float]], dict[str, list[float]], dict[str,list[float]]]]:
+def run_group_experiments(g : Group, experiment : list[tuple[list[tuple[str, str]], None | float]]) -> list[tuple[dict[str, list[float]], dict[str, list[float]], dict[str, list[float]], dict[str,list[float]]]]:
     results = []
 
-    for trial, phase in enumerate(experiment):
-        V, A, A_mack, A_hall = g.runPhase(phase)
+    for trial, (phase, phase_lamda) in enumerate(experiment):
+        V, A, A_mack, A_hall = g.runPhase(phase, phase_lamda)
         results.append((V, A, A_mack, A_hall))
 
     return results
@@ -158,7 +152,7 @@ def main():
         name = name.strip()
         phases = [parse_parts(phase) for phase in phases]
 
-        cs = set(''.join(y[0] for x in phases for y in x))
+        cs = set(''.join(y[0] for x in phases for y in x[0]))
         g = Group(name, args.alphas, args.beta_neg, args.beta, args.lamda, cs, args.use_configurals, args.adaptive_type, args.window_size, args.xi_hall)
 
         for e, (strengths, alphas, alphas_mack, alphas_hall) in enumerate(run_group_experiments(g, phases)):
