@@ -1,2 +1,2 @@
-Control|20A+|20B+
-Test|lambda=.1/20A+|rand/lamda=2/20B+
+Control|20A+          |20B+
+Test   |lambda=.1/20A+|rand/lamda=2/20B+
