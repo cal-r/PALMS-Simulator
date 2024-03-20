@@ -116,7 +116,7 @@ class Strengths:
             for comb in combinations(simples.items(), size):
                 names = [x[0] for x in comb]
                 assocs = [x[1] for x in comb]
-                h.add(''.join(names))
+                h.add(''.join(sorted(names)))
 
         for k, v in compounds.items():
             h.add(k)

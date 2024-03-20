@@ -50,14 +50,14 @@ class Group:
             self.cs = self.alphas.keys()
         '''
 
-    def get_alpha_mack(self, cs):
+    def get_alpha_mack(self, cs, sigma):
         """if len(self.assoc) > 1:
             big_mack_error = ( sum(self.assoc[x] for x in self.assoc if x!=cs)/ (len(self.assoc)-1) ) - self.assoc[cs]
         else:
             big_mack_error = - self.assoc[cs]
         return self.alpha_mack[cs] - 0.2*big_mack_error"""
         
-        return ((1 + (2*self.assoc[cs] - sigma))/2)
+        return ((1 + (2*self.s[cs].assoc - sigma))/2)
 
     def get_alpha_hall(self, cs, sigma, lamda):
         # assert self.window_size is not None
@@ -67,12 +67,12 @@ class Group:
 
         try:
             #error = (self.alpha_hall[cs] * (1-self.xi_hall*math.exp(- delta_ma_hall**2 / 2)))
-            print("HALL")
-            print(1-lamda+sigma)
-            error = (((1-lamda+sigma) * self.alpha_hall[cs] * (1-self.xi_hall*math.exp(- delta_ma_hall**2 / 2)))+lamda-sigma)/2
+            # print("HALL")
+            # print(1-lamda+sigma)
+            error = (((1-lamda+sigma) * self.s[cs].alpha_hall * (1-self.xi_hall*math.exp(- delta_ma_hall**2 / 2)))+lamda-sigma)/2
         except:
-            error = ((1-lamda+sigma)*self.alpha_hall[cs] + lamda-sigma)/2
-        print(f"alpha_hall: {error}")
+            error = ((1-lamda+sigma)*self.s[cs].alpha_hall + lamda-sigma)/2
+        # print(f"alpha_hall: {error}")
         return error
 
     # compounds should probably be moved to Strengths.
