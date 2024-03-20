@@ -1,14 +1,24 @@
 import math
 from collections import deque, defaultdict
+from typing import List
 from itertools import combinations
 import numpy as np
 
 class Group:
     def __init__(self, name, alphas, betan, betap, lamda, cs = None, use_configurals = False, adaptive_type = None, window_size = None, xi_hall = None):
         # If some alphas don't appear, set their alpha to 0.
+
+# Initially, alpha_mack and alpha_hall are identical.
         if cs is not None:
-            initial_alpha = 0.2 if adaptive_type is not 'macknhall' else 0
-            alphas = {k: alphas.get(k, initial_alpha) for k in cs | alphas.keys()}
+            self.alpha_mack = {k: 0.5 for k in cs}
+            self.alpha_hall = {k: 0.5 for k in cs}
+        else:
+            self.alpha_mack = {k: 0.5 for k in alphas.keys()}
+            self.alpha_hall = {k: 0.5 for k in alphas.keys()}
+
+        if cs is not None:
+            init_value = max(max(list(self.alpha_mack.values()), list(self.alpha_hall.values())))
+            alphas = {k: alphas.get(k, init_value) for k in cs | alphas.keys()}
 
         self.name = name
         self.alphas_copy = alphas.copy()
@@ -47,14 +57,6 @@ class Group:
             self.alphas = compounds | alphas
             self.cs = self.alphas.keys()
 
-        # Initially, alpha_mack and alpha_hall are identical.
-        if cs is not None:
-            self.alpha_mack = {k: 0.2 for k in cs}
-            self.alpha_hall = {k: 0.2 for k in cs}
-        else:
-            self.alpha_mack = {k: 0.2 for k in alphas.keys()}
-            self.alpha_hall = {k: 0.2 for k in alphas.keys()}
-
         # The initial associative strength for all stimuli is 0.
         self.assoc = {c: 0. for c in self.cs}
 
@@ -62,7 +64,7 @@ class Group:
     # If we are using configural cues, then these are added to the value and
     # returned separately.
     @staticmethod
-    def combine(V : dict[str, list[float]]) -> dict[str, list[float]]:
+    def combine(V):
         h = dict()
 
         simples = {k: v for k, v in V.items() if len(k) == 1}
@@ -79,7 +81,7 @@ class Group:
 
         return h
 
-    def get_alpha_mack(self, cs : str) -> float:
+    def get_alpha_mack(self, cs, sigma):
         # This overflows -- ask Esther.
         # big_mack_error = sum(self.assoc.values()) / len(self.assoc) - self.assoc[cs]
         # return self.alpha_mack[cs] - big_mack_error
@@ -91,32 +93,37 @@ class Group:
         return self.alpha_mack[cs] - 0.2*big_mack_error"""
         
         #return self.alpha_mack[cs] + 0.01*self.assoc[cs]
+        #print((1 + (2*self.assoc[cs] - sigma))/2)
+        return ((1 + (2*self.assoc[cs] - sigma))/2)
+        #return self.alpha_mack[cs]*(1 + (2*self.assoc[cs] - sum(self.assoc.values())))/2
+        #return self.alpha_mack[cs] + 0.01*(2*self.assoc[cs] - sum(self.assoc.values()))
 
-        return self.alpha_mack[cs] + 0.01*(2*self.assoc[cs] - sum(self.assoc.values()))
-
-    def get_alpha_hall(self, cs : str) -> None | float:
-        if self.window_size is None:
-            return None
+    def get_alpha_hall(self, cs, sigma, lamda):
+        assert self.window_size is not None
 
         delta_ma_hall = self.delta_ma_hall[cs]
         if delta_ma_hall is None:
             delta_ma_hall = 0
 
         try:
-            error = self.xi_hall * self.alpha_hall[cs] * math.exp(- delta_ma_hall**2 / 2)
+            #error = (self.alpha_hall[cs] * (1-self.xi_hall*math.exp(- delta_ma_hall**2 / 2)))
+            print("HALL")
+            print(1-lamda+sigma)
+            error = (((1-lamda+sigma) * self.alpha_hall[cs] * (1-self.xi_hall*math.exp(- delta_ma_hall**2 / 2)))+lamda-sigma)/2
+
         except:
-            error = 0.0000001
+            error = ((1-lamda+sigma)*self.alpha_hall[cs] + lamda-sigma)/2
         print(f"alpha_hall: {error}")
         return error
 
-    def compounds(self, part : str) -> set[str]:
+    def compounds(self, part : str):
         compounds = set(part)
         if self.use_configurals:
             compounds.add(part)
 
         return compounds
 
-    def runPhase(self, parts : list[tuple[str, str]], phase_lamda : None | float) -> tuple[dict[str, list[float]], dict[str, list[float]], dict[str, list[float]], dict[str,list[float]]]:
+    def runPhase(self, parts : List[str]):
         V = dict()
         A = dict()
 
@@ -125,7 +132,7 @@ class Group:
 
         for part, plus in parts:
             beta = self.betap
-            lamda = phase_lamda or self.lamda
+            lamda = self.lamda
             sign = 1
             if not plus == '+':
                 beta = self.betan
@@ -141,8 +148,8 @@ class Group:
                     A_mack[cs] = [self.alpha_mack[cs]]
                     A_hall[cs] = [self.alpha_hall[cs]]
 
-                self.alpha_mack[cs] = self.get_alpha_mack(cs)
-                self.alpha_hall[cs] = self.get_alpha_hall(cs)
+                self.alpha_mack[cs] = self.get_alpha_mack(cs, sigma)
+                self.alpha_hall[cs] = self.get_alpha_hall(cs, sigma, lamda)
                 
                 match self.adaptive_type:
                     case 'linear':
@@ -151,8 +158,7 @@ class Group:
                         if sign == 1:
                             self.alphas[cs] *= (self.alphas[cs] ** 0.05) ** sign
                     case 'macknhall':
-                        #print(lamda)
-                        self.alphas[cs] = (1-lamda+self.assoc[cs]) * self.alpha_mack[cs] + (lamda-self.assoc[cs]) * self.alpha_hall[cs]
+                        self.alphas[cs] = (1-lamda+sigma) * self.alpha_mack[cs] + (lamda-sigma) * self.alpha_hall[cs]
                         """delta_v_n = self.alpha_hall[cs] * beta * (lamda - sigma)
                         v_n = self.alpha_mack[cs] * self.assoc[cs]
                         self.assoc[cs] = v_n + delta_v_n"""
