@@ -2,21 +2,25 @@ import math
 import numpy as np
 from collections import deque, defaultdict
 from itertools import combinations
-from RW_strengths import Strengths, History
+from RW_strengths import Strengths, History, Individual
 from typing import List
 
 class Group:
     def __init__(self, name, alphas, betan, betap, lamda, cs = None, use_configurals = False, adaptive_type = None, window_size = None, xi_hall = None):
         # If some alphas don't appear, set their alpha to 0.
 
-# Initially, alpha_mack and alpha_hall are identical.
+        # Initially, alpha_mack and alpha_hall are identical.
         if cs is not None:
             initial_alpha = 0.5
             alphas = {k: alphas.get(k, initial_alpha) for k in cs | alphas.keys()}
 
         self.name = name
 
-        self.s = Strengths(cs)
+        self.s = Strengths(s = {
+                k: Individual(assoc = 0, alpha = alphas[k])
+                for k in alphas.keys()
+            }
+        )
 
         self.xi_hall = xi_hall
 

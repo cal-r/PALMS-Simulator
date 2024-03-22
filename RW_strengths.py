@@ -12,14 +12,14 @@ class Individual:
     window : deque[float]
     delta_ma_hall : float
 
-    def __init__(self, assoc = 0., alpha = .5, alpha_mack = .5, alpha_hall = .5, delta_ma_hall = .2, window = deque([])):
+    def __init__(self, assoc = 0., alpha = .5, alpha_mack = None, alpha_hall = None, delta_ma_hall = .2, window = deque([])):
         assert type(window) == deque
 
         self.assoc = min(1., assoc)
 
         self.alpha = alpha
-        self.alpha_mack = alpha_mack
-        self.alpha_hall = alpha_hall
+        self.alpha_mack = alpha_mack or alpha
+        self.alpha_hall = alpha_hall or alpha
 
         self.window = window
         self.delta_ma_hall = delta_ma_hall
