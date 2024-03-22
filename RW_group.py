@@ -70,13 +70,10 @@ class Group:
             delta_ma_hall = 0
 
         try:
-            #error = (self.alpha_hall[cs] * (1-self.xi_hall*math.exp(- delta_ma_hall**2 / 2)))
-            # print("HALL")
-            # print(1-lamda+sigma)
-            error = (((1-lamda+sigma) * self.s[cs].alpha_hall * (1-self.xi_hall*math.exp(- delta_ma_hall**2 / 2)))+lamda-sigma)/2
+            error = (((1-abs(lamda-sigma)) * self.s[cs].alpha_hall * (1-self.xi_hall*math.exp(-delta_ma_hall**2 / 2)))+abs(lamda-sigma))/2
         except:
-            error = ((1-lamda+sigma)*self.s[cs].alpha_hall + lamda-sigma)/2
-        # print(f"alpha_hall: {error}")
+            error = ((1-abs(lamda-sigma))*self.s[cs].alpha_hall + abs(lamda-sigma))/2
+
         return error
 
     # compounds should probably be moved to Strengths.
