@@ -117,10 +117,14 @@ class Group:
                         if sign == 1:
                             self.s[cs].alpha *= (self.s[cs].alpha ** 0.05) ** sign
                     case 'macknhall':
-                        self.s[cs].alpha = (1 - lamda + sigma) * self.s[cs].alpha_mack + (lamda - sigma) * self.s[cs].alpha_hall
+                        #self.s[cs].alpha = (1 - lamda + sigma) * self.s[cs].alpha_mack + (lamda - sigma) * self.s[cs].alpha_hall
+                        self.s[cs].alpha = (lamda - sigma) * self.s[cs].alpha_hall
+
 
                 # print(f"DV: {self.s[cs].alpha * beta * (lamda - sigma)}, Alpha: {self.s[cs].alpha}, sigma: {sigma}")
-                self.s[cs].assoc += self.s[cs].alpha * beta * (lamda - sigma)
+                #self.s[cs].assoc += self.s[cs].alpha * beta * (lamda - sigma)
+                self.s[cs].assoc = self.s[cs].assoc*self.s[cs].alpha_mack + self.s[cs].alpha * beta * (lamda - sigma)
+
 
                 if self.window_size is not None:
                     if len(self.s[cs].window) >= self.window_size:
