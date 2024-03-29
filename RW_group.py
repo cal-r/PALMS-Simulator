@@ -56,10 +56,7 @@ class Group:
         return 1/2 * (1 + (2*self.s[cs].assoc - sigma))
 
     def get_alpha_hall(self, cs, sigma, lamda):
-        delta_ma_hall = self.s[cs].delta_ma_hall
-
-        if delta_ma_hall is None:
-            delta_ma_hall = 0
+        delta_ma_hall = self.s[cs].delta_ma_hall or 0
 
         diff = abs(lamda - sigma)
         window_term = 1 - self.xi_hall*math.exp(-delta_ma_hall**2 / 2)
