@@ -115,7 +115,8 @@ class Group:
                         self.s[cs].alpha = (1 - lamda + sigma) * self.s[cs].alpha_mack + (lamda - sigma) * self.s[cs].alpha_hall
                         # self.s[cs].alpha = (lamda - sigma) * self.s[cs].alpha_hall
 
-                self.s[cs].assoc = self.s[cs].assoc*self.s[cs].alpha_mack + self.s[cs].alpha * beta * (lamda - sigma)
+                self.s[cs].assoc += self.s[cs].alpha * beta * (lamda - sigma)
+
 
                 if self.window_size is not None:
                     if len(self.s[cs].window) >= self.window_size:
