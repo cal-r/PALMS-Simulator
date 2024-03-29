@@ -62,8 +62,8 @@ class Group:
             delta_ma_hall = 0
 
         diff = abs(lamda - sigma)
-        window_term = 1-self.xi_hall*math.exp(-delta_ma_hall**2 / 2)
-        error = 1/2 * (((1 - diff) * self.s[cs].alpha_hall * window_term) + diff)
+        window_term = 1 - self.xi_hall*math.exp(-delta_ma_hall**2 / 2)
+        error = 1/2 * ((1 - diff) * self.s[cs].alpha_hall * window_term + diff)
 
         return error
 
