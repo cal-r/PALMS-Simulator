@@ -17,7 +17,7 @@ def parse_args() -> argparse.Namespace:
         epilog = '--alpha_[A-Z] ALPHA\tAssociative strength of CS A..Z. By default 0',
     )
 
-    parser.add_argument("--beta", type = float, default = 1, help="Associativity of the US +.")
+    parser.add_argument("--beta", type = float, default = .5, help="Associativity of the US +.")
     parser.add_argument("--beta-neg", type = float, default = None, help="Associativity of the absence of US +. Equal to beta by default.")
     parser.add_argument("--lamda", type = float, default = 1, help="Asymptote of learning.")
 

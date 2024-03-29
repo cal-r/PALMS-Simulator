@@ -7,16 +7,14 @@ from typing import List
 
 class Group:
     def __init__(self, name, alphas, betan, betap, lamda, cs = None, use_configurals = False, adaptive_type = None, window_size = None, xi_hall = None):
-        # If some alphas don't appear, set their alpha to 0.
-
-        # Initially, alpha_mack and alpha_hall are identical.
         if cs is not None:
             initial_alpha = 0.5
             alphas = {k: alphas.get(k, initial_alpha) for k in cs | alphas.keys()}
 
         self.name = name
 
-        self.s = Strengths(s = {
+        self.s = Strengths(
+            s = {
                 k: Individual(assoc = 0, alpha = alphas[k])
                 for k in alphas.keys()
             }
@@ -114,14 +112,10 @@ class Group:
                         if sign == 1:
                             self.s[cs].alpha *= (self.s[cs].alpha ** 0.05) ** sign
                     case 'macknhall':
-                        #self.s[cs].alpha = (1 - lamda + sigma) * self.s[cs].alpha_mack + (lamda - sigma) * self.s[cs].alpha_hall
-                        self.s[cs].alpha = (lamda - sigma) * self.s[cs].alpha_hall
+                        self.s[cs].alpha = (1 - lamda + sigma) * self.s[cs].alpha_mack + (lamda - sigma) * self.s[cs].alpha_hall
+                        # self.s[cs].alpha = (lamda - sigma) * self.s[cs].alpha_hall
 
-
-                # print(f"DV: {self.s[cs].alpha * beta * (lamda - sigma)}, Alpha: {self.s[cs].alpha}, sigma: {sigma}")
-                #self.s[cs].assoc += self.s[cs].alpha * beta * (lamda - sigma)
                 self.s[cs].assoc = self.s[cs].assoc*self.s[cs].alpha_mack + self.s[cs].alpha * beta * (lamda - sigma)
-
 
                 if self.window_size is not None:
                     if len(self.s[cs].window) >= self.window_size:
