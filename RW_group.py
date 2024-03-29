@@ -56,7 +56,6 @@ class Group:
         return 1/2 * (1 + (2*self.s[cs].assoc - sigma))
 
     def get_alpha_hall(self, cs, sigma, lamda):
-        # assert self.window_size is not None
         delta_ma_hall = self.s[cs].delta_ma_hall
 
         if delta_ma_hall is None:
@@ -65,10 +64,6 @@ class Group:
         diff = abs(lamda - sigma)
         window_term = 1-self.xi_hall*math.exp(-delta_ma_hall**2 / 2)
         error = 1/2 * (((1 - diff) * self.s[cs].alpha_hall * window_term) + diff)
-
-        # try:
-        # except:
-        #     error = ((1-diff)*self.s[cs].alpha_hall + diff)/2
 
         return error
 
