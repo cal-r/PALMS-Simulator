@@ -32,7 +32,10 @@ def parse_args() -> argparse.Namespace:
 
     parser.add_argument("--plot-experiments", nargs = '*', help = 'List of experiments to plot. By default plot everything')
     parser.add_argument("--plot-stimuli", nargs = '*', help = 'List of stimuli, compound and simple, to plot. By default plot everything')
-    parser.add_argument('--plot-alphas', type = bool, action = argparse.BooleanOptionalAction, help = 'Whether to plot the alphas of all CS.')
+    parser.add_argument('--plot-alphas', type = bool, action = argparse.BooleanOptionalAction, help = 'Whether to plot all the alphas, including total alpha, alpha Mack, and alpha Hall.')
+
+    parser.add_argument('--plot-alpha', type = bool, action = argparse.BooleanOptionalAction, help = 'Whether to plot the total alpha.')
+    parser.add_argument('--plot-macknhall', type = bool, action = argparse.BooleanOptionalAction, help = 'Whether to plot the alpha Mack and alpha Hall.')
 
     parser.add_argument(
         "experiment_file",
@@ -62,6 +65,10 @@ def parse_args() -> argparse.Namespace:
 
     if args.adaptive_type == 'macknhall' and args.window_size is None:
         args.window_size = 3
+
+    if args.plot_alphas:
+        args.plot_alpha = True
+        args.plot_macknhall = True
 
     return args
 
@@ -123,12 +130,12 @@ def run_group_experiments(g : Group, experiment : list[Phase], num_trials : int)
 
     return results
 
-def plot_graphs(data: list[dict[str, History]], plot_alphas = False):
+def plot_graphs(data: list[dict[str, History]], plot_alpha = False, plot_macknhall = False):
     seaborn.set()
     pyplot.ion()
 
     for phase_num, experiments in enumerate(data, start = 1):
-        if not plot_alphas:
+        if not plot_alpha and not plot_macknhall:
             fig, axes = pyplot.subplots(1, 1, figsize = (8, 6))
             axes = [axes]
         else:
@@ -138,8 +145,12 @@ def plot_graphs(data: list[dict[str, History]], plot_alphas = False):
         for key, hist in experiments.items():
             axes[0].plot(hist.assoc, label=key, marker='D', color = colors[key], markersize=4, alpha=.5)
 
-            if plot_alphas:
+            if plot_alpha:
                 axes[1].plot(hist.alpha, label=key, color = colors[key], marker='D', markersize=8, alpha=.5)
+            else:
+                axes[1].plot([], label=key, color = colors[key], marker='D', markersize=8, alpha=.5)
+
+            if plot_macknhall:
                 axes[1].plot(hist.alpha_mack, color = colors[key], marker='$M$', markersize=8, alpha=.5)
                 axes[1].plot(hist.alpha_hall, color = colors[key], marker='$H$', markersize=8, alpha=.5)
 
@@ -148,7 +159,7 @@ def plot_graphs(data: list[dict[str, History]], plot_alphas = False):
         axes[0].set_title(f'Phase {phase_num} Associative Strengths')
         axes[0].legend()
 
-        if plot_alphas:
+        if plot_alpha or plot_macknhall:
             axes[1].set_xlabel('Trial Number')
             axes[1].set_ylabel('Alpha')
             axes[1].set_title(f'Phase {phase_num} Alphas')
@@ -187,7 +198,7 @@ def main():
 
                     groups_strengths[phase_num][f'{name} - {cs}'].add(strengths[cs])
 
-    plot_graphs(groups_strengths, args.plot_alphas)
+    plot_graphs(groups_strengths, args.plot_alpha, args.plot_macknhall)
 
 if __name__ == '__main__':
     main()
