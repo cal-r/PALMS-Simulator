@@ -53,24 +53,22 @@ class Group:
         '''
 
     def get_alpha_mack(self, cs, sigma):
-        """if len(self.assoc) > 1:
-            big_mack_error = ( sum(self.assoc[x] for x in self.assoc if x!=cs)/ (len(self.assoc)-1) ) - self.assoc[cs]
-        else:
-            big_mack_error = - self.assoc[cs]
-        return self.alpha_mack[cs] - 0.2*big_mack_error"""
-        
-        return ((1 + (2*self.s[cs].assoc - sigma))/2)
+        return 1/2 * (1 + (2*self.s[cs].assoc - sigma))
 
     def get_alpha_hall(self, cs, sigma, lamda):
         # assert self.window_size is not None
         delta_ma_hall = self.s[cs].delta_ma_hall
+
         if delta_ma_hall is None:
             delta_ma_hall = 0
 
-        try:
-            error = (((1-abs(lamda-sigma)) * self.s[cs].alpha_hall * (1-self.xi_hall*math.exp(-delta_ma_hall**2 / 2)))+abs(lamda-sigma))/2
-        except:
-            error = ((1-abs(lamda-sigma))*self.s[cs].alpha_hall + abs(lamda-sigma))/2
+        diff = abs(lamda - sigma)
+        window_term = 1-self.xi_hall*math.exp(-delta_ma_hall**2 / 2)
+        error = 1/2 * ((1 - diff * self.s[cs].alpha_hall * window_term) + diff)
+
+        # try:
+        # except:
+        #     error = ((1-diff)*self.s[cs].alpha_hall + diff)/2
 
         return error
 
@@ -113,10 +111,8 @@ class Group:
                             self.s[cs].alpha *= (self.s[cs].alpha ** 0.05) ** sign
                     case 'macknhall':
                         self.s[cs].alpha = (1 - lamda + sigma) * self.s[cs].alpha_mack + (lamda - sigma) * self.s[cs].alpha_hall
-                        # self.s[cs].alpha = (lamda - sigma) * self.s[cs].alpha_hall
 
                 self.s[cs].assoc += self.s[cs].alpha * beta * (lamda - sigma)
-
 
                 if self.window_size is not None:
                     if len(self.s[cs].window) >= self.window_size:
