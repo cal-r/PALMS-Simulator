@@ -139,9 +139,9 @@ def plot_graphs(data: list[dict[str, History]], plot_alphas = False):
             axes[0].plot(hist.assoc, label=key, marker='D', color = colors[key], markersize=4, alpha=.5)
 
             if plot_alphas:
-                axes[1].plot(hist.alpha, label=key + r' - $\alpha$', color = colors[key], marker='D', markersize=8, alpha=.5)
-                axes[1].plot(hist.alpha_mack, label=key + r' - $\alpha_{MACK}$', color = colors[key], marker='$M$', markersize=8, alpha=.5)
-                axes[1].plot(hist.alpha_hall, label=key + r' - $\alpha_{HALL}$', color = colors[key], marker='$H$', markersize=8, alpha=.5)
+                axes[1].plot(hist.alpha, label=key, color = colors[key], marker='D', markersize=8, alpha=.5)
+                axes[1].plot(hist.alpha_mack, color = colors[key], marker='$M$', markersize=8, alpha=.5)
+                axes[1].plot(hist.alpha_hall, color = colors[key], marker='$H$', markersize=8, alpha=.5)
 
         axes[0].set_xlabel('Trial Number')
         axes[0].set_ylabel('Associative Strength')
