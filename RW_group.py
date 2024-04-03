@@ -6,7 +6,22 @@ from RW_strengths import Strengths, History, Individual
 from typing import List
 
 class Group:
-    def __init__(self, name, alphas, betan, betap, lamda, cs = None, use_configurals = False, adaptive_type = None, window_size = None, xi_hall = None):
+    name : str
+
+    cs : list[str]
+    s : Strengths
+
+    betan : float
+    betap : float
+    lamda : float
+
+    use_configurals : bool
+    adaptive_type : None | str
+
+    window_size : None | int
+    xi_hall : None | float
+
+    def __init__(self, name : str, alphas : dict[str, float], betan : float, betap : float, lamda : float, cs : None | set[str] = None, use_configurals : bool = False, adaptive_type : None | str = None, window_size : None | int = None, xi_hall : None | float = None):
         if cs is not None:
             initial_alpha = 0.5
             alphas = {k: alphas.get(k, initial_alpha) for k in cs | alphas.keys()}
@@ -52,10 +67,12 @@ class Group:
             self.cs = self.alphas.keys()
         '''
 
-    def get_alpha_mack(self, cs, sigma):
+    def get_alpha_mack(self, cs : str, sigma : float) -> float:
         return 1/2 * (1 + (2*self.s[cs].assoc - sigma))
 
-    def get_alpha_hall(self, cs, sigma, lamda):
+    def get_alpha_hall(self, cs : str, sigma : float, lamda : float) -> float:
+        assert self.xi_hall is not None
+
         delta_ma_hall = self.s[cs].delta_ma_hall or 0
 
         diff = abs(lamda - sigma)
@@ -93,9 +110,6 @@ class Group:
                     hist[cs] = History()
                     hist[cs].add(self.s[cs])
 
-                self.s[cs].alpha_mack = self.get_alpha_mack(cs, sigma)
-                self.s[cs].alpha_hall = self.get_alpha_hall(cs, sigma, lamda)
-                
                 match self.adaptive_type:
                     case 'linear':
                         self.s[cs].alpha *= 1 + sign * 0.05
@@ -103,6 +117,8 @@ class Group:
                         if sign == 1:
                             self.s[cs].alpha *= (self.s[cs].alpha ** 0.05) ** sign
                     case 'macknhall':
+                        self.s[cs].alpha_mack = self.get_alpha_mack(cs, sigma)
+                        self.s[cs].alpha_hall = self.get_alpha_hall(cs, sigma, lamda)
                         self.s[cs].alpha = (1 - lamda + sigma) * self.s[cs].alpha_mack + self.s[cs].alpha_hall
 
                 self.s[cs].assoc += self.s[cs].alpha * beta * (lamda - sigma)
