@@ -68,17 +68,17 @@ class Group:
         '''
 
     def get_alpha_mack(self, cs : str, sigma : float) -> float:
-        return 1/2 * (1 + (2*self.s[cs].assoc - sigma))
+        return 1/2 * (1 + (2 * self.s[cs].assoc - sigma))
 
     def get_alpha_hall(self, cs : str, sigma : float, lamda : float) -> float:
         assert self.xi_hall is not None
 
         delta_ma_hall = self.s[cs].delta_ma_hall or 0
 
-        diff = abs(lamda - sigma)
+        surprise = abs(lamda - sigma)
         window_term =  -self.xi_hall*math.exp(-delta_ma_hall**2 / 2)
-        error = 1/2 * ((1 - diff) * window_term + diff)
-        #error = 1/2 * ((1 - diff) * self.s[cs].alpha_hall * window_term + diff*(1-self.s[cs].alpha_hall))
+        error = 1/2 * ((1 - surprise) * window_term + surprise)
+        #error = 1/2 * ((1 - surprise) * self.s[cs].alpha_hall * window_term + surprise*(1-self.s[cs].alpha_hall))
         #error = self.s[cs].alpha_hall + window_term
         return error
 
