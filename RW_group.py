@@ -76,7 +76,7 @@ class Group:
         delta_ma_hall = self.s[cs].delta_ma_hall or 0
 
         surprise = abs(lamda - sigma)
-        window_term =  -self.xi_hall*math.exp(-delta_ma_hall**2 / 2)
+        window_term =  1 - self.xi_hall * math.exp(-delta_ma_hall**2 / 2)
         error = 1/2 * ((1 - surprise) * window_term + surprise)
         #error = 1/2 * ((1 - surprise) * self.s[cs].alpha_hall * window_term + surprise*(1-self.s[cs].alpha_hall))
         #error = self.s[cs].alpha_hall + window_term
