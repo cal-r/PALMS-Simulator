@@ -59,9 +59,10 @@ class Group:
         delta_ma_hall = self.s[cs].delta_ma_hall or 0
 
         diff = abs(lamda - sigma)
-        window_term = 1 - self.xi_hall*math.exp(-delta_ma_hall**2 / 2)
-        error = 1/2 * ((1 - diff) * self.s[cs].alpha_hall * window_term + diff)
-
+        window_term =  -self.xi_hall*math.exp(-delta_ma_hall**2 / 2)
+        error = 1/2 * ((1 - diff) * window_term + diff)
+        #error = 1/2 * ((1 - diff) * self.s[cs].alpha_hall * window_term + diff*(1-self.s[cs].alpha_hall))
+        #error = self.s[cs].alpha_hall + window_term
         return error
 
     # compounds should probably be moved to Strengths.
@@ -102,7 +103,7 @@ class Group:
                         if sign == 1:
                             self.s[cs].alpha *= (self.s[cs].alpha ** 0.05) ** sign
                     case 'macknhall':
-                        self.s[cs].alpha = (1 - lamda + sigma) * self.s[cs].alpha_mack + (lamda - sigma) * self.s[cs].alpha_hall
+                        self.s[cs].alpha = (1 - lamda + sigma) * self.s[cs].alpha_mack + self.s[cs].alpha_hall
 
                 self.s[cs].assoc += self.s[cs].alpha * beta * (lamda - sigma)
 
