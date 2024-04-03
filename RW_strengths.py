@@ -12,16 +12,17 @@ class Individual:
     window : deque[float]
     delta_ma_hall : float
 
-    def __init__(self, assoc = 0., alpha = .5, alpha_mack = None, alpha_hall = None, delta_ma_hall = .2, window = deque([])):
-        assert type(window) == deque
-
+    def __init__(self, assoc = 0., alpha = .5, alpha_mack = None, alpha_hall = None, delta_ma_hall = .2, window = None):
         self.assoc = min(1., assoc)
 
         self.alpha = alpha
         self.alpha_mack = alpha_mack or alpha
         self.alpha_hall = alpha_hall or alpha
 
-        self.window = window
+        if window is None:
+            window = deque([])
+
+        self.window = window.copy()
         self.delta_ma_hall = delta_ma_hall
 
     def join(self, other : Individual, op) -> Individual:

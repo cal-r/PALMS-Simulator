@@ -136,7 +136,7 @@ def plot_graphs(data: list[dict[str, History]], plot_phase = None, plot_alpha = 
     pyplot.ion()
 
     if plot_phase is not None:
-        data = [data[plot_phase]]
+        data = [data[plot_phase - 1]]
 
     for phase_num, experiments in enumerate(data, start = 1):
         if not plot_alpha and not plot_macknhall:
