@@ -34,7 +34,9 @@ class Individual:
             if type(this) is float or type(this) is int:
                 ret[prop] = op(this, that)
             elif type(this) is deque:
-                assert len(this) == len(that)
+                size = max(len(this), len(that))
+                this = deque([0] * (size - len(this))) + this
+                that = deque([0] * (size - len(that))) + that
                 ret[prop] = deque([op(a, b) for a, b in zip(this, that)])
             else:
                 raise ValueError(f'Unknown type {type(this)} for {prop}, which is equal to {this} and {that}')
