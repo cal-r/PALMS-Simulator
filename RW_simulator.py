@@ -30,6 +30,7 @@ def parse_args() -> argparse.Namespace:
 
     parser.add_argument("--num-trials", type = int, default = 1000, help = 'Amount of trials done in randomised phases')
 
+    parser.add_argument('--plot-phase', type = int, help = 'Plot a single phase')
     parser.add_argument("--plot-experiments", nargs = '*', help = 'List of experiments to plot. By default plot everything')
     parser.add_argument("--plot-stimuli", nargs = '*', help = 'List of stimuli, compound and simple, to plot. By default plot everything')
     parser.add_argument('--plot-alphas', type = bool, action = argparse.BooleanOptionalAction, help = 'Whether to plot all the alphas, including total alpha, alpha Mack, and alpha Hall.')
@@ -130,9 +131,12 @@ def run_group_experiments(g : Group, experiment : list[Phase], num_trials : int)
 
     return results
 
-def plot_graphs(data: list[dict[str, History]], plot_alpha = False, plot_macknhall = False):
+def plot_graphs(data: list[dict[str, History]], plot_phase = None, plot_alpha = False, plot_macknhall = False):
     seaborn.set()
     pyplot.ion()
+
+    if plot_phase is not None:
+        data = [data[plot_phase]]
 
     for phase_num, experiments in enumerate(data, start = 1):
         if not plot_alpha and not plot_macknhall:
@@ -198,7 +202,7 @@ def main():
 
                     groups_strengths[phase_num][f'{name} - {cs}'].add(strengths[cs])
 
-    plot_graphs(groups_strengths, args.plot_alpha, args.plot_macknhall)
+    plot_graphs(groups_strengths, args.plot_phase, args.plot_alpha, args.plot_macknhall)
 
 if __name__ == '__main__':
     main()
