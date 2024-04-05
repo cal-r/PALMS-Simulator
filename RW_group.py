@@ -44,6 +44,8 @@ class Group:
         self.adaptive_type = adaptive_type
         self.window_size = window_size
 
+        self.prev_lamda = 0
+
         # For simplicity, if we use_configurals and some compound stimuli don't
         # have a corresponding \alpha, then we calculate it as the product
         # of their simple stimuli.
@@ -78,8 +80,10 @@ class Group:
         surprise = abs(lamda - sigma)
         window_term =  1 - self.xi_hall * math.exp(-delta_ma_hall**2 / 2)
         error = 1/2 * ((1 - surprise) * self.s[cs].alpha_hall * window_term + surprise)
+
         #error = 1/2 * ((1 - surprise) * self.s[cs].alpha_hall * window_term + surprise*(1-self.s[cs].alpha_hall))
         #error = self.s[cs].alpha_hall + window_term
+
         return error
 
     # compounds should probably be moved to Strengths.
@@ -118,10 +122,10 @@ class Group:
                             self.s[cs].alpha *= (self.s[cs].alpha ** 0.05) ** sign
                     case 'macknhall':
                         self.s[cs].alpha_mack = self.get_alpha_mack(cs, sigma)
-                        self.s[cs].alpha_hall = self.get_alpha_hall(cs, sigma, lamda)
-                        self.s[cs].alpha = (1 - lamda + sigma) * self.s[cs].alpha_mack + self.s[cs].alpha_hall
+                        self.s[cs].alpha_hall = self.get_alpha_hall(cs, sigma, self.prev_lamda)
+                        self.s[cs].alpha = (1 - abs(self.prev_lamda - sigma)) * self.s[cs].alpha_mack + self.s[cs].alpha_hall
 
-                self.s[cs].assoc += self.s[cs].alpha * beta * (lamda - sigma)
+                self.s[cs].assoc += self.s[cs].alpha * beta * (self.prev_lamda - sigma)
 
                 if self.window_size is not None:
                     if len(self.s[cs].window) >= self.window_size:
@@ -134,5 +138,6 @@ class Group:
                     self.s[cs].delta_ma_hall = window_avg - hist[cs].assoc[-1]
 
                 hist[cs].add(self.s[cs])
+            self.prev_lamda = lamda
 
         return Strengths.fromHistories(hist)
