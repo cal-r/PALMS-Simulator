@@ -4,7 +4,6 @@ import re
 import seaborn
 import sys
 from collections import defaultdict
-from dataclasses import dataclass
 from matplotlib import pyplot
 from matplotlib.ticker import StrMethodFormatter, MaxNLocator
 from RW_group import Group

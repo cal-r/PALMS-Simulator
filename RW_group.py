@@ -1,9 +1,6 @@
 import math
-import numpy as np
-from collections import deque, defaultdict
 from itertools import combinations
 from RW_strengths import Strengths, History, Individual
-from typing import List
 
 class Group:
     name : str
@@ -129,12 +126,12 @@ class Group:
                         self.s[cs].alpha_mack = self.get_alpha_mack(cs, sigma)
                         self.s[cs].alpha = self.s[cs].alpha_mack
                     case 'hall':
-                        self.s[cs].alpha_hall = self.get_alpha_hall(cs, sigma, self.prev_lamda)
+                        self.s[cs].alpha_hall += self.get_alpha_hall(cs, sigma, self.prev_lamda)
                         self.s[cs].alpha = self.s[cs].alpha_hall
                         delta_v_factor = 0.5 * abs(self.prev_lamda)
                     case 'macknhall':
                         self.s[cs].alpha_mack = self.get_alpha_mack(cs, sigma)
-                        self.s[cs].alpha_hall = self.get_alpha_hall(cs, sigma, self.prev_lamda)
+                        self.s[cs].alpha_hall += self.get_alpha_hall(cs, sigma, self.prev_lamda)
                         self.s[cs].alpha = (1 - abs(self.prev_lamda - sigma)) * self.s[cs].alpha_mack + self.s[cs].alpha_hall
                     case _:
                         raise NameError(f'Unknown adaptive type {self.adaptive_type}!')
