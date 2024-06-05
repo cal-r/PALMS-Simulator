@@ -79,12 +79,13 @@ class Group:
 
         surprise = abs(lamda - sigma)
         window_term =  1 - self.xi_hall * math.exp(-delta_ma_hall**2 / 2)
-        error = 1/2 * ((1 - surprise) * self.s[cs].alpha_hall * window_term + surprise)
 
-        gamma = 0.5
         new_error = surprise
-        #error = 1/2 * ((1 - surprise) * self.s[cs].alpha_hall * window_term + surprise*(1-self.s[cs].alpha_hall))
-        #error = self.s[cs].alpha_hall + window_term
+
+        # gamma = 0.5
+        # error = 1/2 * ((1 - surprise) * self.s[cs].alpha_hall * window_term + surprise)
+        # error = 1/2 * ((1 - surprise) * self.s[cs].alpha_hall * window_term + surprise*(1-self.s[cs].alpha_hall))
+        # error = self.s[cs].alpha_hall + window_term
 
         return new_error
 
@@ -110,6 +111,7 @@ class Group:
 
             compounds = self.compounds(part)
             sigma = sum(self.s[x].assoc for x in compounds)
+            delta_v_factor = beta * (self.prev_lamda - sigma)
 
             for cs in compounds:
                 if cs not in hist:
@@ -122,19 +124,21 @@ class Group:
                     case 'exponential':
                         if sign == 1:
                             self.s[cs].alpha *= (self.s[cs].alpha ** 0.05) ** sign
+                    case 'mack':
+                        self.s[cs].alpha_mack = self.get_alpha_mack(cs, sigma)
+                        self.s[cs].alpha = self.s[cs].alpha_mack
+                    case 'hall':
+                        self.s[cs].alpha_hall = self.get_alpha_hall(cs, sigma)
+                        self.s[cs].alpha = self.s[cs].alpha_hall
+                        delta_v_factor = 0.5 * abs(self.prev_lamda)
                     case 'macknhall':
                         self.s[cs].alpha_mack = self.get_alpha_mack(cs, sigma)
                         self.s[cs].alpha_hall = self.get_alpha_hall(cs, sigma, self.prev_lamda)
-                        #self.s[cs].alpha = (1 - abs(self.prev_lamda - sigma)) * self.s[cs].alpha_mack + self.s[cs].alpha_hall
-                        self.s[cs].alpha = self.s[cs].alpha_hall
+                        self.s[cs].alpha = (1 - abs(self.prev_lamda - sigma)) * self.s[cs].alpha_mack + self.s[cs].alpha_hall
+                    case _:
+                        raise NameError(f'Unknown adaptive type {self.adaptive_type}!')
 
-                print("Alpha")
-                print(self.s[cs].alpha)
-                delta_v = self.s[cs].alpha * 0.5 * abs(self.prev_lamda)
-                print("Delta")
-                print(delta_v)
-                self.s[cs].assoc += delta_v
-                #self.s[cs].assoc += self.s[cs].alpha * beta * (self.prev_lamda - sigma)
+                self.s[cs].assoc += self.s[cs].alpha * delta_v_factor
 
                 if self.window_size is not None:
                     if len(self.s[cs].window) >= self.window_size:

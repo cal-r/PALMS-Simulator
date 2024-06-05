@@ -23,7 +23,7 @@ def parse_args() -> argparse.Namespace:
 
     parser.add_argument("--use-configurals", type = bool, action = argparse.BooleanOptionalAction, help = 'Use compound stimuli with configural cues')
 
-    parser.add_argument("--adaptive-type", choices = ['', 'linear', 'exponential', 'macknhall'], default = 'macknhall', help = 'Type of adaptive attention mode to use')
+    parser.add_argument("--adaptive-type", choices = ['linear', 'exponential', 'mack', 'hall', 'macknhall'], default = 'macknhall', help = 'Type of adaptive attention mode to use')
     parser.add_argument("--window-size", type = int, default = None, help = 'Size of sliding window for adaptive learning')
 
     parser.add_argument("--xi-hall", type = float, default = 0.2, help = 'Xi parameter for Hall alpha calculation')
@@ -64,7 +64,7 @@ def parse_args() -> argparse.Namespace:
 
     args.use_adaptive = args.adaptive_type is not None
 
-    if args.adaptive_type == 'macknhall' and args.window_size is None:
+    if if args.adaptive_type.endswith('hall') and args.window_size is None:
         args.window_size = 3
 
     if args.plot_alphas:
