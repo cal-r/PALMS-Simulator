@@ -64,7 +64,7 @@ def parse_args() -> argparse.Namespace:
 
     args.use_adaptive = args.adaptive_type is not None
 
-    if if args.adaptive_type.endswith('hall') and args.window_size is None:
+    if args.adaptive_type.endswith('hall') and args.window_size is None:
         args.window_size = 3
 
     if args.plot_alphas:

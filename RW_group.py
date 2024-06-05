@@ -79,10 +79,11 @@ class Group:
 
         surprise = abs(lamda - sigma)
         window_term =  1 - self.xi_hall * math.exp(-delta_ma_hall**2 / 2)
+        gamma = 0.99
+        kayes = gamma*surprise +  (1-gamma)*self.s[cs].alpha_hall
 
-        new_error = surprise
+        new_error = kayes
 
-        # gamma = 0.5
         # error = 1/2 * ((1 - surprise) * self.s[cs].alpha_hall * window_term + surprise)
         # error = 1/2 * ((1 - surprise) * self.s[cs].alpha_hall * window_term + surprise*(1-self.s[cs].alpha_hall))
         # error = self.s[cs].alpha_hall + window_term
