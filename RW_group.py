@@ -128,7 +128,7 @@ class Group:
                         self.s[cs].alpha_mack = self.get_alpha_mack(cs, sigma)
                         self.s[cs].alpha = self.s[cs].alpha_mack
                     case 'hall':
-                        self.s[cs].alpha_hall = self.get_alpha_hall(cs, sigma)
+                        self.s[cs].alpha_hall = self.get_alpha_hall(cs, sigma, self.prev_lamda)
                         self.s[cs].alpha = self.s[cs].alpha_hall
                         delta_v_factor = 0.5 * abs(self.prev_lamda)
                     case 'macknhall':
