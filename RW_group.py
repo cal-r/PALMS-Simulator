@@ -182,7 +182,7 @@ class Group:
 
                         self.s[cs].assoc = self.s[cs].Ve - self.s[cs].Vi
 
-                        print(f'Ve = {self.s[cs].Ve:-3.3f};\tVi = {self.s[cs].Vi:-3.3f};\tRho = {rho:-3.3f};\talpha = {self.s[cs].alpha:-3.3f};\tassoc = {self.s[cs].assoc:-3.3f}')
+                        # print(f'Ve = {self.s[cs].Ve:-3.3f};\tVi = {self.s[cs].Vi:-3.3f};\tRho = {rho:-3.3f};\talpha = {self.s[cs].alpha:-3.3f};\tassoc = {self.s[cs].assoc:-3.3f}')
                     case _:
                         raise NameError(f'Unknown adaptive type {self.adaptive_type}!')
 

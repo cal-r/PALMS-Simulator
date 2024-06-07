@@ -165,13 +165,13 @@ def plot_graphs(data: list[dict[str, History]], plot_phase = None, plot_alpha = 
         axes[0].set_xlabel('Trial Number')
         axes[0].set_ylabel('Associative Strength')
         axes[0].set_title(f'Phase {phase_num} Associative Strengths')
-        axes[0].legend()
+        axes[0].legend(fontsize = 'small')
 
         if plot_alpha or plot_macknhall:
             axes[1].set_xlabel('Trial Number')
             axes[1].set_ylabel('Alpha')
             axes[1].set_title(f'Phase {phase_num} Alphas')
-            axes[1].legend()
+            axes[1].legend(fontsize = 'small')
 
         pyplot.tight_layout()
         pyplot.show()
