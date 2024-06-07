@@ -84,11 +84,15 @@ class Phase:
     # The lamda for this phase.
     lamda : None | float
 
+    # String description of this phase.
+    phase_str : str
+
     # Return the set of single (one-character) CS.
     def cs(self):
         return set.union(*[set(x[0]) for x in self.elems])
 
     def __init__(self, phase_str : str):
+        self.phase_str = phase_str
         self.rand = False
         self.lamda = None
         self.elems = []
@@ -137,15 +141,20 @@ def main():
 
     groups_strengths = []
 
+    phases: dict[str, list[Phase]] = dict()
     for e, experiment in enumerate(args.experiment_file.readlines()):
-        name, *phases = experiment.split('|')
+        name, *phase_strs = experiment.strip().split('|')
         name = name.strip()
-        phases = [Phase(phase_str) for phase_str in phases]
 
-        if name not in (args.plot_experiments or [name]):
+        if args.plot_experiments is not None and name not in args.plot_experiments:
             continue
 
-        cs = set.union(*[x.cs() for x in phases])
+        if name in phases:
+            raise NameError(f'Repeated phase name {name}')
+
+        phases[name] = [Phase(phase_str) for phase_str in phase_strs]
+
+        cs = set.union(*[x.cs() for x in phases[name]])
         g = Group(
             name = name,
             alphas = args.alphas,
@@ -162,7 +171,7 @@ def main():
             xi_hall = args.xi_hall,
         )
 
-        for phase_num, strength_hist in enumerate(run_group_experiments(g, phases, args.num_trials)):
+        for phase_num, strength_hist in enumerate(run_group_experiments(g, phases[name], args.num_trials)):
             while len(groups_strengths) <= phase_num:
                 groups_strengths.append(defaultdict(lambda: History()))
 
@@ -173,7 +182,13 @@ def main():
 
                     groups_strengths[phase_num][f'{name} - {cs}'].add(strengths[cs])
 
-    plot_graphs(groups_strengths, args.plot_phase, args.plot_alpha, args.plot_macknhall)
+    plot_graphs(
+        groups_strengths,
+        phases,
+        args.plot_phase,
+        args.plot_alpha,
+        args.plot_macknhall,
+    )
 
 if __name__ == '__main__':
     main()

@@ -3,7 +3,26 @@ from matplotlib import pyplot
 from RW_strengths import History
 from matplotlib.ticker import MaxNLocator
 
-def plot_graphs(data: list[dict[str, History]], plot_phase = None, plot_alpha = False, plot_macknhall = False):
+def titleify(phases, phase_num) -> str:
+    titles = []
+
+    q = max(len(v) for v in phases.values())
+    title_length = max(len(k) for k in phases.keys())
+    val_lengths = [max(len(v[x].phase_str) for v in phases.values()) for x in range(q)]
+    for k, v in phases.items():
+        group_str = [k.rjust(title_length)]
+        for e, (g, v) in enumerate(zip(v, val_lengths), start = 1):
+            phase_str = g.phase_str.rjust(v, '-')
+            if e == phase_num:
+                phase_str = fr'$\mathbf{{{phase_str}}}$'
+
+            group_str.append(phase_str)
+
+        titles.append('|'.join(group_str))
+
+    return '\n'.join(titles)
+
+def plot_graphs(data: list[dict[str, History]], phases, plot_phase = None, plot_alpha = False, plot_macknhall = False):
     seaborn.set()
     pyplot.ion()
 
@@ -33,18 +52,22 @@ def plot_graphs(data: list[dict[str, History]], plot_phase = None, plot_alpha = 
 
         axes[0].set_xlabel('Trial Number')
         axes[0].set_ylabel('Associative Strength')
-        axes[0].set_title(f'Phase {phase_num} Associative Strengths')
+        axes[0].set_title(f'Associative Strengths')
         axes[0].xaxis.set_major_locator(MaxNLocator(integer = True))
         axes[0].legend(fontsize = 'small')
 
         if plot_alpha or plot_macknhall:
             axes[1].set_xlabel('Trial Number')
             axes[1].set_ylabel('Alpha')
-            axes[1].set_title(f'Phase {phase_num} Alphas')
+            axes[1].set_title(f'Alphas')
             axes[1].xaxis.set_major_locator(MaxNLocator(integer = True))
+            axes[1].yaxis.tick_right()
+            axes[1].yaxis.set_label_position('right')
             axes[1].legend(fontsize = 'small')
 
-        pyplot.tight_layout()
+        fig.suptitle(titleify(phases, phase_num), fontdict = {'family': 'monospace'}, fontsize = 12)
+        fig.tight_layout()
+        fig.subplots_adjust(top = .90)
         pyplot.show()
 
     input('Press any key to continue...')
