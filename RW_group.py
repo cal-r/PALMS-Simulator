@@ -167,8 +167,8 @@ class Group:
                         VXe = sigmaE - self.s[cs].Ve
                         VXi = sigmaI - self.s[cs].Vi
 
-                        DVe = 0
-                        DVi = 0
+                        DVe = 0.
+                        DVi = 0.
                         if rho >= 0:
                             DVe = self.s[cs].alpha * self.betap * (1 - self.s[cs].Ve + self.s[cs].Vi) * abs(rho)
 
