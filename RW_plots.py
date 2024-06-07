@@ -52,11 +52,11 @@ def plot_graphs(data: list[dict[str, History]], phases, plot_phase = None, plot_
 
         axes[0].set_xlabel('Trial Number')
         axes[0].set_ylabel('Associative Strength')
-        axes[0].set_title(f'Associative Strengths')
         axes[0].xaxis.set_major_locator(MaxNLocator(integer = True))
         axes[0].legend(fontsize = 'small')
 
         if plot_alpha or plot_macknhall:
+            axes[0].set_title(f'Associative Strengths')
             axes[1].set_xlabel('Trial Number')
             axes[1].set_ylabel('Alpha')
             axes[1].set_title(f'Alphas')
@@ -67,7 +67,10 @@ def plot_graphs(data: list[dict[str, History]], phases, plot_phase = None, plot_
 
         fig.suptitle(titleify(phases, phase_num), fontdict = {'family': 'monospace'}, fontsize = 12)
         fig.tight_layout()
-        fig.subplots_adjust(top = .90)
+
+        if len(axes) > 1:
+            fig.subplots_adjust(top = .90)
+
         pyplot.show()
 
     input('Press any key to continue...')
