@@ -20,7 +20,7 @@ class Group:
     window_size : None | int
     xi_hall : None | float
 
-    def __init__(self, name : str, alphas : dict[str, float], betan : float, betap : float, lamda : float, gamma : float, cs : None | set[str] = None, use_configurals : bool = False, adaptive_type : None | str = None, window_size : None | int = None, xi_hall : None | float = None):
+    def __init__(self, name : str, alphas : dict[str, float], betan : float, betap : float, lamda : float, gamma : float, thetaE : float, thetaI : float, cs : None | set[str] = None, use_configurals : bool = False, adaptive_type : None | str = None, window_size : None | int = None, xi_hall : None | float = None):
         if cs is not None:
             initial_alpha = 0.5
             alphas = {k: alphas.get(k, initial_alpha) for k in cs | alphas.keys()}
@@ -40,6 +40,8 @@ class Group:
         self.betap = betap
         self.lamda = lamda
         self.gamma = gamma
+        self.thetaE = thetaE
+        self.thetaI = thetaI
 
         self.use_configurals = use_configurals
         self.adaptive_type = adaptive_type
@@ -159,6 +161,28 @@ class Group:
                         self.s[cs].alpha = self.gamma * abs(rho) + (1 - self.gamma) * self.s[cs].alpha
 
                         # print(f'Ve = {self.s[cs].Ve:-3.3f};\tVi = {self.s[cs].Vi:-3.3f};\tRho = {rho:-3.3f};\talpha = {self.s[cs].alpha:-3.3f};\tassoc = {self.s[cs].assoc:-3.3f}')
+                    case 'lepelley':
+                        rho = lamda - (sigmaE - sigmaI)
+
+                        VXe = sigmaE - self.s[cs].Ve
+                        VXi = sigmaI - self.s[cs].Vi
+
+                        DVe = 0
+                        DVi = 0
+                        if rho >= 0:
+                            DVe = self.s[cs].alpha * self.betap * (1 - self.s[cs].Ve + self.s[cs].Vi) * abs(rho)
+                            self.s[cs].alpha += self.thetaE * (abs(lamda - self.s[cs].Ve + self.s[cs].Vi) - abs(lamda - VXe + VXi))
+                        else:
+                            DVi = self.s[cs].alpha * self.betan * (1 - self.s[cs].Vi + self.s[cs].Ve) * abs(rho)
+                            self.s[cs].alpha += self.thetaI * (abs(abs(rho) - self.s[cs].Vi + self.s[cs].Ve) - abs(abs(rho) - VXi + VXe))
+
+                        self.s[cs].alpha = min(max(self.s[cs].alpha, 0.05), 1)
+                        self.s[cs].Ve += DVe
+                        self.s[cs].Vi += DVi
+
+                        self.s[cs].assoc = self.s[cs].Ve - self.s[cs].Vi
+
+                        print(f'Ve = {self.s[cs].Ve:-3.3f};\tVi = {self.s[cs].Vi:-3.3f};\tRho = {rho:-3.3f};\talpha = {self.s[cs].alpha:-3.3f};\tassoc = {self.s[cs].assoc:-3.3f}')
                     case _:
                         raise NameError(f'Unknown adaptive type {self.adaptive_type}!')
 
