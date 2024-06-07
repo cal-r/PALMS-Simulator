@@ -171,7 +171,9 @@ class Group:
                         DVi = 0
                         if rho >= 0:
                             DVe = self.s[cs].alpha * self.betap * (1 - self.s[cs].Ve + self.s[cs].Vi) * abs(rho)
-                            self.s[cs].alpha += self.thetaE * (abs(lamda - self.s[cs].Ve + self.s[cs].Vi) - abs(lamda - VXe + VXi))
+
+                            if rho > 0:
+                                self.s[cs].alpha += self.thetaE * (abs(lamda - self.s[cs].Ve + self.s[cs].Vi) - abs(lamda - VXe + VXi))
                         else:
                             DVi = self.s[cs].alpha * self.betan * (1 - self.s[cs].Vi + self.s[cs].Ve) * abs(rho)
                             self.s[cs].alpha += self.thetaI * (abs(abs(rho) - self.s[cs].Vi + self.s[cs].Ve) - abs(abs(rho) - VXi + VXe))
