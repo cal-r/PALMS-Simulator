@@ -19,10 +19,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--beta", type = float, default = .5, help="Associativity of the US +.")
     parser.add_argument("--beta-neg", type = float, default = None, help="Associativity of the absence of US +. Equal to beta by default.")
     parser.add_argument("--lamda", type = float, default = 1, help="Asymptote of learning.")
+    parser.add_argument("--gamma", type = float, default = .5, help = "Weighting how much you rely on past experinces on DualV adaptive type.")
 
     parser.add_argument("--use-configurals", type = bool, action = argparse.BooleanOptionalAction, help = 'Use compound stimuli with configural cues')
 
-    parser.add_argument("--adaptive-type", choices = ['linear', 'exponential', 'mack', 'hall', 'macknhall'], default = 'macknhall', help = 'Type of adaptive attention mode to use')
+    parser.add_argument("--adaptive-type", choices = ['linear', 'exponential', 'mack', 'hall', 'macknhall', 'dualV'], default = 'dualV', help = 'Type of adaptive attention mode to use')
     parser.add_argument("--window-size", type = int, default = None, help = 'Size of sliding window for adaptive learning')
 
     parser.add_argument("--xi-hall", type = float, default = 0.2, help = 'Xi parameter for Hall alpha calculation')
@@ -49,7 +50,7 @@ def parse_args() -> argparse.Namespace:
     args, rest = parser.parse_known_args()
     args.alphas = dict()
     for arg in rest:
-        match = re.fullmatch('--alpha[-_]([A-Z])\s*=?\s*([0-9]*\.?[0-9]*)', arg)
+        match = re.fullmatch(r'--alpha[-_]([A-Z])\s*=?\s*([0-9]*\.?[0-9]*)', arg)
         if not match:
             parser.error(f'Option not understood: {arg}')
 
@@ -189,7 +190,7 @@ def main():
             continue
 
         cs = set.union(*[x.cs() for x in phases])
-        g = Group(name, args.alphas, args.beta_neg, args.beta, args.lamda, cs, args.use_configurals, args.adaptive_type, args.window_size, args.xi_hall)
+        g = Group(name, args.alphas, args.beta_neg, args.beta, args.lamda, args.gamma, cs, args.use_configurals, args.adaptive_type, args.window_size, args.xi_hall)
 
         for phase_num, strength_hist in enumerate(run_group_experiments(g, phases, args.num_trials)):
             while len(groups_strengths) <= phase_num:

@@ -12,13 +12,15 @@ class Group:
     betap : float
     lamda : float
 
+    prev_lamda : float
+
     use_configurals : bool
     adaptive_type : None | str
 
     window_size : None | int
     xi_hall : None | float
 
-    def __init__(self, name : str, alphas : dict[str, float], betan : float, betap : float, lamda : float, cs : None | set[str] = None, use_configurals : bool = False, adaptive_type : None | str = None, window_size : None | int = None, xi_hall : None | float = None):
+    def __init__(self, name : str, alphas : dict[str, float], betan : float, betap : float, lamda : float, gamma : float, cs : None | set[str] = None, use_configurals : bool = False, adaptive_type : None | str = None, window_size : None | int = None, xi_hall : None | float = None):
         if cs is not None:
             initial_alpha = 0.5
             alphas = {k: alphas.get(k, initial_alpha) for k in cs | alphas.keys()}
@@ -37,6 +39,8 @@ class Group:
         self.betan = betan
         self.betap = betap
         self.lamda = lamda
+        self.gamma = gamma
+
         self.use_configurals = use_configurals
         self.adaptive_type = adaptive_type
         self.window_size = window_size
@@ -108,7 +112,11 @@ class Group:
                 beta, lamda, sign = self.betan, 0, -1
 
             compounds = self.compounds(part)
+
             sigma = sum(self.s[x].assoc for x in compounds)
+            sigmaE = sum(self.s[x].Ve for x in compounds)
+            sigmaI = sum(self.s[x].Vi for x in compounds)
+
             delta_v_factor = beta * (self.prev_lamda - sigma)
 
             for cs in compounds:
@@ -119,24 +127,40 @@ class Group:
                 match self.adaptive_type:
                     case 'linear':
                         self.s[cs].alpha *= 1 + sign * 0.05
+                        self.s[cs].assoc += self.s[cs].alpha * delta_v_factor
                     case 'exponential':
                         if sign == 1:
                             self.s[cs].alpha *= (self.s[cs].alpha ** 0.05) ** sign
+                        self.s[cs].assoc += self.s[cs].alpha * delta_v_factor
                     case 'mack':
                         self.s[cs].alpha_mack = self.get_alpha_mack(cs, sigma)
                         self.s[cs].alpha = self.s[cs].alpha_mack
+                        self.s[cs].assoc += self.s[cs].alpha * delta_v_factor
                     case 'hall':
                         self.s[cs].alpha_hall = self.get_alpha_hall(cs, sigma, self.prev_lamda)
                         self.s[cs].alpha = self.s[cs].alpha_hall
                         delta_v_factor = 0.5 * abs(self.prev_lamda)
+                        self.s[cs].assoc += self.s[cs].alpha * delta_v_factor
                     case 'macknhall':
                         self.s[cs].alpha_mack = self.get_alpha_mack(cs, sigma)
                         self.s[cs].alpha_hall = self.get_alpha_hall(cs, sigma, self.prev_lamda)
                         self.s[cs].alpha = (1 - abs(self.prev_lamda - sigma)) * self.s[cs].alpha_mack + self.s[cs].alpha_hall
+                        self.s[cs].assoc += self.s[cs].alpha * delta_v_factor
+                    case 'dualV':
+                        # Ask Esther whether this is lamda^{n + 1) or lamda^n.
+                        rho = lamda - (sigmaE - sigmaI)
+
+                        if rho >= 0:
+                            self.s[cs].Ve += self.betap * self.s[cs].alpha * self.lamda
+                        else:
+                            self.s[cs].Vi += self.betan * self.s[cs].alpha * abs(rho)
+
+                        self.s[cs].assoc = self.s[cs].Ve - self.s[cs].Vi
+                        self.s[cs].alpha = self.gamma * rho + (1 - self.gamma) * self.s[cs].alpha
+
+                        # print(f'Ve = {self.s[cs].Ve};\tVi = {self.s[cs].Vi};\talpha={self.s[cs].alpha}\tassoc = {self.s[cs].assoc}')
                     case _:
                         raise NameError(f'Unknown adaptive type {self.adaptive_type}!')
-
-                self.s[cs].assoc += self.s[cs].alpha * delta_v_factor
 
                 if self.window_size is not None:
                     if len(self.s[cs].window) >= self.window_size:

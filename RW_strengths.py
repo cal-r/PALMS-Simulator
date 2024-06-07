@@ -5,6 +5,10 @@ from itertools import combinations
 
 class Individual:
     assoc : float
+
+    Ve : float
+    Vi : float
+
     alpha : float
     alpha_mack : float
     alpha_hall : float
@@ -12,8 +16,11 @@ class Individual:
     window : deque[float]
     delta_ma_hall : float
 
-    def __init__(self, assoc = 0., alpha = .5, alpha_mack = None, alpha_hall = None, delta_ma_hall = .2, window = None):
+    def __init__(self, *, assoc = 0., Ve = 0., Vi = 0., alpha = .5, alpha_mack = None, alpha_hall = None, delta_ma_hall = .2, window = None):
         self.assoc = min(1., assoc)
+
+        self.Ve = self.assoc
+        self.Vi = self.assoc
 
         self.alpha = alpha
         self.alpha_mack = alpha_mack or alpha
@@ -146,6 +153,12 @@ class Strengths:
     # Returns sum of associated values
     def Sigma(self):
         return sum(x.assoc for x in self.s.values())
+
+    def SigmaE(self):
+        return sum(x.Ve for x in self.s.values())
+
+    def SigmaI(self):
+        return sum(x.Vi for x in self.s.values())
 
     @staticmethod
     def avg(val : list[Strengths]) -> Strengths:

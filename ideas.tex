@@ -7,6 +7,7 @@
 
 \newcommand{\alphamack}{\alpha _{\text{Mack}}}
 \newcommand{\alphahall}{\alpha _{\text{Hall}}}
+\newcommand{\msp}{\hspace{-5pt}}
 
 \renewcommand{\thesubsection}{\arabic{subsection}}
 \renewcommand{\thesubsubsection}{\quad{} \alph{subsubsection}}
@@ -14,6 +15,14 @@
 \begin{document}
 
 \section*{Canonical Formulas}
+
+\subsection{Inhibitory and Excitatory $\alphahall$}
+
+\begin{align}
+	\Delta V^{n + 1}_i &= \beta_E \alpha^n_i \lambda^{n + 1} \tag{Excitatory} \\
+	\Delta \overline{V^{n + 1}_i} &= \beta_i \alpha^n_i \left| \overline{ \lambda^{n + 1} } \right| \tag{Inhibitory} \\
+	\overline{ \lambda^{n + 1 } } &= \lambda^{n + 1} - \left( \sum_{i \in \{ A \dots Z \} } \msp V^n_i - \sum_{i \in \{ A \dots Z \} } \msp \overline{V^n_1} \right) \notag{}
+\end{align}
 
 \clearpage{}
 
