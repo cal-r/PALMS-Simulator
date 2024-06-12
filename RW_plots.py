@@ -22,12 +22,16 @@ def titleify(phases, phase_num) -> str:
 
     return '\n'.join(titles)
 
-def plot_graphs(data: list[dict[str, History]], phases, plot_phase = None, plot_alpha = False, plot_macknhall = False):
+def plot_graphs(data: list[dict[str, History]], *, phases = None, filename = None, plot_phase = None, plot_alpha = False, plot_macknhall = False):
     seaborn.set()
-    pyplot.ion()
 
     if plot_phase is not None:
         data = [data[plot_phase - 1]]
+
+    if filename is None:
+        pyplot.ion()
+    else:
+        filename = filename.removesuffix('.png')
 
     for phase_num, experiments in enumerate(data, start = 1):
         if not plot_alpha and not plot_macknhall:
@@ -71,6 +75,10 @@ def plot_graphs(data: list[dict[str, History]], phases, plot_phase = None, plot_
         if len(axes) > 1:
             fig.subplots_adjust(top = .90)
 
-        pyplot.show()
+        if filename is not None:
+            pyplot.savefig(f'{filename}_{phase_num}.png', dpi = 300, bbox_inches = 'tight')
+        else:
+            pyplot.show()
 
-    input('Press any key to continue...')
+    if filename is None:
+        input('Press any key to continue...')

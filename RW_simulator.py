@@ -39,6 +39,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--plot-alpha', type = bool, action = argparse.BooleanOptionalAction, help = 'Whether to plot the total alpha.')
     parser.add_argument('--plot-macknhall', type = bool, action = argparse.BooleanOptionalAction, help = 'Whether to plot the alpha Mack and alpha Hall.')
 
+    parser.add_argument('--savefig', type = str, help = 'Instead of showing figures, they will be saved to "fig_n.png"')
+
     parser.add_argument(
         "experiment_file",
         nargs='?',
@@ -184,10 +186,11 @@ def main():
 
     plot_graphs(
         groups_strengths,
-        phases,
-        args.plot_phase,
-        args.plot_alpha,
-        args.plot_macknhall,
+        phases = phases,
+        filename = args.savefig,
+        plot_phase = args.plot_phase,
+        plot_alpha = args.plot_alpha,
+        plot_macknhall = args.plot_macknhall,
     )
 
 if __name__ == '__main__':
