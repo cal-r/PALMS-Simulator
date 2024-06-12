@@ -134,6 +134,10 @@ class Strengths:
 
         return h
 
+    def ordered_cs(self) -> list[str]:
+        cs = self.combined_cs()
+        return sorted(cs, key = lambda x: (len(x), x))
+
     # Get the individual values of either a single key (len(key) == 1), or
     # the combined values of a combination of keys (sum of values).
     def __getitem__(self, key : str) -> Individual:

@@ -178,7 +178,7 @@ def main():
                 groups_strengths.append(defaultdict(lambda: History()))
 
             for strengths in strength_hist:
-                for cs in strengths.combined_cs():
+                for cs in strengths.ordered_cs():
                     if cs not in (args.plot_stimuli or [cs]):
                         continue
 
