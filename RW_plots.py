@@ -8,7 +8,9 @@ def titleify(filename, phases, phase_num) -> str:
     titles = []
 
     if filename is not None:
-        titles.append(re.sub(r'\..+', '', re.sub(r'[-_]', ' ', filename)).title())
+        filename = re.sub(r'.*\/|\..+', '', re.sub(r'[-_]', ' ', filename))
+        filename = filename.title().replace('Lepelley', 'LePelley').replace('Dualv', 'DualV')
+        titles.append(filename)
 
     q = max(len(v) for v in phases.values())
     title_length = max(len(k) for k in phases.keys())
@@ -26,7 +28,7 @@ def titleify(filename, phases, phase_num) -> str:
 
     return '\n'.join(titles)
 
-def plot_graphs(data: list[dict[str, History]], *, phases = None, filename = None, plot_phase = None, plot_alpha = False, plot_macknhall = False, experiment_file = None):
+def plot_graphs(data: list[dict[str, History]], *, phases = None, filename = None, plot_phase = None, plot_alpha = False, plot_macknhall = False):
     seaborn.set()
 
     if plot_phase is not None:
@@ -73,7 +75,7 @@ def plot_graphs(data: list[dict[str, History]], *, phases = None, filename = Non
             axes[1].yaxis.set_label_position('right')
             axes[1].legend(fontsize = 'small')
 
-        fig.suptitle(titleify(experiment_file, phases, phase_num), fontdict = {'family': 'monospace'}, fontsize = 12)
+        fig.suptitle(titleify(filename, phases, phase_num), fontdict = {'family': 'monospace'}, fontsize = 12)
         fig.tight_layout()
 
         if len(axes) > 1:
