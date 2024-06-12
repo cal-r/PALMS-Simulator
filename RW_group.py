@@ -124,7 +124,7 @@ class Group:
                     hist[cs] = History()
                     hist[cs].add(self.s[cs])
 
-                self.run_learning(cs, beta, lamda, sign, sigma, sigmaE, sigmaI)
+                self.runLearning(cs, beta, lamda, sign, sigma, sigmaE, sigmaI)
 
                 if self.window_size is not None:
                     if len(self.s[cs].window) >= self.window_size:
@@ -141,7 +141,7 @@ class Group:
 
         return Strengths.fromHistories(hist)
 
-    def run_learning(self, cs: str, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
+    def runLearning(self, cs: str, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
         delta_v_factor = beta * (self.prev_lamda - sigma)
 
         match self.adaptive_type:
