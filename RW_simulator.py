@@ -191,6 +191,7 @@ def main():
         plot_phase = args.plot_phase,
         plot_alpha = args.plot_alpha,
         plot_macknhall = args.plot_macknhall,
+        experiment_file = args.experiment_file.name,
     )
 
 if __name__ == '__main__':

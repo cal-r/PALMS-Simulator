@@ -1,10 +1,14 @@
+import re
 import seaborn
 from matplotlib import pyplot
 from RW_strengths import History
 from matplotlib.ticker import MaxNLocator
 
-def titleify(phases, phase_num) -> str:
+def titleify(filename, phases, phase_num) -> str:
     titles = []
+
+    if filename is not None:
+        titles.append(re.sub(r'\..+', '', re.sub(r'[-_]', ' ', filename)).title())
 
     q = max(len(v) for v in phases.values())
     title_length = max(len(k) for k in phases.keys())
@@ -22,7 +26,7 @@ def titleify(phases, phase_num) -> str:
 
     return '\n'.join(titles)
 
-def plot_graphs(data: list[dict[str, History]], *, phases = None, filename = None, plot_phase = None, plot_alpha = False, plot_macknhall = False):
+def plot_graphs(data: list[dict[str, History]], *, phases = None, filename = None, plot_phase = None, plot_alpha = False, plot_macknhall = False, experiment_file = None):
     seaborn.set()
 
     if plot_phase is not None:
@@ -69,11 +73,11 @@ def plot_graphs(data: list[dict[str, History]], *, phases = None, filename = Non
             axes[1].yaxis.set_label_position('right')
             axes[1].legend(fontsize = 'small')
 
-        fig.suptitle(titleify(phases, phase_num), fontdict = {'family': 'monospace'}, fontsize = 12)
+        fig.suptitle(titleify(experiment_file, phases, phase_num), fontdict = {'family': 'monospace'}, fontsize = 12)
         fig.tight_layout()
 
         if len(axes) > 1:
-            fig.subplots_adjust(top = .90)
+            fig.subplots_adjust(top = .85)
 
         if filename is not None:
             pyplot.savefig(f'{filename}_{phase_num}.png', dpi = 300, bbox_inches = 'tight')
