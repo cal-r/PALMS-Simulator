@@ -182,6 +182,8 @@ class Group:
                 self.s[cs].alpha = self.gamma * abs(rho) + (1 - self.gamma) * self.s[cs].alpha
                 self.s[cs].assoc = self.s[cs].Ve - self.s[cs].Vi
 
+                print(f'{cs}:\t𝛒 = {rho: .3f}; Ve = {self.s[cs].Ve:.3f}; Vi = {self.s[cs].Vi:.3f}')
+
             case 'lepelley':
                 rho = lamda - (sigmaE - sigmaI)
 
@@ -246,7 +248,7 @@ class Group:
 
                 self.s[cs].assoc = self.s[cs].Ve - self.s[cs].Vi
 
-                print(f'{cs}:\t𝛒 = {rho:.3f}; Ve = {self.s[cs].Ve:.3f}; Vi = {self.s[cs].Vi:.3f}')
+                print(f'{cs}:\t𝛒 = {rho: .3f}; Ve = {self.s[cs].Ve:.3f}; Vi = {self.s[cs].Vi:.3f}')
 
             case _:
                 raise NameError(f'Unknown adaptive type {self.adaptive_type}!')

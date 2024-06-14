@@ -148,6 +148,8 @@ def main():
         name, *phase_strs = experiment.strip().split('|')
         name = name.strip()
 
+        print(name)
+
         if args.plot_experiments is not None and name not in args.plot_experiments:
             continue
 

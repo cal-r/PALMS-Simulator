@@ -17,7 +17,7 @@ class Individual:
     delta_ma_hall : float
 
     def __init__(self, *, assoc = 0., Ve = 0., Vi = 0., alpha = .5, alpha_mack = None, alpha_hall = None, delta_ma_hall = .2, window = None):
-        self.assoc = min(1., assoc)
+        self.assoc = assoc
 
         self.Ve = self.assoc
         self.Vi = self.assoc
