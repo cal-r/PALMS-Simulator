@@ -123,7 +123,7 @@ class Group:
                     hist[cs] = History()
                     hist[cs].add(self.s[cs])
 
-                self.runLearning(cs, beta, lamda, sign, sigma, sigmaE, sigmaI)
+                self.step(cs, beta, lamda, sign, sigma, sigmaE, sigmaI)
 
                 if self.window_size is not None:
                     if len(self.s[cs].window) >= self.window_size:
@@ -140,7 +140,7 @@ class Group:
 
         return Strengths.fromHistories(hist)
 
-    def runLearning(self, cs: str, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
+    def step(self, cs: str, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
         delta_v_factor = beta * (self.prev_lamda - sigma)
 
         match self.adaptive_type:
@@ -179,8 +179,8 @@ class Group:
                 else:
                     self.s[cs].Vi += self.betan * self.s[cs].alpha * abs(rho)
 
-                self.s[cs].assoc = self.s[cs].Ve - self.s[cs].Vi
                 self.s[cs].alpha = self.gamma * abs(rho) + (1 - self.gamma) * self.s[cs].alpha
+                self.s[cs].assoc = self.s[cs].Ve - self.s[cs].Vi
 
             case 'lepelley':
                 rho = lamda - (sigmaE - sigmaI)
@@ -218,6 +218,35 @@ class Group:
 
                 self.s[cs].alpha = 1/2 * (1 + self.s[cs].assoc - (VXe - VXi))
                 self.s[cs].assoc = self.s[cs].Ve - self.s[cs].Vi
+
+            case 'hybrid':
+                rho = lamda - (sigmaE - sigmaI)
+
+                NVe = 0.
+                NVi = 0.
+                if rho >= 0:
+                    NVe = self.s[cs].alpha_mack * self.s[cs].Ve + self.betap * self.s[cs].alpha_hall * lamda
+                    NVi = self.s[cs].Vi
+                else:
+                    NVe = self.s[cs].Ve
+                    NVi = self.s[cs].alpha_mack * self.s[cs].Vi + self.betan * self.s[cs].alpha_hall * abs(rho)
+
+                VXe = sigmaE - self.s[cs].Ve
+                VXi = sigmaI - self.s[cs].Vi
+                if rho > 0:
+                    self.s[cs].alpha_mack += -self.thetaE * (abs(lamda - self.s[cs].Ve + self.s[cs].Vi) - abs(lamda - VXe + VXi))
+                elif rho < 0:
+                    self.s[cs].alpha_mack += -self.thetaI * (abs(abs(rho) - self.s[cs].Vi + self.s[cs].Ve) - abs(abs(rho) - VXi + VXe))
+
+                self.s[cs].alpha_mack = min(max(self.s[cs].alpha_mack, 0.05), 1)
+                self.s[cs].alpha_hall = self.gamma * abs(rho) + (1 - self.gamma) * self.s[cs].alpha_hall
+
+                self.s[cs].Ve = NVe
+                self.s[cs].Vi = NVi
+
+                self.s[cs].assoc = self.s[cs].Ve - self.s[cs].Vi
+
+                print(f'{cs}:\t𝛒 = {rho:.3f}; Ve = {self.s[cs].Ve:.3f}; Vi = {self.s[cs].Vi:.3f}')
 
             case _:
                 raise NameError(f'Unknown adaptive type {self.adaptive_type}!')
