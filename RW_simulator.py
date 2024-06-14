@@ -16,7 +16,7 @@ def parse_args() -> argparse.Namespace:
 
     parser.add_argument('--alpha', type = float, default = .5, help = 'Alpha for all other stimuli')
     parser.add_argument("--beta", type = float, default = .5, help="Associativity of the US +.")
-    parser.add_argument("--beta-neg", type = float, default = None, help="Associativity of the absence of US +. Equal to beta by default.")
+    parser.add_argument("--beta-neg", type = float, default = .2, help="Associativity of the absence of US +. Equal to beta by default.")
     parser.add_argument("--lamda", type = float, default = 1, help="Asymptote of learning.")
     parser.add_argument("--gamma", type = float, default = .5, help = "Weighting how much you rely on past experinces on DualV adaptive type.")
 
@@ -25,7 +25,7 @@ def parse_args() -> argparse.Namespace:
 
     parser.add_argument("--use-configurals", type = bool, action = argparse.BooleanOptionalAction, help = 'Use compound stimuli with configural cues')
 
-    parser.add_argument("--adaptive-type", choices = ['linear', 'exponential', 'mack', 'hall', 'macknhall', 'dualV', 'lepelley'], default = 'dualV', help = 'Type of adaptive attention mode to use')
+    parser.add_argument("--adaptive-type", choices = ['linear', 'exponential', 'mack', 'hall', 'macknhall', 'dualV', 'lepelley', 'dualmack'], default = 'dualV', help = 'Type of adaptive attention mode to use')
     parser.add_argument("--window-size", type = int, default = None, help = 'Size of sliding window for adaptive learning')
 
     parser.add_argument("--xi-hall", type = float, default = 0.2, help = 'Xi parameter for Hall alpha calculation')
@@ -61,9 +61,6 @@ def parse_args() -> argparse.Namespace:
             parser.error(f'Option not understood: {arg}')
 
         args.alphas[match.group(1)] = float(match.group(2))
-
-    if args.beta_neg is None:
-        args.beta_neg = args.beta
 
     if args.use_configurals is None:
         args.use_configurals = False

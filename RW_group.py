@@ -147,24 +147,29 @@ class Group:
             case 'linear':
                 self.s[cs].alpha *= 1 + sign * 0.05
                 self.s[cs].assoc += self.s[cs].alpha * delta_v_factor
+
             case 'exponential':
                 if sign == 1:
                     self.s[cs].alpha *= (self.s[cs].alpha ** 0.05) ** sign
                 self.s[cs].assoc += self.s[cs].alpha * delta_v_factor
+
             case 'mack':
                 self.s[cs].alpha_mack = self.get_alpha_mack(cs, sigma)
                 self.s[cs].alpha = self.s[cs].alpha_mack
                 self.s[cs].assoc += self.s[cs].alpha * delta_v_factor
+
             case 'hall':
                 self.s[cs].alpha_hall = self.get_alpha_hall(cs, sigma, self.prev_lamda)
                 self.s[cs].alpha = self.s[cs].alpha_hall
                 delta_v_factor = 0.5 * abs(self.prev_lamda)
                 self.s[cs].assoc += self.s[cs].alpha * delta_v_factor
+
             case 'macknhall':
                 self.s[cs].alpha_mack = self.get_alpha_mack(cs, sigma)
                 self.s[cs].alpha_hall = self.get_alpha_hall(cs, sigma, self.prev_lamda)
                 self.s[cs].alpha = (1 - abs(self.prev_lamda - sigma)) * self.s[cs].alpha_mack + self.s[cs].alpha_hall
                 self.s[cs].assoc += self.s[cs].alpha * delta_v_factor
+
             case 'dualV':
                 # Ask Esther whether this is lamda^{n + 1) or lamda^n.
                 rho = lamda - (sigmaE - sigmaI)
@@ -176,6 +181,7 @@ class Group:
 
                 self.s[cs].assoc = self.s[cs].Ve - self.s[cs].Vi
                 self.s[cs].alpha = self.gamma * abs(rho) + (1 - self.gamma) * self.s[cs].alpha
+
             case 'lepelley':
                 rho = lamda - (sigmaE - sigmaI)
 
@@ -198,5 +204,20 @@ class Group:
                 self.s[cs].Vi += DVi
 
                 self.s[cs].assoc = self.s[cs].Ve - self.s[cs].Vi
+
+            case 'dualmack':
+                rho = lamda - (sigmaE - sigmaI)
+
+                VXe = sigmaE - self.s[cs].Ve
+                VXi = sigmaI - self.s[cs].Vi
+
+                if rho >= 0:
+                    self.s[cs].Ve += self.s[cs].alpha * self.betap * (1 - self.s[cs].Ve + self.s[cs].Vi) * abs(rho)
+                else:
+                    self.s[cs].Vi += self.s[cs].alpha * self.betan * (1 - self.s[cs].Vi + self.s[cs].Ve) * abs(rho)
+
+                self.s[cs].alpha = 1/2 * (1 + self.s[cs].assoc - (VXe - VXi))
+                self.s[cs].assoc = self.s[cs].Ve - self.s[cs].Vi
+
             case _:
                 raise NameError(f'Unknown adaptive type {self.adaptive_type}!')
