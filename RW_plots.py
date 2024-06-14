@@ -4,12 +4,15 @@ from matplotlib import pyplot
 from RW_strengths import History
 from matplotlib.ticker import MaxNLocator
 
-def titleify(filename, phases, phase_num) -> str:
+def titleify(filename, phases, phase_num, suffix) -> str:
     titles = []
 
     if filename is not None:
         filename = re.sub(r'.*\/|\..+', '', re.sub(r'[-_]', ' ', filename))
         filename = filename.title().replace('Lepelley', 'LePelley').replace('Dualv', 'DualV')
+        if suffix is not None:
+            filename = f'{filename} ({suffix})'
+
         titles.append(filename)
 
     q = max(len(v) for v in phases.values())
@@ -28,7 +31,7 @@ def titleify(filename, phases, phase_num) -> str:
 
     return '\n'.join(titles)
 
-def plot_graphs(data: list[dict[str, History]], *, phases = None, filename = None, plot_phase = None, plot_alpha = False, plot_macknhall = False):
+def plot_graphs(data: list[dict[str, History]], *, phases = None, filename = None, plot_phase = None, plot_alpha = False, plot_macknhall = False, title_suffix = None):
     seaborn.set()
 
     if plot_phase is not None:
@@ -75,14 +78,14 @@ def plot_graphs(data: list[dict[str, History]], *, phases = None, filename = Non
             axes[1].yaxis.set_label_position('right')
             axes[1].legend(fontsize = 'small')
 
-        fig.suptitle(titleify(filename, phases, phase_num), fontdict = {'family': 'monospace'}, fontsize = 12)
+        fig.suptitle(titleify(filename, phases, phase_num, title_suffix), fontdict = {'family': 'monospace'}, fontsize = 12)
         fig.tight_layout()
 
         if len(axes) > 1:
             fig.subplots_adjust(top = .85)
 
         if filename is not None:
-            pyplot.savefig(f'{filename}_{phase_num}.png', dpi = 300, bbox_inches = 'tight')
+            pyplot.savefig(f'{filename}_{phase_num}.png', dpi = 150, bbox_inches = 'tight')
         else:
             pyplot.show()
 

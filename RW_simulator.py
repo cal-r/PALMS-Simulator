@@ -14,6 +14,7 @@ def parse_args() -> argparse.Namespace:
         epilog = '--alpha_[A-Z] ALPHA\tAssociative strength of CS A..Z. By default 0',
     )
 
+    parser.add_argument('--alpha', type = float, default = .5, help = 'Alpha for all other stimuli')
     parser.add_argument("--beta", type = float, default = .5, help="Associativity of the US +.")
     parser.add_argument("--beta-neg", type = float, default = None, help="Associativity of the absence of US +. Equal to beta by default.")
     parser.add_argument("--lamda", type = float, default = 1, help="Asymptote of learning.")
@@ -38,6 +39,8 @@ def parse_args() -> argparse.Namespace:
 
     parser.add_argument('--plot-alpha', type = bool, action = argparse.BooleanOptionalAction, help = 'Whether to plot the total alpha.')
     parser.add_argument('--plot-macknhall', type = bool, action = argparse.BooleanOptionalAction, help = 'Whether to plot the alpha Mack and alpha Hall.')
+
+    parser.add_argument('--title-suffix', type = str, help = 'Title suffix')
 
     parser.add_argument('--savefig', type = str, help = 'Instead of showing figures, they will be saved to "fig_n.png"')
 
@@ -160,6 +163,7 @@ def main():
         g = Group(
             name = name,
             alphas = args.alphas,
+            default_alpha = args.alpha,
             betan = args.beta_neg,
             betap = args.beta,
             lamda = args.lamda,
@@ -191,6 +195,7 @@ def main():
         plot_phase = args.plot_phase,
         plot_alpha = args.plot_alpha,
         plot_macknhall = args.plot_macknhall,
+        title_suffix = args.title_suffix
     )
 
 if __name__ == '__main__':

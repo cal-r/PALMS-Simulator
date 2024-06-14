@@ -20,10 +20,9 @@ class Group:
     window_size : None | int
     xi_hall : None | float
 
-    def __init__(self, name : str, alphas : dict[str, float], betan : float, betap : float, lamda : float, gamma : float, thetaE : float, thetaI : float, cs : None | set[str] = None, use_configurals : bool = False, adaptive_type : None | str = None, window_size : None | int = None, xi_hall : None | float = None):
+    def __init__(self, name : str, alphas : dict[str, float], default_alpha : float, betan : float, betap : float, lamda : float, gamma : float, thetaE : float, thetaI : float, cs : None | set[str] = None, use_configurals : bool = False, adaptive_type : None | str = None, window_size : None | int = None, xi_hall : None | float = None):
         if cs is not None:
-            initial_alpha = 0.5
-            alphas = {k: alphas.get(k, initial_alpha) for k in cs | alphas.keys()}
+            alphas = {k: alphas.get(k, default_alpha) for k in cs | alphas.keys()}
 
         self.name = name
 
