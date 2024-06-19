@@ -77,6 +77,7 @@ def plot_graphs(data: list[dict[str, History]], *, phases = None, filename = Non
             axes[1].set_title(f'Alphas')
             axes[1].xaxis.set_major_locator(MaxNLocator(integer = True))
             axes[1].yaxis.tick_right()
+            axes[1].tick_params(axis = 'y', which = 'both', right = True, length = 0)
             axes[1].yaxis.set_label_position('right')
             axes[1].legend(fontsize = 'small')
 
