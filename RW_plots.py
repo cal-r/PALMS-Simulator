@@ -24,6 +24,8 @@ def titleify(filename, phases, phase_num, suffix) -> str:
             phase_str = g.phase_str.rjust(v, '-')
             if e == phase_num:
                 phase_str = fr'$\mathbf{{{phase_str}}}$'
+            else:
+                phase_str = fr'${phase_str}$'
 
             group_str.append(phase_str)
 
