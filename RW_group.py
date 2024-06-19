@@ -182,7 +182,7 @@ class Group:
                 self.s[cs].alpha = self.gamma * abs(rho) + (1 - self.gamma) * self.s[cs].alpha
                 self.s[cs].assoc = self.s[cs].Ve - self.s[cs].Vi
 
-                print(f'{cs}:\t𝛒 = {rho: .3f}; Ve = {self.s[cs].Ve:.3f}; Vi = {self.s[cs].Vi:.3f}')
+                #print(f'{cs}:\t𝛒 = {rho: .3f}; Ve = {self.s[cs].Ve:.3f}; Vi = {self.s[cs].Vi:.3f}')
 
 
             case 'lepelley':
@@ -225,15 +225,19 @@ class Group:
 
             case 'hybrid':
                 rho = lamda - (sigmaE - sigmaI)
-
+                
                 NVe = 0.
                 NVi = 0.
                 if rho >= 0:
-                    NVe = self.s[cs].alpha_mack * self.s[cs].Ve + self.betap * self.s[cs].alpha_hall * lamda
+                    DVe = self.s[cs].alpha_hall * self.betap * (1 - self.s[cs].Ve + self.s[cs].Vi) * abs(rho)
+                    NVe = self.s[cs].alpha_mack * self.s[cs].Ve + DVe
+                    #NVe = self.s[cs].alpha_mack * self.s[cs].Ve + self.betap * self.s[cs].alpha_hall * lamda
                     NVi = self.s[cs].Vi
                 else:
                     NVe = self.s[cs].Ve
-                    NVi = self.s[cs].alpha_mack * self.s[cs].Vi + self.betan * self.s[cs].alpha_hall * abs(rho)
+                    DvI = self.s[cs].alpha_hall * self.betan * (1 - self.s[cs].Vi + self.s[cs].Ve) * abs(rho)
+                    NVi = self.s[cs].alpha_mack * self.s[cs].Vi + DvI
+                    #NVi = self.s[cs].alpha_mack * self.s[cs].Vi + self.betan * self.s[cs].alpha_hall * abs(rho)
 
                 VXe = sigmaE - self.s[cs].Ve
                 VXi = sigmaI - self.s[cs].Vi
@@ -247,14 +251,14 @@ class Group:
 
                 self.s[cs].Ve = NVe
                 self.s[cs].Vi = NVi
-                self.s[cs].Ve = min(max(self.s[cs].Ve, 0), 1)
-                self.s[cs].Vi = min(max(self.s[cs].Vi, 0), 1)
+                #self.s[cs].Ve = min(max(self.s[cs].Ve, 0), 1)
+                #self.s[cs].Vi = min(max(self.s[cs].Vi, 0), 1)
 
 
 
                 self.s[cs].assoc = self.s[cs].Ve - self.s[cs].Vi
 
-                print(f'{cs}:\t𝛒 = {rho: .3f}; Ve = {self.s[cs].Ve:.3f}; Vi = {self.s[cs].Vi:.3f}')
+                #print(f'{cs}:\t𝛒 = {rho: .3f}; Ve = {self.s[cs].Ve:.3f}; Vi = {self.s[cs].Vi:.3f}, ; VNet = {self.s[cs].assoc:.3f}')
 
             case _:
                 raise NameError(f'Unknown adaptive type {self.adaptive_type}!')
