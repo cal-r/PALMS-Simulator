@@ -184,6 +184,7 @@ class Group:
 
                 print(f'{cs}:\t𝛒 = {rho: .3f}; Ve = {self.s[cs].Ve:.3f}; Vi = {self.s[cs].Vi:.3f}')
 
+
             case 'lepelley':
                 rho = lamda - (sigmaE - sigmaI)
 
@@ -206,6 +207,7 @@ class Group:
                 self.s[cs].Vi += DVi
 
                 self.s[cs].assoc = self.s[cs].Ve - self.s[cs].Vi
+
 
             case 'dualmack':
                 rho = lamda - (sigmaE - sigmaI)
@@ -245,6 +247,10 @@ class Group:
 
                 self.s[cs].Ve = NVe
                 self.s[cs].Vi = NVi
+                self.s[cs].Ve = min(max(self.s[cs].Ve, 0), 1)
+                self.s[cs].Vi = min(max(self.s[cs].Vi, 0), 1)
+
+
 
                 self.s[cs].assoc = self.s[cs].Ve - self.s[cs].Vi
 
