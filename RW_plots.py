@@ -20,12 +20,13 @@ def titleify(filename, phases, phase_num, suffix) -> str:
     val_lengths = [max(len(v[x].phase_str) for v in phases.values()) for x in range(q)]
     for k, v in phases.items():
         group_str = [k.rjust(title_length)]
-        for e, (g, v) in enumerate(zip(v, val_lengths), start = 1):
-            phase_str = g.phase_str.rjust(v, '-')
+        for e, (g, ln) in enumerate(zip(v, val_lengths), start = 1):
+            phase_str = g.phase_str
             if e == phase_num:
                 phase_str = fr'$\mathbf{{{phase_str}}}$'
             else:
                 phase_str = fr'${phase_str}$'
+            phase_str = (ln - len(g.phase_str)) * ' ' + phase_str
 
             group_str.append(phase_str)
 
