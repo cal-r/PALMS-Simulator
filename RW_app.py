@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+import sys
 from PyQt6.QtCore import QTimer
 from PyQt6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDialog, QFormLayout, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit,
                              QPushButton, QTabWidget, QTableWidget, QVBoxLayout, QWidget, QStyleFactory)
@@ -10,6 +10,7 @@ class PavlovianApp(QDialog):
         super(PavlovianApp, self).__init__(parent)
 
         self.adaptive_types = ['linear', 'exponential', 'mack', 'hall', 'macknhall', 'dualV', 'lepelley', 'dualmack', 'hybrid']
+        self.plot_experiment_types = ['plot phase', 'plot experiments', 'plot stimuli', 'plot alphas', 'plot alpha', 'plot macknhall']
         self.current_adaptive_type = None
 
         self.originalPalette = QApplication.palette()
@@ -41,8 +42,8 @@ class PavlovianApp(QDialog):
 
         mainLayout = QGridLayout()
         mainLayout.addWidget(self.tableTabWidget, 0, 0, 1, 2)  # Expanded to cover two columns
-        mainLayout.addWidget(self.parametersGroupBox, 1, 0, 1, 1)  # Swapped position with adaptiveTypeGroupBox
-        mainLayout.addWidget(self.adaptiveTypeGroupBox, 1, 1, 1, 1)  # Swapped position with parametersGroupBox
+        mainLayout.addWidget(self.parametersGroupBox, 1, 0, 1, 1)  # Parameters on the bottom left
+        mainLayout.addWidget(self.adaptiveTypeGroupBox, 1, 1, 1, 1)  # Adaptive type on the bottom right
         self.setLayout(mainLayout)
 
         self.setWindowTitle("Pavlovian App")
@@ -64,12 +65,29 @@ class PavlovianApp(QDialog):
         self.adaptivetypeComboBox = QComboBox(self)
         self.adaptivetypeComboBox.addItems(self.adaptive_types)
         self.adaptivetypeComboBox.activated.connect(self.changeAdaptiveType)
+        
+        self.plotexperimentComboBox = QComboBox(self)
+        self.plotexperimentComboBox.addItems(self.plot_experiment_types)
+        self.plotexperimentComboBox.activated.connect(self.changePlotExperimentType)
+
+        self.setDefaultParamsButton = QPushButton("Set Default Parameters")
+        self.setDefaultParamsButton.clicked.connect(self.setDefaultParameters)
+
+        self.printButton = QPushButton("Print")
+        self.printButton.clicked.connect(self.printMessage)
 
         layout = QVBoxLayout()
         layout.addWidget(self.adaptivetypeComboBox)
+        layout.addWidget(self.plotexperimentComboBox)
+        layout.addWidget(self.setDefaultParamsButton)
+        layout.addWidget(self.printButton)
         layout.addStretch(1)
         self.adaptiveTypeGroupBox.setLayout(layout)
 
+    def changePlotExperimentType(self):
+        self.plot_experiment_type = self.plotexperimentComboBox.currentText()
+        print(self.plot_experiment_type)
+        
     def changeAdaptiveType(self):
         self.current_adaptive_type = self.adaptivetypeComboBox.currentText()
         print(self.current_adaptive_type)
@@ -117,6 +135,8 @@ class PavlovianApp(QDialog):
         self.thetaI_box = QLineEdit()
         self.window_size_Label = QLabel("Window Size")
         self.window_size_box = QLineEdit()
+        self.num_trials_Label = QLabel("Number Trials")
+        self.num_trials_box = QLineEdit()
 
         params.addRow(self.alpha_Label, self.alpha_box)
         params.addRow(self.lamda_Label, self.lamda_box)
@@ -126,8 +146,40 @@ class PavlovianApp(QDialog):
         params.addRow(self.thetaE_Label, self.thetaE_box)
         params.addRow(self.thetaI_Label, self.thetaI_box)
         params.addRow(self.window_size_Label, self.window_size_box)
+        params.addRow(self.num_trials_Label, self.num_trials_box)
 
         self.parametersGroupBox.setLayout(params)
+
+    def setDefaultParameters(self):
+        defaults = {
+            'alpha': '0.1',
+            'lamda': '0.5',
+            'beta': '0.3',
+            'betan': '0.2',
+            'gamma': '0.4',
+            'thetaE': '0.6',
+            'thetaI': '0.7',
+            'window_size': '10'
+        }
+
+        for key, value in defaults.items():
+            widget = getattr(self, f'{key}_box')
+            widget.setText(value)
+
+    def printMessage(self):
+        rowCount = self.tableWidget.rowCount()
+        columnCount = self.tableWidget.columnCount()
+
+        table_contents = []
+        for row in range(rowCount):
+            row_data = []
+            for column in range(columnCount):
+                item = self.tableWidget.item(row, column)
+                row_data.append(item.text() if item is not None else "")
+            table_contents.append(row_data)
+
+        for row in table_contents:
+            print("\t".join(row))
 
     def createTableWidget(self):
         self.tableTabWidget = QTabWidget()
@@ -189,8 +241,6 @@ class PavlovianApp(QDialog):
 
 
 if __name__ == '__main__':
-    import sys
-
     app = QApplication(sys.argv)
     gallery = PavlovianApp()
     gallery.show()
