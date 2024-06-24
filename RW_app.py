@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtCore import QTimer
 from PyQt6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDialog, QFormLayout, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit,
-                             QPushButton, QSizePolicy, QTableWidget, QTabWidget, QVBoxLayout, QWidget, QStyleFactory)
+                             QPushButton, QTabWidget, QTableWidget, QVBoxLayout, QWidget, QStyleFactory)
 
 
 class PavlovianApp(QDialog):
@@ -74,36 +74,58 @@ class PavlovianApp(QDialog):
         self.current_adaptive_type = self.adaptivetypeComboBox.currentText()
         print(self.current_adaptive_type)
 
+        # Enable specific widgets based on the selected adaptive type
+        widgets_to_enable = {
+            'linear': ['alpha', 'lamda', 'beta'],
+            'exponential': ['alpha', 'lamda', 'beta'],
+            'mack': ['alpha', 'lamda', 'beta', 'thetaE', 'thetaI'],
+            'hall': ['lamda', 'lamda', 'beta', 'gamma', 'thetaE', 'thetaI'],
+            'macknhall': ['alpha', 'lamda', 'beta', 'gamma', 'window_size'],
+            'dualV': ['alpha', 'lamda', 'beta', 'betan', 'gamma'],
+            'lepelley': ['alpha', 'lamda', 'beta', 'betan', 'gamma', 'thetaE', 'thetaI'],
+            'dualmack': ['alpha', 'lamda', 'beta', 'betan'],
+            'hybrid': ['alpha', 'lamda', 'beta', 'betan', 'gamma', 'thetaE', 'thetaI'],
+        }
+
+        # Disable all widgets initially
+        for key in ['alpha', 'lamda', 'beta', 'betan', 'gamma', 'thetaE', 'thetaI', 'window_size']:
+            widget = getattr(self, f'{key}_box')
+            widget.setDisabled(True)
+
+        # Enable the widgets for the current adaptive type
+        for key in widgets_to_enable[self.current_adaptive_type]:
+            widget = getattr(self, f'{key}_box')
+            widget.setDisabled(False)
+
     def createParametersGroupBox(self):
         self.parametersGroupBox = QGroupBox("Parameters")
 
         params = QFormLayout()
-        alpha_Label = QLabel("Initial Alpha")
-        alpha_box = QLineEdit()
-        lamda_Label = QLabel("Lambda")
-        lamda_box = QLineEdit()
-        beta_Label = QLabel("Beta")
-        beta_box = QLineEdit()
-        betap_Label = QLabel("Excitory Beta")
-        betan_Label = QLabel("Inhibitory Beta")
-        betan_box = QLineEdit()
-        gamma_Label = QLabel("Gamma")
-        gamma_box = QLineEdit()
-        thetaE_Label = QLabel("Theta E")
-        thetaE_box = QLineEdit()
-        thetaI_Label = QLabel("Theta I")
-        thetaI_box = QLineEdit()
-        window_size_Label = QLabel("Window Size")
-        window_size_box = QLineEdit()
+        self.alpha_Label = QLabel("Initial Alpha")
+        self.alpha_box = QLineEdit()
+        self.lamda_Label = QLabel("Lambda")
+        self.lamda_box = QLineEdit()
+        self.beta_Label = QLabel("Beta")
+        self.beta_box = QLineEdit()
+        self.betan_Label = QLabel("Inhibitory Beta")
+        self.betan_box = QLineEdit()
+        self.gamma_Label = QLabel("Gamma")
+        self.gamma_box = QLineEdit()
+        self.thetaE_Label = QLabel("Theta E")
+        self.thetaE_box = QLineEdit()
+        self.thetaI_Label = QLabel("Theta I")
+        self.thetaI_box = QLineEdit()
+        self.window_size_Label = QLabel("Window Size")
+        self.window_size_box = QLineEdit()
 
-        params.addRow(alpha_Label, alpha_box)
-        params.addRow(lamda_Label, lamda_box)
-        params.addRow(beta_Label, beta_box)
-        params.addRow(betan_Label, betan_box)
-        params.addRow(gamma_Label, gamma_box)
-        params.addRow(thetaE_Label, thetaE_box)
-        params.addRow(thetaI_Label, thetaI_box)
-        params.addRow(window_size_Label, window_size_box)
+        params.addRow(self.alpha_Label, self.alpha_box)
+        params.addRow(self.lamda_Label, self.lamda_box)
+        params.addRow(self.beta_Label, self.beta_box)
+        params.addRow(self.betan_Label, self.betan_box)
+        params.addRow(self.gamma_Label, self.gamma_box)
+        params.addRow(self.thetaE_Label, self.thetaE_box)
+        params.addRow(self.thetaI_Label, self.thetaI_box)
+        params.addRow(self.window_size_Label, self.window_size_box)
 
         self.parametersGroupBox.setLayout(params)
 
@@ -113,16 +135,16 @@ class PavlovianApp(QDialog):
         tab1 = QWidget()
         self.tableWidget = QTableWidget(2, 1)  # 1 column, 2 rows
 
-        addColumnButton = QPushButton("Add Phase")
+        addColumnButton = QPushButton("Add Column")
         addColumnButton.clicked.connect(self.addColumn)
 
-        removeColumnButton = QPushButton("Remove Phase")
+        removeColumnButton = QPushButton("Remove Column")
         removeColumnButton.clicked.connect(self.removeColumn)
 
-        addRowButton = QPushButton("Add Group")
+        addRowButton = QPushButton("Add Row")
         addRowButton.clicked.connect(self.addRow)
 
-        removeRowButton = QPushButton("Remove Group")
+        removeRowButton = QPushButton("Remove Row")
         removeRowButton.clicked.connect(self.removeRow)
 
         buttonLayout = QVBoxLayout()
