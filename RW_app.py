@@ -1,9 +1,18 @@
-#!/usr/bin/env python
 import sys
+from collections import defaultdict
 from PyQt6.QtCore import QTimer, Qt
-from PyQt6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDialog, QFormLayout, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit,
-                             QPushButton, QTabWidget, QTableWidget, QVBoxLayout, QWidget, QStyleFactory, QTableWidgetItem)
+from PyQt6.QtWidgets import *
+from RW_experiment import RWArgs, run_stuff
+from RW_plots import plot_graphs
+from RW_strengths import History
 
+class CoolWidget(QTableWidget):
+    def getText(self, row: int, col: int) -> str:
+        item = self.item(row, col)
+        if item is None:
+            return ""
+
+        return item.text()
 
 class PavlovianApp(QDialog):
     def __init__(self, parent=None):
@@ -55,8 +64,9 @@ class PavlovianApp(QDialog):
         self.changePalette()
 
     def changePalette(self):
-        if self.useStylePaletteCheckBox.isChecked():
-            QApplication.setPalette(QApplication.style().standardPalette())
+        style = QApplication.style()
+        if self.useStylePaletteCheckBox.isChecked() and style is not None:
+            QApplication.setPalette(style.standardPalette())
         else:
             QApplication.setPalette(self.originalPalette)
 
@@ -99,7 +109,10 @@ class PavlovianApp(QDialog):
         currentColumnCount = self.tableWidget.columnCount()
         self.tableWidget.setColumnCount(currentColumnCount + 1)
         self.inset_text_column_index = currentColumnCount
-        self.tableWidget.setHorizontalHeaderItem(self.inset_text_column_index, QLabel("Inset Text"))
+        self.tableWidget.setHorizontalHeaderItem(
+            self.inset_text_column_index,
+            QTableWidgetItem("Inset Text"),
+        )
 
     def removeInsetTextColumn(self):
         currentColumnCount = self.tableWidget.columnCount()
@@ -188,57 +201,56 @@ class PavlovianApp(QDialog):
     def plotExperiment(self):
         rowCount = self.tableWidget.rowCount()
         columnCount = self.tableWidget.columnCount()
+        phases = columnCount - 1
 
-        table_contents = []
-        for row in range(rowCount):
-            row_data = []
-            for column in range(columnCount):
-                item = self.tableWidget.item(row, column)
-                row_data.append(item.text() if item is not None else "")
-            table_contents.append(row_data)
-
-        for row in table_contents:
-            print("\t".join(row))
-            
         self.current_adaptive_type = self.adaptivetypeComboBox.currentText()
-        
-        
         self.plot_experiment_type = self.plotexperimentComboBox.currentText()
         
-        
-        # Todo: Call RW_simulator using the following values
-        # Note: plot_experiment type is missing plot_stimuli and plot_phases
-        
-        # print(table_contents)
-        # print(self.plot_experiment_type)
-        # print(self.current_adaptive_type)
-        # print(self.alpha_box.text())
-        # print(self.lamda_box.text())
-        # print(self.beta_box.text())
-        # print(self.betan_box.text())
-        # print(self.gamma_box.text())
-        # print(self.thetaE_box.text())
-        # print(self.thetaI_box.text())
-        # print(self.window_size_box.text())
-        # print(self.num_trials_box.text())
+        args = RWArgs(
+            adaptive_type = self.current_adaptive_type,
+
+            alphas = defaultdict(lambda: float(self.alpha_box.text())),
+            alpha = float(self.alpha_box.text()),
+            beta = float(self.beta_box.text()),
+            beta_neg = float(self.betan_box.text()),
+            lamda = float(self.lamda_box.text()),
+            gamma = float(self.gamma_box.text()),
+            thetaE = float(self.thetaE_box.text()),
+            thetaI = float(self.thetaI_box.text()),
+
+            window_size = int(self.window_size_box.text()),
+            num_trials = int(self.num_trials_box.text()),
+
+            use_configurals = False,
+            xi_hall = 0.5,
+        )
+
+        strengths = [History.emptydict() for _ in range(columnCount)]
+        for row in range(rowCount):
+            name, *phase_strs = [self.tableWidget.getText(row, column) for column in range(columnCount)]
+            local_strengths = run_stuff(name, phase_strs, args)
+            strengths = [a | b for a, b in zip(strengths, local_strengths)]
+
+        plot_graphs(strengths)
+
+        return strengths
 
     def createTableWidget(self):
         self.tableTabWidget = QTabWidget()
 
         tab1 = QWidget()
-        self.tableWidget = QTableWidget(2, 2)  # 2 columns, 2 rows (one for row names, one for data)
+        self.tableWidget = CoolWidget(2, 2)
 
         # Set the first column as row names and make them editable
         for row in range(self.tableWidget.rowCount()):
-            item = QTableWidgetItem(f"Group {row + 1}")
-            self.tableWidget.setItem(row, 0, item)
+            if row == 0:
+                item = QTableWidgetItem('Control')
+            elif self.tableWidget.rowCount() == 2:
+                item = QTableWidgetItem('Test')
+            else:
+                item = QTableWidgetItem(f'Test {row}')
 
-        # # Make all other cells non-editable
-        # for row in range(self.tableWidget.rowCount()):
-        #     for column in range(1, self.tableWidget.columnCount()):
-        #         item = QTableWidgetItem()
-        #         item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
-        #         self.tableWidget.setItem(row, column, item)
+            self.tableWidget.setItem(row, 0, item)
 
         addColumnButton = QPushButton("Add Column")
         addColumnButton.clicked.connect(self.addColumn)
@@ -283,7 +295,7 @@ class PavlovianApp(QDialog):
     def addRow(self):
         currentRowCount = self.tableWidget.rowCount()
         self.tableWidget.setRowCount(currentRowCount + 1)
-        item = QTableWidgetItem(f"Group {currentRowCount + 1}")
+        item = QTableWidgetItem(f"Test {currentRowCount}")
         self.tableWidget.setItem(currentRowCount, 0, item)
         for column in range(1, self.tableWidget.columnCount()):
             item = QTableWidgetItem()

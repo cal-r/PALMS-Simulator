@@ -82,7 +82,9 @@ def plot_graphs(data: list[dict[str, History]], *, phases = None, filename = Non
             axes[1].yaxis.set_label_position('right')
             axes[1].legend(fontsize = 'small')
 
-        fig.suptitle(titleify(filename, phases, phase_num, title_suffix), fontdict = {'family': 'monospace'}, fontsize = 12)
+        if phases is not None:
+            fig.suptitle(titleify(filename, phases, phase_num, title_suffix), fontdict = {'family': 'monospace'}, fontsize = 12)
+
         fig.tight_layout()
 
         if len(axes) > 1:
