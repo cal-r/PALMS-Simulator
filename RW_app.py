@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 import sys
-from PyQt6.QtCore import QTimer
+from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDialog, QFormLayout, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit,
-                             QPushButton, QTabWidget, QTableWidget, QVBoxLayout, QWidget, QStyleFactory)
+                             QPushButton, QTabWidget, QTableWidget, QVBoxLayout, QWidget, QStyleFactory, QTableWidgetItem)
 
 
 class PavlovianApp(QDialog):
@@ -10,8 +10,9 @@ class PavlovianApp(QDialog):
         super(PavlovianApp, self).__init__(parent)
 
         self.adaptive_types = ['linear', 'exponential', 'mack', 'hall', 'macknhall', 'dualV', 'lepelley', 'dualmack', 'hybrid']
-        self.plot_experiment_types = ['plot phase', 'plot experiments', 'plot stimuli', 'plot alphas', 'plot alpha', 'plot macknhall']
+        self.plot_experiment_types = ['plot experiments', 'plot alpha', 'plot alphas', 'plot macknhall']
         self.current_adaptive_type = None
+        self.inset_text_column_index = None  # Track the index of the inset text column
 
         self.originalPalette = QApplication.palette()
 
@@ -73,8 +74,8 @@ class PavlovianApp(QDialog):
         self.setDefaultParamsButton = QPushButton("Set Default Parameters")
         self.setDefaultParamsButton.clicked.connect(self.setDefaultParameters)
 
-        self.printButton = QPushButton("Print")
-        self.printButton.clicked.connect(self.printMessage)
+        self.printButton = QPushButton("Plot")
+        self.printButton.clicked.connect(self.plotExperiment)
 
         layout = QVBoxLayout()
         layout.addWidget(self.adaptivetypeComboBox)
@@ -86,18 +87,35 @@ class PavlovianApp(QDialog):
 
     def changePlotExperimentType(self):
         self.plot_experiment_type = self.plotexperimentComboBox.currentText()
-        print(self.plot_experiment_type)
-        
+
+        if self.plot_experiment_type in ['plot phase', 'plot stimuli']:
+            if self.inset_text_column_index is None:  # Add the column only if it's not already added
+                self.addInsetTextColumn()
+        else:
+            if self.inset_text_column_index is not None:  # Remove the column only if it was previously added
+                self.removeInsetTextColumn()
+
+    def addInsetTextColumn(self):
+        currentColumnCount = self.tableWidget.columnCount()
+        self.tableWidget.setColumnCount(currentColumnCount + 1)
+        self.inset_text_column_index = currentColumnCount
+        self.tableWidget.setHorizontalHeaderItem(self.inset_text_column_index, QLabel("Inset Text"))
+
+    def removeInsetTextColumn(self):
+        currentColumnCount = self.tableWidget.columnCount()
+        if currentColumnCount > 1 and self.inset_text_column_index is not None:
+            self.tableWidget.removeColumn(self.inset_text_column_index)
+            self.inset_text_column_index = None
+
     def changeAdaptiveType(self):
         self.current_adaptive_type = self.adaptivetypeComboBox.currentText()
-        print(self.current_adaptive_type)
 
         # Enable specific widgets based on the selected adaptive type
         widgets_to_enable = {
             'linear': ['alpha', 'lamda', 'beta'],
             'exponential': ['alpha', 'lamda', 'beta'],
             'mack': ['alpha', 'lamda', 'beta', 'thetaE', 'thetaI'],
-            'hall': ['lamda', 'lamda', 'beta', 'gamma', 'thetaE', 'thetaI'],
+            'hall': ['lamda', 'beta', 'gamma', 'thetaE', 'thetaI'],
             'macknhall': ['alpha', 'lamda', 'beta', 'gamma', 'window_size'],
             'dualV': ['alpha', 'lamda', 'beta', 'betan', 'gamma'],
             'lepelley': ['alpha', 'lamda', 'beta', 'betan', 'gamma', 'thetaE', 'thetaI'],
@@ -153,20 +171,21 @@ class PavlovianApp(QDialog):
     def setDefaultParameters(self):
         defaults = {
             'alpha': '0.1',
-            'lamda': '0.5',
+            'lamda': '1',
             'beta': '0.3',
             'betan': '0.2',
-            'gamma': '0.4',
-            'thetaE': '0.6',
-            'thetaI': '0.7',
-            'window_size': '10'
+            'gamma': '0.5',
+            'thetaE': '0.3',
+            'thetaI': '0.1',
+            'window_size': '10',
+            'num_trials': '1000'
         }
 
         for key, value in defaults.items():
             widget = getattr(self, f'{key}_box')
             widget.setText(value)
 
-    def printMessage(self):
+    def plotExperiment(self):
         rowCount = self.tableWidget.rowCount()
         columnCount = self.tableWidget.columnCount()
 
@@ -180,12 +199,46 @@ class PavlovianApp(QDialog):
 
         for row in table_contents:
             print("\t".join(row))
+            
+        self.current_adaptive_type = self.adaptivetypeComboBox.currentText()
+        
+        
+        self.plot_experiment_type = self.plotexperimentComboBox.currentText()
+        
+        
+        # Todo: Call RW_simulator using the following values
+        # Note: plot_experiment type is missing plot_stimuli and plot_phases
+        
+        # print(table_contents)
+        # print(self.plot_experiment_type)
+        # print(self.current_adaptive_type)
+        # print(self.alpha_box.text())
+        # print(self.lamda_box.text())
+        # print(self.beta_box.text())
+        # print(self.betan_box.text())
+        # print(self.gamma_box.text())
+        # print(self.thetaE_box.text())
+        # print(self.thetaI_box.text())
+        # print(self.window_size_box.text())
+        # print(self.num_trials_box.text())
 
     def createTableWidget(self):
         self.tableTabWidget = QTabWidget()
 
         tab1 = QWidget()
-        self.tableWidget = QTableWidget(2, 1)  # 1 column, 2 rows
+        self.tableWidget = QTableWidget(2, 2)  # 2 columns, 2 rows (one for row names, one for data)
+
+        # Set the first column as row names and make them editable
+        for row in range(self.tableWidget.rowCount()):
+            item = QTableWidgetItem(f"Group {row + 1}")
+            self.tableWidget.setItem(row, 0, item)
+
+        # # Make all other cells non-editable
+        # for row in range(self.tableWidget.rowCount()):
+        #     for column in range(1, self.tableWidget.columnCount()):
+        #         item = QTableWidgetItem()
+        #         item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+        #         self.tableWidget.setItem(row, column, item)
 
         addColumnButton = QPushButton("Add Column")
         addColumnButton.clicked.connect(self.addColumn)
@@ -217,15 +270,25 @@ class PavlovianApp(QDialog):
     def addColumn(self):
         currentColumnCount = self.tableWidget.columnCount()
         self.tableWidget.setColumnCount(currentColumnCount + 1)
+        # for row in range(self.tableWidget.rowCount()):
+        #     item = QTableWidgetItem()
+        #     item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+        #     self.tableWidget.setItem(row, currentColumnCount, item)
 
     def removeColumn(self):
         currentColumnCount = self.tableWidget.columnCount()
-        if currentColumnCount > 1:
+        if currentColumnCount > 2:  # Keep at least the row names and one data column
             self.tableWidget.setColumnCount(currentColumnCount - 1)
 
     def addRow(self):
         currentRowCount = self.tableWidget.rowCount()
         self.tableWidget.setRowCount(currentRowCount + 1)
+        item = QTableWidgetItem(f"Group {currentRowCount + 1}")
+        self.tableWidget.setItem(currentRowCount, 0, item)
+        for column in range(1, self.tableWidget.columnCount()):
+            item = QTableWidgetItem()
+            item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+            self.tableWidget.setItem(currentRowCount, column, item)
 
     def removeRow(self):
         currentRowCount = self.tableWidget.rowCount()
