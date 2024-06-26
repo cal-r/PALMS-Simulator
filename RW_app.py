@@ -209,18 +209,18 @@ class PavlovianApp(QDialog):
         # Todo: Call RW_simulator using the following values
         # Note: plot_experiment type is missing plot_stimuli and plot_phases
         
-        # print(table_contents)
-        # print(self.plot_experiment_type)
-        # print(self.current_adaptive_type)
-        # print(self.alpha_box.text())
-        # print(self.lamda_box.text())
-        # print(self.beta_box.text())
-        # print(self.betan_box.text())
-        # print(self.gamma_box.text())
-        # print(self.thetaE_box.text())
-        # print(self.thetaI_box.text())
-        # print(self.window_size_box.text())
-        # print(self.num_trials_box.text())
+        print(table_contents)
+        print(self.plot_experiment_type)
+        print(self.current_adaptive_type)
+        print(self.alpha_box.text())
+        print(self.lamda_box.text())
+        print(self.beta_box.text())
+        print(self.betan_box.text())
+        print(self.gamma_box.text())
+        print(self.thetaE_box.text())
+        print(self.thetaI_box.text())
+        print(self.window_size_box.text())
+        print(self.num_trials_box.text())
 
     def createTableWidget(self):
         self.tableTabWidget = QTabWidget()
