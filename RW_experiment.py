@@ -1,5 +1,7 @@
 import random
 import re
+from dataclasses import dataclass
+
 from RW_group import Group
 from RW_strengths import Strengths, History
 
@@ -36,6 +38,34 @@ class Phase:
                 self.elems += int(num or '1') * [(cs, sign or '+')]
             else:
                 raise ValueError(f'Part not understood: {part}')
+
+@dataclass(kw_only = True)
+class RWArgs:
+    alphas: dict[str, float]
+    beta: float
+    beta_neg: float
+    lamda: float
+    gamma: float
+    thetaE: float
+    thetaI: float
+
+    use_configurals: bool
+    adaptive_type: str
+    window_size: int
+    xi_hall: float
+    num_trials: int
+
+    # TODO: Change this to default_alpha or something like that
+    alpha: float
+
+    plot_phase: None | int = None
+    plot_experiments: None | list[str] = None
+    plot_stimuli: None | list[str] = None
+    plot_alpha: bool = False
+    plot_macknhall: bool = False
+
+    title_suffix: None | str = None
+    savefig: None | str = None
 
 def run_stuff(name: str, phase_strs: list[str], args) -> list[dict[str, History]]:
     phase = [Phase(phase_str) for phase_str in phase_strs]
