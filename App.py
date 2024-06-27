@@ -6,13 +6,90 @@ from Experiment import RWArgs, run_stuff
 from Plots import plot_graphs
 from Strengths import History
 
-class CoolWidget(QTableWidget):
+class CoolTable(QTableWidget):
+    def __init__(self, rows: int, cols: int):
+        super().__init__(rows, cols)
+        self.setVerticalHeaders()
+        self.setHorizontalHeaderItem(0, QTableWidgetItem('Phase 1'))
+        self.itemChanged.connect(self.autoResize)
+
     def getText(self, row: int, col: int) -> str:
         item = self.item(row, col)
         if item is None:
             return ""
 
         return item.text()
+
+    def setVerticalHeaders(self):
+        rows = self.rowCount()
+
+        self.setVerticalHeaderItem(0, QTableWidgetItem('Control'))
+        self.setVerticalHeaderItem(1, QTableWidgetItem('Test'))
+
+        firstNum = 2 if rows <= 3 else 1
+        for e in range(firstNum, rows):
+            self.setVerticalHeaderItem(e, QTableWidgetItem(f'Test {e}'))
+
+    def keyPressEvent(self, event):
+        if event.key() in (Qt.Key.Key_Backspace, Qt.Key.Key_Delete):
+            for item in self.selectedItems():
+                item.setText('')
+        else:
+            super().keyPressEvent(event)
+
+    def addInsetTextColumn(self):
+        currentColumnCount = self.columnCount()
+        self.setColumnCount(currentColumnCount + 1)
+        self.inset_text_column_index = currentColumnCount
+        self.setHorizontalHeaderItem(
+            self.inset_text_column_index,
+            QTableWidgetItem("Inset Text"),
+        )
+
+    def removeInsetTextColumn(self):
+        currentColumnCount = self.columnCount()
+        if currentColumnCount > 1 and self.inset_text_column_index is not None:
+            self.removeColumn(self.inset_text_column_index)
+            self.inset_text_column_index = None
+
+    def autoResize(self, item):
+        col = item.column()
+        row = item.row()
+
+        colCount = self.columnCount()
+        rowCount = self.rowCount()
+
+        if item.text():
+            if col == colCount - 1:
+                self.addColumn()
+
+            if row == rowCount - 1:
+                self.addRow()
+        else:
+            if col == colCount - 2 and not any(self.getText(x, col) for x in range(colCount)):
+                self.removeColumn()
+
+            if row == rowCount - 2 and not any(self.getText(x, row) for x in range(rowCount)):
+                self.removeRow()
+
+    def addColumn(self):
+        cols = self.columnCount()
+        self.insertColumn(cols)
+        self.setHorizontalHeaderItem(cols, QTableWidgetItem(f'Phase {cols + 1}'))
+
+    def removeColumn(self):
+        currentColumnCount = self.columnCount()
+        self.setColumnCount(currentColumnCount - 1)
+
+    def addRow(self):
+        rows = self.rowCount()
+        self.insertRow(rows)
+        self.setVerticalHeaders()
+
+    def removeRow(self):
+        currentRowCount = self.rowCount()
+        self.setRowCount(currentRowCount - 1)
+        self.setVerticalHeaders()
 
 class PavlovianApp(QDialog):
     def __init__(self, parent=None):
@@ -21,13 +98,12 @@ class PavlovianApp(QDialog):
         self.adaptive_types = ['linear', 'exponential', 'mack', 'hall', 'macknhall', 'dualV', 'lepelley', 'dualmack', 'hybrid']
         self.plot_experiment_types = ['plot experiments', 'plot alpha', 'plot alphas', 'plot macknhall']
         self.current_adaptive_type = None
-        self.inset_text_column_index = None  # Track the index of the inset text column
+        self.inset_text_column_index = None
 
         self.originalPalette = QApplication.palette()
 
         self.initUI()
 
-        # Use a timer to ensure all widgets are updated after the window is shown
         QTimer.singleShot(100, self.updateWidgets)
 
     def initUI(self):
@@ -42,33 +118,21 @@ class PavlovianApp(QDialog):
 
         disableWidgetsCheckBox = QCheckBox("&Disable widgets")
 
+        self.tableWidget = CoolTable(2, 1)
+
         self.createAdaptiveTypeGroupBox()
         self.createParametersGroupBox()
-        self.createTableWidget()
 
         disableWidgetsCheckBox.toggled.connect(self.adaptiveTypeGroupBox.setDisabled)
         disableWidgetsCheckBox.toggled.connect(self.parametersGroupBox.setDisabled)
-        disableWidgetsCheckBox.toggled.connect(self.tableTabWidget.setDisabled)
 
         mainLayout = QGridLayout()
-        mainLayout.addWidget(self.tableTabWidget, 0, 0, 1, 2)  # Expanded to cover two columns
-        mainLayout.addWidget(self.parametersGroupBox, 1, 0, 1, 1)  # Parameters on the bottom left
-        mainLayout.addWidget(self.adaptiveTypeGroupBox, 1, 1, 1, 1)  # Adaptive type on the bottom right
+        mainLayout.addWidget(self.tableWidget, 0, 0, 1, 2)
+        mainLayout.addWidget(self.parametersGroupBox, 1, 0, 1, 1)
+        mainLayout.addWidget(self.adaptiveTypeGroupBox, 1, 1, 1, 1)
         self.setLayout(mainLayout)
 
-        self.setWindowTitle("Pavlovian App")
-        self.changeStyle('Windows')
-
-    def changeStyle(self, styleName):
-        QApplication.setStyle(QStyleFactory.create(styleName))
-        self.changePalette()
-
-    def changePalette(self):
-        style = QApplication.style()
-        if self.useStylePaletteCheckBox.isChecked() and style is not None:
-            QApplication.setPalette(style.standardPalette())
-        else:
-            QApplication.setPalette(self.originalPalette)
+        self.setWindowTitle("🐕🔔")
 
     def createAdaptiveTypeGroupBox(self):
         self.adaptiveTypeGroupBox = QGroupBox("Adaptive Type")
@@ -99,31 +163,15 @@ class PavlovianApp(QDialog):
         self.plot_experiment_type = self.plotexperimentComboBox.currentText()
 
         if self.plot_experiment_type in ['plot phase', 'plot stimuli']:
-            if self.inset_text_column_index is None:  # Add the column only if it's not already added
+            if self.inset_text_column_index is None:
                 self.addInsetTextColumn()
         else:
-            if self.inset_text_column_index is not None:  # Remove the column only if it was previously added
+            if self.inset_text_column_index is not None:
                 self.removeInsetTextColumn()
-
-    def addInsetTextColumn(self):
-        currentColumnCount = self.tableWidget.columnCount()
-        self.tableWidget.setColumnCount(currentColumnCount + 1)
-        self.inset_text_column_index = currentColumnCount
-        self.tableWidget.setHorizontalHeaderItem(
-            self.inset_text_column_index,
-            QTableWidgetItem("Inset Text"),
-        )
-
-    def removeInsetTextColumn(self):
-        currentColumnCount = self.tableWidget.columnCount()
-        if currentColumnCount > 1 and self.inset_text_column_index is not None:
-            self.tableWidget.removeColumn(self.inset_text_column_index)
-            self.inset_text_column_index = None
 
     def changeAdaptiveType(self):
         self.current_adaptive_type = self.adaptivetypeComboBox.currentText()
 
-        # Enable specific widgets based on the selected adaptive type
         widgets_to_enable = {
             'linear': ['alpha', 'lamda', 'beta'],
             'exponential': ['alpha', 'lamda', 'beta'],
@@ -136,12 +184,10 @@ class PavlovianApp(QDialog):
             'hybrid': ['alpha', 'lamda', 'beta', 'betan', 'gamma', 'thetaE', 'thetaI'],
         }
 
-        # Disable all widgets initially
         for key in ['alpha', 'lamda', 'beta', 'betan', 'gamma', 'thetaE', 'thetaI', 'window_size']:
             widget = getattr(self, f'{key}_box')
             widget.setDisabled(True)
 
-        # Enable the widgets for the current adaptive type
         for key in widgets_to_enable[self.current_adaptive_type]:
             widget = getattr(self, f'{key}_box')
             widget.setDisabled(False)
@@ -199,8 +245,8 @@ class PavlovianApp(QDialog):
             widget.setText(value)
 
     def plotExperiment(self):
-        rowCount = self.tableWidget.rowCount()
-        columnCount = self.tableWidget.columnCount()
+        rowCount = self.tableWidget.rowCount() - 1
+        columnCount = self.tableWidget.columnCount() - 1
         phases = columnCount - 1
 
         self.current_adaptive_type = self.adaptivetypeComboBox.currentText()
@@ -236,75 +282,11 @@ class PavlovianApp(QDialog):
 
         return strengths
 
-    def createTableWidget(self):
-        self.tableTabWidget = QTabWidget()
-
-        tab1 = QWidget()
-        self.tableWidget = CoolWidget(2, 1)
-        self.tableWidget.setVerticalHeaderItem(0, QTableWidgetItem('Control'))
-        self.tableWidget.setVerticalHeaderItem(1, QTableWidgetItem('Test'))
-
-        self.tableWidget.setHorizontalHeaderItem(0, QTableWidgetItem('Phase 1'))
-
-        addColumnButton = QPushButton("Add Column")
-        addColumnButton.clicked.connect(self.addColumn)
-
-        removeColumnButton = QPushButton("Remove Column")
-        removeColumnButton.clicked.connect(self.removeColumn)
-
-        addRowButton = QPushButton("Add Row")
-        addRowButton.clicked.connect(self.addRow)
-
-        removeRowButton = QPushButton("Remove Row")
-        removeRowButton.clicked.connect(self.removeRow)
-
-        buttonLayout = QVBoxLayout()
-        buttonLayout.addWidget(addColumnButton)
-        buttonLayout.addWidget(removeColumnButton)
-        buttonLayout.addWidget(addRowButton)
-        buttonLayout.addWidget(removeRowButton)
-        buttonLayout.addStretch(1)
-
-        tab1Layout = QHBoxLayout()
-        tab1Layout.setContentsMargins(5, 5, 5, 5)
-        tab1Layout.addWidget(self.tableWidget)
-        tab1Layout.addLayout(buttonLayout)
-        tab1.setLayout(tab1Layout)
-
-        self.tableTabWidget.addTab(tab1, "&Table")
-
-    def addColumn(self):
-        cols = self.tableWidget.columnCount()
-        self.tableWidget.insertColumn(cols)
-        self.tableWidget.setHorizontalHeaderItem(cols, QTableWidgetItem(f'Phase {cols + 1}'))
-
-    def removeColumn(self):
-        currentColumnCount = self.tableWidget.columnCount()
-        if currentColumnCount > 2:  # Keep at least the row names and one data column
-            self.tableWidget.setColumnCount(currentColumnCount - 1)
-
-    def addRow(self):
-        currentRowCount = self.tableWidget.rowCount()
-        self.tableWidget.setRowCount(currentRowCount + 1)
-        item = QTableWidgetItem(f"Test {currentRowCount}")
-        self.tableWidget.setItem(currentRowCount, 0, item)
-        for column in range(1, self.tableWidget.columnCount()):
-            item = QTableWidgetItem()
-            item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
-            self.tableWidget.setItem(currentRowCount, column, item)
-
-    def removeRow(self):
-        currentRowCount = self.tableWidget.rowCount()
-        if currentRowCount > 1:
-            self.tableWidget.setRowCount(currentRowCount - 1)
-
     def updateWidgets(self):
-        # Explicitly update and repaint widgets to ensure they are rendered correctly
         self.tableWidget.update()
         self.tableWidget.repaint()
         self.update()
         self.repaint()
-
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
