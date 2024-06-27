@@ -2,9 +2,9 @@ import sys
 from collections import defaultdict
 from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtWidgets import *
-from RW_experiment import RWArgs, run_stuff
-from RW_plots import plot_graphs
-from RW_strengths import History
+from Experiment import RWArgs, run_stuff
+from Plots import plot_graphs
+from Strengths import History
 
 class CoolWidget(QTableWidget):
     def getText(self, row: int, col: int) -> str:

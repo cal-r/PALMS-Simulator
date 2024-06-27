@@ -4,10 +4,10 @@ import re
 import sys
 from collections import defaultdict
 from matplotlib.ticker import StrMethodFormatter, MaxNLocator
-from RW_experiment import run_stuff
-from RW_group import Group
-from RW_strengths import Strengths, History
-from RW_plots import plot_graphs
+from Experiment import run_stuff
+from Group import Group
+from Strengths import Strengths, History
+from Plots import plot_graphs
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(

@@ -2,8 +2,8 @@ import random
 import re
 from dataclasses import dataclass
 
-from RW_group import Group
-from RW_strengths import Strengths, History
+from Group import Group
+from Strengths import Strengths, History
 
 class Phase:
     # elems contains a list of ([CS], US) of an experiment.

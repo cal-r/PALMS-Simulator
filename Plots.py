@@ -1,7 +1,7 @@
 import re
 import seaborn
 from matplotlib import pyplot
-from RW_strengths import History
+from Strengths import History
 from matplotlib.ticker import MaxNLocator
 
 def titleify(filename, phases, phase_num, suffix) -> str:
