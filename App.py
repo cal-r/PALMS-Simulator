@@ -12,6 +12,7 @@ class CoolTable(QTableWidget):
         self.setVerticalHeaders()
         self.setHorizontalHeaderItem(0, QTableWidgetItem('Phase 1'))
         self.itemChanged.connect(self.autoResize)
+        self.freeze = False
 
     def getText(self, row: int, col: int) -> str:
         item = self.item(row, col)
@@ -53,6 +54,9 @@ class CoolTable(QTableWidget):
             self.inset_text_column_index = None
 
     def autoResize(self, item):
+        if self.freeze:
+            return
+
         col = item.column()
         row = item.row()
 
@@ -90,6 +94,25 @@ class CoolTable(QTableWidget):
         currentRowCount = self.rowCount()
         self.setRowCount(currentRowCount - 1)
         self.setVerticalHeaders()
+
+    def loadFile(self, lines):
+        self.freeze = True
+
+        self.setRowCount(len(lines))
+
+        maxCols = 0
+        for row, group in enumerate(lines):
+            name, *phase_strs = [x.strip() for x in group.split('|')]
+
+            if len(phase_strs) > maxCols:
+                maxCols = len(phase_strs)
+                self.setColumnCount(maxCols)
+
+            self.setVerticalHeaderItem(row, QTableWidgetItem(name))
+            for col, phase in enumerate(phase_strs):
+                self.setItem(row, col, QTableWidgetItem(phase))
+
+        self.freeze = False
 
 class PavlovianApp(QDialog):
     def __init__(self, parent=None):
@@ -133,9 +156,17 @@ class PavlovianApp(QDialog):
         self.setLayout(mainLayout)
 
         self.setWindowTitle("🐕🔔")
+        self.restoreDefaultParameters()
+
+    def openFileDialog(self):
+        file, _ = QFileDialog.getOpenFileName(self, 'Open File', './Experiments')
+        self.tableWidget.loadFile([x.strip() for x in open(file)])
 
     def createAdaptiveTypeGroupBox(self):
         self.adaptiveTypeGroupBox = QGroupBox("Adaptive Type")
+
+        self.fileButton = QPushButton('Load file')
+        self.fileButton.clicked.connect(self.openFileDialog)
 
         self.adaptivetypeComboBox = QComboBox(self)
         self.adaptivetypeComboBox.addItems(self.adaptive_types)
@@ -145,13 +176,14 @@ class PavlovianApp(QDialog):
         self.plotexperimentComboBox.addItems(self.plot_experiment_types)
         self.plotexperimentComboBox.activated.connect(self.changePlotExperimentType)
 
-        self.setDefaultParamsButton = QPushButton("Set Default Parameters")
-        self.setDefaultParamsButton.clicked.connect(self.setDefaultParameters)
+        self.setDefaultParamsButton = QPushButton("Restore Default Parameters")
+        self.setDefaultParamsButton.clicked.connect(self.restoreDefaultParameters)
 
         self.printButton = QPushButton("Plot")
         self.printButton.clicked.connect(self.plotExperiment)
 
         layout = QVBoxLayout()
+        layout.addWidget(self.fileButton)
         layout.addWidget(self.adaptivetypeComboBox)
         layout.addWidget(self.plotexperimentComboBox)
         layout.addWidget(self.setDefaultParamsButton)
@@ -227,7 +259,7 @@ class PavlovianApp(QDialog):
 
         self.parametersGroupBox.setLayout(params)
 
-    def setDefaultParameters(self):
+    def restoreDefaultParameters(self):
         defaults = {
             'alpha': '0.1',
             'lamda': '1',
@@ -245,10 +277,6 @@ class PavlovianApp(QDialog):
             widget.setText(value)
 
     def plotExperiment(self):
-        rowCount = self.tableWidget.rowCount() - 1
-        columnCount = self.tableWidget.columnCount() - 1
-        phases = columnCount - 1
-
         self.current_adaptive_type = self.adaptivetypeComboBox.currentText()
         self.plot_experiment_type = self.plotexperimentComboBox.currentText()
         
@@ -271,10 +299,18 @@ class PavlovianApp(QDialog):
             xi_hall = 0.5,
         )
 
+        rowCount = self.tableWidget.rowCount()
+        columnCount = self.tableWidget.columnCount()
+        while not any(self.tableWidget.getText(row, columnCount - 1) for row in range(rowCount)):
+            columnCount -= 1
+
         strengths = [History.emptydict() for _ in range(columnCount)]
         for row in range(rowCount):
             name = self.tableWidget.verticalHeaderItem(row).text()
             phase_strs = [self.tableWidget.getText(row, column) for column in range(columnCount)]
+            if not any(phase_strs):
+                continue
+
             local_strengths = run_stuff(name, phase_strs, args)
             strengths = [a | b for a, b in zip(strengths, local_strengths)]
 
