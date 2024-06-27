@@ -227,7 +227,8 @@ class PavlovianApp(QDialog):
 
         strengths = [History.emptydict() for _ in range(columnCount)]
         for row in range(rowCount):
-            name, *phase_strs = [self.tableWidget.getText(row, column) for column in range(columnCount)]
+            name = self.tableWidget.verticalHeaderItem(row).text()
+            phase_strs = [self.tableWidget.getText(row, column) for column in range(columnCount)]
             local_strengths = run_stuff(name, phase_strs, args)
             strengths = [a | b for a, b in zip(strengths, local_strengths)]
 
@@ -239,18 +240,11 @@ class PavlovianApp(QDialog):
         self.tableTabWidget = QTabWidget()
 
         tab1 = QWidget()
-        self.tableWidget = CoolWidget(2, 2)
+        self.tableWidget = CoolWidget(2, 1)
+        self.tableWidget.setVerticalHeaderItem(0, QTableWidgetItem('Control'))
+        self.tableWidget.setVerticalHeaderItem(1, QTableWidgetItem('Test'))
 
-        # Set the first column as row names and make them editable
-        for row in range(self.tableWidget.rowCount()):
-            if row == 0:
-                item = QTableWidgetItem('Control')
-            elif self.tableWidget.rowCount() == 2:
-                item = QTableWidgetItem('Test')
-            else:
-                item = QTableWidgetItem(f'Test {row}')
-
-            self.tableWidget.setItem(row, 0, item)
+        self.tableWidget.setHorizontalHeaderItem(0, QTableWidgetItem('Phase 1'))
 
         addColumnButton = QPushButton("Add Column")
         addColumnButton.clicked.connect(self.addColumn)
@@ -280,12 +274,9 @@ class PavlovianApp(QDialog):
         self.tableTabWidget.addTab(tab1, "&Table")
 
     def addColumn(self):
-        currentColumnCount = self.tableWidget.columnCount()
-        self.tableWidget.setColumnCount(currentColumnCount + 1)
-        # for row in range(self.tableWidget.rowCount()):
-        #     item = QTableWidgetItem()
-        #     item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
-        #     self.tableWidget.setItem(row, currentColumnCount, item)
+        cols = self.tableWidget.columnCount()
+        self.tableWidget.insertColumn(cols)
+        self.tableWidget.setHorizontalHeaderItem(cols, QTableWidgetItem(f'Phase {cols + 1}'))
 
     def removeColumn(self):
         currentColumnCount = self.tableWidget.columnCount()
