@@ -1,10 +1,15 @@
 import re
 import seaborn
+import matplotlib
+matplotlib.use('QtAgg')
+
 from matplotlib import pyplot
 from Strengths import History
 from matplotlib.ticker import MaxNLocator
 
-def titleify(filename, phases, phase_num, suffix) -> str:
+from Experiment import Phase
+
+def titleify(filename: str, phases: dict[str, list[Phase]], phase_num: int, suffix: str) -> str:
     titles = []
 
     if filename is not None:
@@ -25,7 +30,7 @@ def titleify(filename, phases, phase_num, suffix) -> str:
             if e == phase_num:
                 phase_str = fr'$\mathbf{{{phase_str}}}$'
             else:
-                phase_str = fr'${phase_str}$'
+                phase_str = phase_str
             phase_str = (ln - len(g.phase_str)) * ' ' + phase_str
 
             group_str.append(phase_str)
@@ -34,7 +39,7 @@ def titleify(filename, phases, phase_num, suffix) -> str:
 
     return '\n'.join(titles)
 
-def plot_graphs(data: list[dict[str, History]], *, phases = None, filename = None, plot_phase = None, plot_alpha = False, plot_macknhall = False, title_suffix = None):
+def plot_graphs(data: list[dict[str, History]], *, phases: None | dict[str, list[Phase]] = None, filename = None, plot_phase = None, plot_alpha = False, plot_macknhall = False, title_suffix = None):
     seaborn.set()
 
     if plot_phase is not None:
@@ -93,7 +98,7 @@ def plot_graphs(data: list[dict[str, History]], *, phases = None, filename = Non
         if filename is not None:
             pyplot.savefig(f'{filename}_{phase_num}.png', dpi = 150, bbox_inches = 'tight')
         else:
+            if fig.canvas.manager is not None:
+                fig.canvas.manager.window.activateWindow()
+                fig.canvas.manager.window.raise_()
             pyplot.show()
-
-    if filename is None:
-        input('Press any key to continue...')

@@ -67,7 +67,7 @@ class RWArgs:
     title_suffix: None | str = None
     savefig: None | str = None
 
-def run_stuff(name: str, phase_strs: list[str], args) -> list[dict[str, History]]:
+def run_stuff(name: str, phase_strs: list[str], args) -> tuple[list[dict[str, History]], list[Phase]]:
     phase = [Phase(phase_str) for phase_str in phase_strs]
 
     stimuli = set.union(*[x.cs() for x in phase])
@@ -97,7 +97,7 @@ def run_stuff(name: str, phase_strs: list[str], args) -> list[dict[str, History]
                 if args.plot_stimuli is None or cs in args.plot_stimuli:
                     group_strengths[phase_num][f'{name} - {cs}'].add(strengths[cs])
 
-    return group_strengths
+    return group_strengths, phase
 
 def run_group_experiments(g : Group, experiment : list[Phase], num_trials : int) -> list[list[Strengths]]:
     results = []

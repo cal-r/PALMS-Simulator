@@ -3,7 +3,6 @@ import random
 import re
 import sys
 from collections import defaultdict
-from matplotlib.ticker import StrMethodFormatter, MaxNLocator
 from Experiment import run_stuff
 from Group import Group
 from Strengths import Strengths, History

@@ -305,16 +305,18 @@ class PavlovianApp(QDialog):
             columnCount -= 1
 
         strengths = [History.emptydict() for _ in range(columnCount)]
+        phases = dict()
         for row in range(rowCount):
             name = self.tableWidget.verticalHeaderItem(row).text()
             phase_strs = [self.tableWidget.getText(row, column) for column in range(columnCount)]
             if not any(phase_strs):
                 continue
 
-            local_strengths = run_stuff(name, phase_strs, args)
+            local_strengths, local_phases = run_stuff(name, phase_strs, args)
             strengths = [a | b for a, b in zip(strengths, local_strengths)]
+            phases[name] = local_phases
 
-        plot_graphs(strengths)
+        plot_graphs(strengths, phases = phases)
 
         return strengths
 
