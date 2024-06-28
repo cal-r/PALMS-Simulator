@@ -3,10 +3,10 @@ import random
 import re
 import sys
 from collections import defaultdict
-from matplotlib.ticker import StrMethodFormatter, MaxNLocator
-from RW_group import Group
-from RW_strengths import Strengths, History
-from RW_plots import plot_graphs
+from Experiment import run_all_phases
+from Group import Group
+from Strengths import Strengths, History
+from Plots import show_plots, save_plots
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -76,126 +76,47 @@ def parse_args() -> argparse.Namespace:
 
     return args
 
-class Phase:
-    # elems contains a list of ([CS], US) of an experiment.
-    elems : list[tuple[str, str]]
-
-    # Whether this phase should be randomised.
-    rand : bool
-
-    # The lamda for this phase.
-    lamda : None | float
-
-    # String description of this phase.
-    phase_str : str
-
-    # Return the set of single (one-character) CS.
-    def cs(self):
-        return set.union(*[set(x[0]) for x in self.elems])
-
-    def __init__(self, phase_str : str):
-        self.phase_str = phase_str
-        self.rand = False
-        self.lamda = None
-        self.elems = []
-
-        for part in phase_str.strip().split('/'):
-            if part == 'rand':
-                self.rand = True
-            elif (match := re.fullmatch(r'lamb?da *= *([0-9]*(?:\.[0-9]*)?)', part)) is not None:
-                self.lamda = float(match.group(1))
-            elif (match := re.fullmatch(r'([0-9]*)([A-Z]+)([+-]?)', part)) is not None:
-                num, cs, sign = match.groups()
-                self.elems += int(num or '1') * [(cs, sign or '+')]
-            else:
-                raise ValueError(f'Part not understood: {part}')
-
-def run_group_experiments(g : Group, experiment : list[Phase], num_trials : int) -> list[list[Strengths]]:
-    results = []
-
-    for trial, phase in enumerate(experiment):
-        if not phase.rand:
-            strength_hist = g.runPhase(phase.elems, phase.lamda)
-            results.append(strength_hist)
-        else:
-            initial_strengths = g.s.copy()
-            final_strengths = []
-            hist = []
-
-            for trial in range(num_trials):
-                random.shuffle(phase.elems)
-
-                g.s = initial_strengths.copy()
-                hist.append(g.runPhase(phase.elems, phase.lamda))
-                final_strengths.append(g.s.copy())
-
-            results.append([
-                Strengths.avg([h[x] for h in hist if x < len(h)])
-                for x in range(max(len(h) for h in hist))
-            ])
-
-            g.s = Strengths.avg(final_strengths)
-
-    return results
-
 def main():
     args = parse_args()
 
-    groups_strengths = []
+    groups_strengths = None
 
     phases: dict[str, list[Phase]] = dict()
     for e, experiment in enumerate(args.experiment_file.readlines()):
         name, *phase_strs = experiment.strip().split('|')
         name = name.strip()
 
-        print(name)
+        if groups_strengths is None:
+            groups_strengths = [History.emptydict() for _ in phase_strs]
 
         if args.plot_experiments is not None and name not in args.plot_experiments:
             continue
 
-        if name in phases:
-            raise NameError(f'Repeated phase name {name}')
+        local_strengths, local_phases = run_all_phases(name, phase_strs, args)
+        groups_strengths = [a | b for a, b in zip(groups_strengths, local_strengths)]
+        phases[name] = local_phases
 
-        phases[name] = [Phase(phase_str) for phase_str in phase_strs]
+    assert(groups_strengths is not None)
 
-        cs = set.union(*[x.cs() for x in phases[name]])
-        g = Group(
-            name = name,
-            alphas = args.alphas,
-            default_alpha = args.alpha,
-            betan = args.beta_neg,
-            betap = args.beta,
-            lamda = args.lamda,
-            gamma = args.gamma,
-            thetaE = args.thetaE,
-            thetaI = args.thetaI,
-            cs = cs,
-            use_configurals = args.use_configurals,
-            adaptive_type = args.adaptive_type,
-            window_size = args.window_size,
-            xi_hall = args.xi_hall,
+    if args.savefig is None:
+        show_plots(
+            groups_strengths,
+            phases = phases,
+            plot_phase = args.plot_phase,
+            plot_alpha = args.plot_alpha,
+            plot_macknhall = args.plot_macknhall,
         )
-
-        for phase_num, strength_hist in enumerate(run_group_experiments(g, phases[name], args.num_trials)):
-            while len(groups_strengths) <= phase_num:
-                groups_strengths.append(defaultdict(lambda: History()))
-
-            for strengths in strength_hist:
-                for cs in strengths.ordered_cs():
-                    if cs not in (args.plot_stimuli or [cs]):
-                        continue
-
-                    groups_strengths[phase_num][f'{name} - {cs}'].add(strengths[cs])
-
-    plot_graphs(
-        groups_strengths,
-        phases = phases,
-        filename = args.savefig,
-        plot_phase = args.plot_phase,
-        plot_alpha = args.plot_alpha,
-        plot_macknhall = args.plot_macknhall,
-        title_suffix = args.title_suffix
-    )
+        input('Press any key to continue...')
+    else:
+        save_plots(
+            groups_strengths,
+            phases = phases,
+            filename = args.savefig,
+            plot_phase = args.plot_phase,
+            plot_alpha = args.plot_alpha,
+            plot_macknhall = args.plot_macknhall,
+            title_suffix = args.title_suffix
+        )
 
 if __name__ == '__main__':
     main()

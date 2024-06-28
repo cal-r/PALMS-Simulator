@@ -1,6 +1,6 @@
 import math
 from itertools import combinations
-from RW_strengths import Strengths, History, Individual
+from Strengths import Strengths, History, Individual
 
 def sigmoid(x):
   return 1 / (1 + math.exp(-x))

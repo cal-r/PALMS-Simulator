@@ -1,10 +1,15 @@
 import re
 import seaborn
+import matplotlib
+matplotlib.use('QtAgg')
+
 from matplotlib import pyplot
-from RW_strengths import History
+from Strengths import History
 from matplotlib.ticker import MaxNLocator
 
-def titleify(filename, phases, phase_num, suffix) -> str:
+from Experiment import Phase
+
+def titleify(filename: str, phases: dict[str, list[Phase]], phase_num: int, suffix: str) -> str:
     titles = []
 
     if filename is not None:
@@ -20,12 +25,12 @@ def titleify(filename, phases, phase_num, suffix) -> str:
     val_lengths = [max(len(v[x].phase_str) for v in phases.values()) for x in range(q)]
     for k, v in phases.items():
         group_str = [k.rjust(title_length)]
-        for e, (g, v) in enumerate(zip(v, val_lengths), start = 1):
-            phase_str = g.phase_str.rjust(v, '-')
+        for e, (g, ln) in enumerate(zip(v, val_lengths), start = 1):
+            phase_str = g.phase_str
             if e == phase_num:
                 phase_str = fr'$\mathbf{{{phase_str}}}$'
-            else:
-                phase_str = fr'${phase_str}$'
+
+            phase_str = (ln - len(g.phase_str)) * ' ' + phase_str
 
             group_str.append(phase_str)
 
@@ -33,17 +38,13 @@ def titleify(filename, phases, phase_num, suffix) -> str:
 
     return '\n'.join(titles)
 
-def plot_graphs(data: list[dict[str, History]], *, phases = None, filename = None, plot_phase = None, plot_alpha = False, plot_macknhall = False, title_suffix = None):
+def generate_figures(data: list[dict[str, History]], *, phases: None | dict[str, list[Phase]] = None, filename = None, plot_phase = None, plot_alpha = False, plot_macknhall = False, title_suffix = None) -> list[pyplot.Figure]:
     seaborn.set()
 
     if plot_phase is not None:
         data = [data[plot_phase - 1]]
 
-    if filename is None:
-        pyplot.ion()
-    else:
-        filename = filename.removesuffix('.png')
-
+    figures = []
     for phase_num, experiments in enumerate(data, start = 1):
         if not plot_alpha and not plot_macknhall:
             fig, axes = pyplot.subplots(1, 1, figsize = (8, 6))
@@ -81,16 +82,45 @@ def plot_graphs(data: list[dict[str, History]], *, phases = None, filename = Non
             axes[1].yaxis.set_label_position('right')
             axes[1].legend(fontsize = 'small')
 
-        fig.suptitle(titleify(filename, phases, phase_num, title_suffix), fontdict = {'family': 'monospace'}, fontsize = 12)
-        fig.tight_layout()
+        if phases is not None:
+            fig.suptitle(titleify(filename, phases, phase_num, title_suffix), fontdict = {'family': 'monospace'}, fontsize = 12)
 
         if len(axes) > 1:
             fig.subplots_adjust(top = .85)
 
-        if filename is not None:
-            pyplot.savefig(f'{filename}_{phase_num}.png', dpi = 150, bbox_inches = 'tight')
-        else:
-            pyplot.show()
+        fig.tight_layout()
+        figures.append(fig)
 
-    if filename is None:
-        input('Press any key to continue...')
+    return figures
+
+def show_plots(data: list[dict[str, History]], *, phases: None | dict[str, list[Phase]] = None, plot_phase = None, plot_alpha = False, plot_macknhall = False):
+    pyplot.ion()
+
+    figures = generate_figures(
+        data = data,
+        phases = phases,
+        plot_phase = plot_phase,
+        plot_alpha = plot_alpha,
+        plot_macknhall = plot_macknhall,
+    )
+
+    for fig in figures:
+        fig.show()
+
+    pyplot.ioff()
+
+def save_plots(data: list[dict[str, History]], *, phases: None | dict[str, list[Phase]] = None, filename: str = None, plot_phase = None, plot_alpha = False, plot_macknhall = False, title_suffix = None):
+    filename = filename.removesuffix('.png')
+
+    figures = generate_figures(
+        data = data,
+        phases = phases,
+        plot_phase = plot_phase,
+        plot_alpha = plot_alpha,
+        plot_macknhall = plot_macknhall,
+        filename = filename,
+        title_suffix = title_suffix,
+    )
+
+    for phase_num, fig in enumerate(figures, start = 1):
+        fig.savefig(f'{filename}_{phase_num}.png', dpi = 150, bbox_inches = 'tight')

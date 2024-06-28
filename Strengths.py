@@ -1,5 +1,5 @@
 from __future__ import annotations
-from collections import deque
+from collections import deque, defaultdict
 from functools import reduce
 from itertools import combinations
 
@@ -81,6 +81,10 @@ class History:
 
     def __getattr__(self, key):
         return [getattr(p, key) for p in self.hist]
+
+    @classmethod
+    def emptydict(cls) -> dict[str, History]:
+        return defaultdict(lambda: History())
 
 class Strengths:
     cs : set[str]
