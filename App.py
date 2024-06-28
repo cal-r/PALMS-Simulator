@@ -1,6 +1,7 @@
 import sys
 from collections import defaultdict
 from PyQt6.QtCore import QTimer, Qt
+from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import *
 from Experiment import RWArgs, create_group_and_phase, run_group_experiments, group_results
 from Plots import plot_graphs
@@ -154,7 +155,7 @@ class PavlovianApp(QDialog):
         self.plotBox = FigureCanvasQTAgg()
 
         mainLayout = QGridLayout()
-        mainLayout.addWidget(self.tableWidget, 0, 0, 1, 2)
+        mainLayout.addWidget(self.tableWidget, 0, 0, 1, 6)
         mainLayout.addWidget(self.parametersGroupBox, 1, 0, 1, 1)
         mainLayout.addWidget(self.plotGroupBox, 1, 1, 1, 4)
         mainLayout.addWidget(self.adaptiveTypeGroupBox, 1, 5, 1, 1)
@@ -177,8 +178,8 @@ class PavlovianApp(QDialog):
         self.adaptivetypeComboBox.addItems(self.adaptive_types)
         self.adaptivetypeComboBox.activated.connect(self.changeAdaptiveType)
 
-        self.plotAlphaCheckbox = QCheckBox('Plot Alpha')
-        self.plotMnHCheckbox = QCheckBox('Plot MackNHall')
+        self.plotAlphaCheckbox = QCheckBox('Plot α')
+        self.plotMnHCheckbox = QCheckBox("Mack'n'Hall")
         
         self.plotTickBoxesLayout = QHBoxLayout()
         self.plotTickBoxesLayout.addWidget(self.plotAlphaCheckbox)
@@ -217,45 +218,39 @@ class PavlovianApp(QDialog):
         }
 
         for key in ['alpha', 'lamda', 'beta', 'betan', 'gamma', 'thetaE', 'thetaI', 'window_size']:
-            widget = getattr(self, f'{key}_box')
+            widget = getattr(self, f'{key}').box
             widget.setDisabled(True)
 
         for key in widgets_to_enable[self.current_adaptive_type]:
-            widget = getattr(self, f'{key}_box')
+            widget = getattr(self, f'{key}').box
             widget.setDisabled(False)
 
     def createParametersGroupBox(self):
         self.parametersGroupBox = QGroupBox("Parameters")
 
-        params = QFormLayout()
-        self.alpha_Label = QLabel("Initial Alpha")
-        self.alpha_box = QLineEdit()
-        self.lamda_Label = QLabel("Lambda")
-        self.lamda_box = QLineEdit()
-        self.beta_Label = QLabel("Beta")
-        self.beta_box = QLineEdit()
-        self.betan_Label = QLabel("Inhibitory Beta")
-        self.betan_box = QLineEdit()
-        self.gamma_Label = QLabel("Gamma")
-        self.gamma_box = QLineEdit()
-        self.thetaE_Label = QLabel("Theta E")
-        self.thetaE_box = QLineEdit()
-        self.thetaI_Label = QLabel("Theta I")
-        self.thetaI_box = QLineEdit()
-        self.window_size_Label = QLabel("Window Size")
-        self.window_size_box = QLineEdit()
-        self.num_trials_Label = QLabel("Number Trials")
-        self.num_trials_box = QLineEdit()
+        class DualLabel:
+            def __init__(self, text, layout, font = None):
+                self.label = QLabel(text)
+                self.box = QLineEdit()
 
-        params.addRow(self.alpha_Label, self.alpha_box)
-        params.addRow(self.lamda_Label, self.lamda_box)
-        params.addRow(self.beta_Label, self.beta_box)
-        params.addRow(self.betan_Label, self.betan_box)
-        params.addRow(self.gamma_Label, self.gamma_box)
-        params.addRow(self.thetaE_Label, self.thetaE_box)
-        params.addRow(self.thetaI_Label, self.thetaI_box)
-        params.addRow(self.window_size_Label, self.window_size_box)
-        params.addRow(self.num_trials_Label, self.num_trials_box)
+                if font is not None:
+                    self.label.setFont(QFont(font))
+
+                layout.addRow(self.label, self.box)
+
+        params = QFormLayout()
+        self.alpha = DualLabel("α ", params, 'Monospace')
+        self.lamda = DualLabel("λ ", params, 'Monospace')
+        self.beta = DualLabel("β⁺", params, 'Monospace')
+        self.betan = DualLabel("β⁻", params, 'Monospace')
+        self.gamma = DualLabel("γ ", params, 'Monospace')
+        self.thetaE = DualLabel("θᴱ", params, 'Monospace')
+        self.thetaI = DualLabel("θᴵ", params, 'Monospace')
+        self.window_size = DualLabel("Window Size", params)
+        self.num_trials = DualLabel("Number Trials", params)
+
+        params.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
+        params.setHorizontalSpacing(10)
 
         self.parametersGroupBox.setLayout(params)
 
@@ -273,7 +268,7 @@ class PavlovianApp(QDialog):
         }
 
         for key, value in defaults.items():
-            widget = getattr(self, f'{key}_box')
+            widget = getattr(self, f'{key}').box
             widget.setText(value)
 
     def plotExperiment(self):
@@ -282,17 +277,17 @@ class PavlovianApp(QDialog):
         args = RWArgs(
             adaptive_type = self.current_adaptive_type,
 
-            alphas = defaultdict(lambda: float(self.alpha_box.text())),
-            alpha = float(self.alpha_box.text()),
-            beta = float(self.beta_box.text()),
-            beta_neg = float(self.betan_box.text()),
-            lamda = float(self.lamda_box.text()),
-            gamma = float(self.gamma_box.text()),
-            thetaE = float(self.thetaE_box.text()),
-            thetaI = float(self.thetaI_box.text()),
+            alphas = defaultdict(lambda: float(self.alpha.box.text())),
+            alpha = float(self.alpha.box.text()),
+            beta = float(self.beta.box.text()),
+            beta_neg = float(self.betan.box.text()),
+            lamda = float(self.lamda.box.text()),
+            gamma = float(self.gamma.box.text()),
+            thetaE = float(self.thetaE.box.text()),
+            thetaI = float(self.thetaI.box.text()),
 
-            window_size = int(self.window_size_box.text()),
-            num_trials = int(self.num_trials_box.text()),
+            window_size = int(self.window_size.box.text()),
+            num_trials = int(self.num_trials.box.text()),
 
             plot_alpha = self.plotAlphaCheckbox.checkState() == Qt.CheckState.Checked,
             plot_macknhall = self.plotMnHCheckbox.checkState() == Qt.CheckState.Checked,
