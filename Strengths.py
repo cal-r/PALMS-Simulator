@@ -83,7 +83,7 @@ class History:
         return [getattr(p, key) for p in self.hist]
 
     @classmethod
-    def emptydict(cls):
+    def emptydict(cls) -> dict[str, History]:
         return defaultdict(lambda: History())
 
 class Strengths:

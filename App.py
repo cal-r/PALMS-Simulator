@@ -2,9 +2,11 @@ import sys
 from collections import defaultdict
 from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtWidgets import *
-from Experiment import RWArgs, run_stuff
+from Experiment import RWArgs, create_group_and_phase, run_group_experiments, group_results
 from Plots import plot_graphs
 from Strengths import History
+
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 
 class CoolTable(QTableWidget):
     def __init__(self, rows: int, cols: int):
@@ -149,10 +151,14 @@ class PavlovianApp(QDialog):
         disableWidgetsCheckBox.toggled.connect(self.adaptiveTypeGroupBox.setDisabled)
         disableWidgetsCheckBox.toggled.connect(self.parametersGroupBox.setDisabled)
 
+        self.plotGroupBox = QGroupBox('Plots')
+        self.plotBox = FigureCanvasQTAgg()
+
         mainLayout = QGridLayout()
         mainLayout.addWidget(self.tableWidget, 0, 0, 1, 2)
         mainLayout.addWidget(self.parametersGroupBox, 1, 0, 1, 1)
-        mainLayout.addWidget(self.adaptiveTypeGroupBox, 1, 1, 1, 1)
+        mainLayout.addWidget(self.plotGroupBox, 1, 1, 1, 4)
+        mainLayout.addWidget(self.adaptiveTypeGroupBox, 1, 5, 1, 1)
         self.setLayout(mainLayout)
 
         self.setWindowTitle("🐕🔔")
@@ -279,7 +285,7 @@ class PavlovianApp(QDialog):
     def plotExperiment(self):
         self.current_adaptive_type = self.adaptivetypeComboBox.currentText()
         self.plot_experiment_type = self.plotexperimentComboBox.currentText()
-        
+
         args = RWArgs(
             adaptive_type = self.current_adaptive_type,
 
@@ -301,9 +307,10 @@ class PavlovianApp(QDialog):
 
         rowCount = self.tableWidget.rowCount()
         columnCount = self.tableWidget.columnCount()
-        while not any(self.tableWidget.getText(row, columnCount - 1) for row in range(rowCount)):
+        while columnCount > 0 and not any(self.tableWidget.getText(row, columnCount - 1) for row in range(rowCount)):
             columnCount -= 1
 
+        print(columnCount)
         strengths = [History.emptydict() for _ in range(columnCount)]
         phases = dict()
         for row in range(rowCount):
@@ -312,7 +319,10 @@ class PavlovianApp(QDialog):
             if not any(phase_strs):
                 continue
 
-            local_strengths, local_phases = run_stuff(name, phase_strs, args)
+            group, local_phases = create_group_and_phase(name, phase_strs, args)
+            results = run_group_experiments(group, local_phases, args.num_trials)
+            local_strengths = group_results(results, name, args)
+
             strengths = [a | b for a, b in zip(strengths, local_strengths)]
             phases[name] = local_phases
 

@@ -67,10 +67,10 @@ class RWArgs:
     title_suffix: None | str = None
     savefig: None | str = None
 
-def run_stuff(name: str, phase_strs: list[str], args) -> tuple[list[dict[str, History]], list[Phase]]:
-    phase = [Phase(phase_str) for phase_str in phase_strs]
+def create_group_and_phase(name: str, phase_strs: list[str], args) -> tuple[Group, list[Phase]]:
+    phases = [Phase(phase_str) for phase_str in phase_strs]
 
-    stimuli = set.union(*[x.cs() for x in phase])
+    stimuli = set.union(*[x.cs() for x in phases])
     g = Group(
         name = name,
         alphas = args.alphas,
@@ -88,16 +88,7 @@ def run_stuff(name: str, phase_strs: list[str], args) -> tuple[list[dict[str, Hi
         xi_hall = args.xi_hall,
     )
 
-    results = run_group_experiments(g, phase, args.num_trials)
-
-    group_strengths = [History.emptydict() for _ in results]
-    for phase_num, strength_hist in enumerate(results):
-        for strengths in strength_hist:
-            for cs in strengths.ordered_cs():
-                if args.plot_stimuli is None or cs in args.plot_stimuli:
-                    group_strengths[phase_num][f'{name} - {cs}'].add(strengths[cs])
-
-    return group_strengths, phase
+    return g, phases
 
 def run_group_experiments(g : Group, experiment : list[Phase], num_trials : int) -> list[list[Strengths]]:
     results = []
@@ -126,3 +117,13 @@ def run_group_experiments(g : Group, experiment : list[Phase], num_trials : int)
             g.s = Strengths.avg(final_strengths)
 
     return results
+
+def group_results(results: list[list[Strengths]], name: str, args: RWArgs) -> list[dict[str, History]]:
+    group_strengths = [History.emptydict() for _ in results]
+    for phase_num, strength_hist in enumerate(results):
+        for strengths in strength_hist:
+            for cs in strengths.ordered_cs():
+                if args.plot_stimuli is None or cs in args.plot_stimuli:
+                    group_strengths[phase_num][f'{name} - {cs}'].add(strengths[cs])
+
+    return group_strengths
