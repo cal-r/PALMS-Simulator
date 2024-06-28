@@ -2,6 +2,9 @@ import math
 from itertools import combinations
 from RW_strengths import Strengths, History, Individual
 
+def sigmoid(x):
+  return 1 / (1 + math.exp(-x))
+
 class Group:
     name : str
 
@@ -46,7 +49,7 @@ class Group:
         self.adaptive_type = adaptive_type
         self.window_size = window_size
 
-        self.prev_lamda = 0
+        self.prev_lamda = lamda
 
         # For simplicity, if we use_configurals and some compound stimuli don't
         # have a corresponding \alpha, then we calculate it as the product
@@ -72,7 +75,7 @@ class Group:
         '''
 
     def get_alpha_mack(self, cs : str, sigma : float) -> float:
-        return 1/2 * (1 + (2 * self.s[cs].assoc - sigma))
+        return 1/2 * (1 + 2*self.s[cs].assoc - sigma)
 
     def get_alpha_hall(self, cs : str, sigma : float, lamda : float) -> float:
         assert self.xi_hall is not None
@@ -156,13 +159,14 @@ class Group:
             case 'mack':
                 self.s[cs].alpha_mack = self.get_alpha_mack(cs, sigma)
                 self.s[cs].alpha = self.s[cs].alpha_mack
-                self.s[cs].assoc += self.s[cs].alpha * delta_v_factor
+                #self.s[cs].assoc = self.s[cs].assoc + self.s[cs].alpha * delta_v_factor
+                self.s[cs].assoc = self.s[cs].assoc * delta_v_factor + delta_v_factor/2*beta
 
             case 'hall':
                 self.s[cs].alpha_hall = self.get_alpha_hall(cs, sigma, self.prev_lamda)
                 self.s[cs].alpha = self.s[cs].alpha_hall
                 delta_v_factor = 0.5 * abs(self.prev_lamda)
-                self.s[cs].assoc += self.s[cs].alpha * delta_v_factor
+                self.s[cs].assoc += self.s[cs].alpha * beta * (lamda - sigma)
 
             case 'macknhall':
                 self.s[cs].alpha_mack = self.get_alpha_mack(cs, sigma)
@@ -174,6 +178,9 @@ class Group:
                 # Ask Esther whether this is lamda^{n + 1) or lamda^n.
                 rho = lamda - (sigmaE - sigmaI)
 
+                delta_ma_hall = self.s[cs].delta_ma_hall or 0
+                self.gamma = 1 - math.exp(-delta_ma_hall**2)
+
                 if rho >= 0:
                     self.s[cs].Ve += self.betap * self.s[cs].alpha * lamda
                 else:
@@ -183,6 +190,8 @@ class Group:
                 self.s[cs].assoc = self.s[cs].Ve - self.s[cs].Vi
 
                 #print(f'{cs}:\t𝛒 = {rho: .3f}; Ve = {self.s[cs].Ve:.3f}; Vi = {self.s[cs].Vi:.3f}')
+
+                
 
 
             case 'lepelley':
@@ -230,13 +239,13 @@ class Group:
                 NVi = 0.
                 if rho >= 0:
                     DVe = self.s[cs].alpha_hall * self.betap * (1 - self.s[cs].Ve + self.s[cs].Vi) * abs(rho)
-                    NVe = self.s[cs].alpha_mack * self.s[cs].Ve + DVe
+                    NVe = self.s[cs].Ve + DVe
                     #NVe = self.s[cs].alpha_mack * self.s[cs].Ve + self.betap * self.s[cs].alpha_hall * lamda
                     NVi = self.s[cs].Vi
                 else:
                     NVe = self.s[cs].Ve
                     DvI = self.s[cs].alpha_hall * self.betan * (1 - self.s[cs].Vi + self.s[cs].Ve) * abs(rho)
-                    NVi = self.s[cs].alpha_mack * self.s[cs].Vi + DvI
+                    NVi = self.s[cs].Vi + DvI
                     #NVi = self.s[cs].alpha_mack * self.s[cs].Vi + self.betan * self.s[cs].alpha_hall * abs(rho)
 
                 VXe = sigmaE - self.s[cs].Ve
@@ -256,9 +265,9 @@ class Group:
 
 
 
-                self.s[cs].assoc = self.s[cs].Ve - self.s[cs].Vi
+                self.s[cs].assoc = self.s[cs].alpha_mack * (self.s[cs].Ve - self.s[cs].Vi)
 
-                #print(f'{cs}:\t𝛒 = {rho: .3f}; Ve = {self.s[cs].Ve:.3f}; Vi = {self.s[cs].Vi:.3f}, ; VNet = {self.s[cs].assoc:.3f}')
+                print(f'{cs}:\t𝛒 = {rho: .3f}; Ve = {self.s[cs].Ve:.3f}; Vi = {self.s[cs].Vi:.3f}, ; VNet = {self.s[cs].assoc:.3f}, ; deltaA = {-self.thetaE * (abs(lamda - self.s[cs].Ve + self.s[cs].Vi) - abs(lamda - VXe + VXi))}')
 
             case _:
                 raise NameError(f'Unknown adaptive type {self.adaptive_type}!')
