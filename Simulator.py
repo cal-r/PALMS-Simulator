@@ -106,6 +106,7 @@ def main():
             plot_alpha = args.plot_alpha,
             plot_macknhall = args.plot_macknhall,
         )
+        input('Press any key to continue...')
     else:
         save_plots(
             groups_strengths,

@@ -3,11 +3,12 @@ from collections import defaultdict
 from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import *
-from Experiment import RWArgs, create_group_and_phase, run_group_experiments, group_results
-from Plots import plot_graphs
+from Experiment import RWArgs, create_group_and_phase, run_group_experiments, group_results, Phase
+from Plots import show_plots, generate_figures
 from Strengths import History
 
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+from matplotlib import pyplot
 
 class CoolTable(QTableWidget):
     def __init__(self, rows: int, cols: int):
@@ -127,6 +128,9 @@ class PavlovianApp(QDialog):
 
         self.originalPalette = QApplication.palette()
 
+        self.phase = 1
+        self.numPhases = 0
+        self.figures = []
         self.initUI()
 
         QTimer.singleShot(100, self.updateWidgets)
@@ -151,13 +155,34 @@ class PavlovianApp(QDialog):
         disableWidgetsCheckBox.toggled.connect(self.adaptiveTypeGroupBox.setDisabled)
         disableWidgetsCheckBox.toggled.connect(self.parametersGroupBox.setDisabled)
 
-        self.plotGroupBox = QGroupBox('Plots')
-        self.plotBox = FigureCanvasQTAgg()
+        self.plotBox = QGroupBox('Plot')
+        self.plotBoxLayout = QVBoxLayout()
+
+        self.plotCanvas = FigureCanvasQTAgg()
+
+        self.phaseBox = QGroupBox('Phase Selector')
+
+        self.phaseBoxLayout = QGridLayout()
+        self.leftPhaseButton = QPushButton('<')
+        self.leftPhaseButton.clicked.connect(self.prevPhase)
+
+        self.phaseInfo = QLabel('')
+        self.rightPhaseButton = QPushButton('>')
+        self.rightPhaseButton.clicked.connect(self.nextPhase)
+
+        self.phaseBoxLayout.addWidget(self.leftPhaseButton, 0, 0, 1, 1)
+        self.phaseBoxLayout.addWidget(self.phaseInfo, 0, 1, 1, 4, Qt.AlignmentFlag.AlignCenter)
+        self.phaseBoxLayout.addWidget(self.rightPhaseButton, 0, 6, 1, 1)
+        self.phaseBox.setLayout(self.phaseBoxLayout)
+
+        self.plotBoxLayout.addWidget(self.plotCanvas, stretch = 1)
+        self.plotBoxLayout.addWidget(self.phaseBox)
+        self.plotBox.setLayout(self.plotBoxLayout)
 
         mainLayout = QGridLayout()
         mainLayout.addWidget(self.tableWidget, 0, 0, 1, 6)
         mainLayout.addWidget(self.parametersGroupBox, 1, 0, 1, 1)
-        mainLayout.addWidget(self.plotGroupBox, 1, 1, 1, 4)
+        mainLayout.addWidget(self.plotBox, 1, 1, 1, 4)
         mainLayout.addWidget(self.adaptiveTypeGroupBox, 1, 5, 1, 1)
         self.setLayout(mainLayout)
 
@@ -190,6 +215,9 @@ class PavlovianApp(QDialog):
         self.setDefaultParamsButton = QPushButton("Restore Default Parameters")
         self.setDefaultParamsButton.clicked.connect(self.restoreDefaultParameters)
 
+        self.refreshButton = QPushButton("Refresh")
+        self.refreshButton.clicked.connect(self.refreshExperiment)
+
         self.printButton = QPushButton("Plot")
         self.printButton.clicked.connect(self.plotExperiment)
 
@@ -198,6 +226,7 @@ class PavlovianApp(QDialog):
         layout.addWidget(self.adaptivetypeComboBox)
         layout.addWidget(self.plotTickBoxes)
         layout.addWidget(self.setDefaultParamsButton)
+        layout.addWidget(self.refreshButton)
         layout.addWidget(self.printButton)
         layout.addStretch(1)
         self.adaptiveTypeGroupBox.setLayout(layout)
@@ -229,9 +258,10 @@ class PavlovianApp(QDialog):
         self.parametersGroupBox = QGroupBox("Parameters")
 
         class DualLabel:
-            def __init__(self, text, layout, font = None):
+            def __init__(self, text, layout, parent, font = None):
                 self.label = QLabel(text)
                 self.box = QLineEdit()
+                self.box.returnPressed.connect(parent.refreshExperiment)
 
                 if font is not None:
                     self.label.setFont(QFont(font))
@@ -239,15 +269,15 @@ class PavlovianApp(QDialog):
                 layout.addRow(self.label, self.box)
 
         params = QFormLayout()
-        self.alpha = DualLabel("α ", params, 'Monospace')
-        self.lamda = DualLabel("λ ", params, 'Monospace')
-        self.beta = DualLabel("β⁺", params, 'Monospace')
-        self.betan = DualLabel("β⁻", params, 'Monospace')
-        self.gamma = DualLabel("γ ", params, 'Monospace')
-        self.thetaE = DualLabel("θᴱ", params, 'Monospace')
-        self.thetaI = DualLabel("θᴵ", params, 'Monospace')
-        self.window_size = DualLabel("Window Size", params)
-        self.num_trials = DualLabel("Number Trials", params)
+        self.alpha = DualLabel("α ", params, self, 'Monospace')
+        self.lamda = DualLabel("λ ", params, self, 'Monospace')
+        self.beta = DualLabel("β⁺", params, self, 'Monospace')
+        self.betan = DualLabel("β⁻", params, self, 'Monospace')
+        self.gamma = DualLabel("γ ", params, self, 'Monospace')
+        self.thetaE = DualLabel("θᴱ", params, self, 'Monospace')
+        self.thetaI = DualLabel("θᴵ", params, self, 'Monospace')
+        self.window_size = DualLabel("Window Size", params, self)
+        self.num_trials = DualLabel("Number Trials", params, self)
 
         params.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
 
@@ -270,7 +300,7 @@ class PavlovianApp(QDialog):
             widget = getattr(self, f'{key}').box
             widget.setText(value)
 
-    def plotExperiment(self):
+    def generateResults(self) -> tuple[dict[str, History], dict[str, list[Phase]], RWArgs]:
         self.current_adaptive_type = self.adaptivetypeComboBox.currentText()
 
         args = RWArgs(
@@ -315,7 +345,35 @@ class PavlovianApp(QDialog):
             strengths = [a | b for a, b in zip(strengths, local_strengths)]
             phases[name] = local_phases
 
-        plot_graphs(
+        return strengths, phases, args
+
+    def refreshExperiment(self):
+        for fig in self.figures:
+            pyplot.close(fig)
+
+        strengths, phases, args = self.generateResults()
+        self.numPhases = max(len(v) for v in phases.values())
+        self.phase = min(self.phase, self.numPhases)
+
+        self.figures = generate_figures(
+            strengths,
+            phases = phases,
+            plot_alpha = args.plot_alpha,
+            plot_macknhall = args.plot_macknhall,
+        )
+        self.refreshFigure()
+
+    def refreshFigure(self):
+        # pyplot.ion()
+        self.plotCanvas.setMinimumSize(800, 400)
+        self.plotCanvas.figure = self.figures[self.phase - 1]
+        self.plotCanvas.draw()
+
+        self.phaseInfo.setText(f'Phase {self.phase}/{self.numPhases}')
+
+    def plotExperiment(self):
+        strengths, phases, args = self.generateResults()
+        show_plots(
             strengths,
             phases = phases,
             plot_alpha = args.plot_alpha,
@@ -329,6 +387,20 @@ class PavlovianApp(QDialog):
         self.tableWidget.repaint()
         self.update()
         self.repaint()
+
+    def prevPhase(self):
+        if self.phase == 1:
+            return
+
+        self.phase -= 1
+        self.refreshFigure()
+    
+    def nextPhase(self):
+        if self.phase >= self.numPhases:
+            return
+
+        self.phase += 1 
+        self.refreshFigure()
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

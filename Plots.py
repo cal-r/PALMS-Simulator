@@ -107,7 +107,7 @@ def show_plots(data: list[dict[str, History]], *, phases: None | dict[str, list[
     for fig in figures:
         fig.show()
 
-    input('Press any key to continue...')
+    pyplot.ioff()
 
 def save_plots(data: list[dict[str, History]], *, phases: None | dict[str, list[Phase]] = None, filename: str = None, plot_phase = None, plot_alpha = False, plot_macknhall = False, title_suffix = None):
     filename = filename.removesuffix('.png')
