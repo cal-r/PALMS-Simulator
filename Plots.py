@@ -98,7 +98,8 @@ def plot_graphs(data: list[dict[str, History]], *, phases: None | dict[str, list
         if filename is not None:
             pyplot.savefig(f'{filename}_{phase_num}.png', dpi = 150, bbox_inches = 'tight')
         else:
+            pyplot.show()
             if fig.canvas.manager is not None:
                 fig.canvas.manager.window.activateWindow()
                 fig.canvas.manager.window.raise_()
-            pyplot.show()
+    input('Press any key to continue...')

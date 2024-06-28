@@ -127,3 +127,10 @@ def group_results(results: list[list[Strengths]], name: str, args: RWArgs) -> li
                     group_strengths[phase_num][f'{name} - {cs}'].add(strengths[cs])
 
     return group_strengths
+
+def run_all_phases(name: str, phase_strs: list[str], args: RWArgs):
+    group, phases = create_group_and_phase(name, phase_strs, args)
+    results = run_group_experiments(group, phases, args.num_trials)
+    strengths = group_results(results, name, args)
+
+    return strengths, phases

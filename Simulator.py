@@ -3,7 +3,7 @@ import random
 import re
 import sys
 from collections import defaultdict
-from Experiment import run_stuff
+from Experiment import run_all_phases
 from Group import Group
 from Strengths import Strengths, History
 from Plots import plot_graphs
@@ -81,7 +81,7 @@ def main():
 
     groups_strengths = None
 
-    # phases: dict[str, list[Phase]] = dict()
+    phases: dict[str, list[Phase]] = dict()
     for e, experiment in enumerate(args.experiment_file.readlines()):
         name, *phase_strs = experiment.strip().split('|')
         name = name.strip()
@@ -92,11 +92,9 @@ def main():
         if args.plot_experiments is not None and name not in args.plot_experiments:
             continue
 
-        # if name in phases:
-            # raise NameError(f'Repeated phase name {name}')
-
-        local_strengths = run_stuff(name, phase_strs, args)
+        local_strengths, local_phases = run_all_phases(name, phase_strs, args)
         groups_strengths = [a | b for a, b in zip(groups_strengths, local_strengths)]
+        phases[name] = local_phases
 
     assert(groups_strengths is not None)
     plot_graphs(
