@@ -121,7 +121,6 @@ class PavlovianApp(QDialog):
         super(PavlovianApp, self).__init__(parent)
 
         self.adaptive_types = ['linear', 'exponential', 'mack', 'hall', 'macknhall', 'dualV', 'lepelley', 'dualmack', 'hybrid']
-        self.plot_experiment_types = ['plot experiments', 'plot alpha', 'plot alphas', 'plot macknhall']
         self.current_adaptive_type = None
         self.inset_text_column_index = None
 
@@ -177,10 +176,15 @@ class PavlovianApp(QDialog):
         self.adaptivetypeComboBox = QComboBox(self)
         self.adaptivetypeComboBox.addItems(self.adaptive_types)
         self.adaptivetypeComboBox.activated.connect(self.changeAdaptiveType)
+
+        self.plotAlphaCheckbox = QCheckBox('Plot Alpha')
+        self.plotMnHCheckbox = QCheckBox('Plot MackNHall')
         
-        self.plotexperimentComboBox = QComboBox(self)
-        self.plotexperimentComboBox.addItems(self.plot_experiment_types)
-        self.plotexperimentComboBox.activated.connect(self.changePlotExperimentType)
+        self.plotTickBoxesLayout = QHBoxLayout()
+        self.plotTickBoxesLayout.addWidget(self.plotAlphaCheckbox)
+        self.plotTickBoxesLayout.addWidget(self.plotMnHCheckbox)
+        self.plotTickBoxes = QGroupBox('')
+        self.plotTickBoxes.setLayout(self.plotTickBoxesLayout)
 
         self.setDefaultParamsButton = QPushButton("Restore Default Parameters")
         self.setDefaultParamsButton.clicked.connect(self.restoreDefaultParameters)
@@ -191,21 +195,11 @@ class PavlovianApp(QDialog):
         layout = QVBoxLayout()
         layout.addWidget(self.fileButton)
         layout.addWidget(self.adaptivetypeComboBox)
-        layout.addWidget(self.plotexperimentComboBox)
+        layout.addWidget(self.plotTickBoxes)
         layout.addWidget(self.setDefaultParamsButton)
         layout.addWidget(self.printButton)
         layout.addStretch(1)
         self.adaptiveTypeGroupBox.setLayout(layout)
-
-    def changePlotExperimentType(self):
-        self.plot_experiment_type = self.plotexperimentComboBox.currentText()
-
-        if self.plot_experiment_type in ['plot phase', 'plot stimuli']:
-            if self.inset_text_column_index is None:
-                self.addInsetTextColumn()
-        else:
-            if self.inset_text_column_index is not None:
-                self.removeInsetTextColumn()
 
     def changeAdaptiveType(self):
         self.current_adaptive_type = self.adaptivetypeComboBox.currentText()
@@ -284,7 +278,6 @@ class PavlovianApp(QDialog):
 
     def plotExperiment(self):
         self.current_adaptive_type = self.adaptivetypeComboBox.currentText()
-        self.plot_experiment_type = self.plotexperimentComboBox.currentText()
 
         args = RWArgs(
             adaptive_type = self.current_adaptive_type,
@@ -301,6 +294,9 @@ class PavlovianApp(QDialog):
             window_size = int(self.window_size_box.text()),
             num_trials = int(self.num_trials_box.text()),
 
+            plot_alpha = self.plotAlphaCheckbox.checkState() == Qt.CheckState.Checked,
+            plot_macknhall = self.plotMnHCheckbox.checkState() == Qt.CheckState.Checked,
+
             use_configurals = False,
             xi_hall = 0.5,
         )
@@ -310,7 +306,6 @@ class PavlovianApp(QDialog):
         while columnCount > 0 and not any(self.tableWidget.getText(row, columnCount - 1) for row in range(rowCount)):
             columnCount -= 1
 
-        print(columnCount)
         strengths = [History.emptydict() for _ in range(columnCount)]
         phases = dict()
         for row in range(rowCount):
@@ -326,7 +321,12 @@ class PavlovianApp(QDialog):
             strengths = [a | b for a, b in zip(strengths, local_strengths)]
             phases[name] = local_phases
 
-        plot_graphs(strengths, phases = phases)
+        plot_graphs(
+            strengths,
+            phases = phases,
+            plot_alpha = args.plot_alpha,
+            plot_macknhall = args.plot_macknhall,
+        )
 
         return strengths
 
