@@ -250,7 +250,6 @@ class PavlovianApp(QDialog):
         self.num_trials = DualLabel("Number Trials", params)
 
         params.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
-        params.setHorizontalSpacing(10)
 
         self.parametersGroupBox.setLayout(params)
 

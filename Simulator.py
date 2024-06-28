@@ -6,7 +6,7 @@ from collections import defaultdict
 from Experiment import run_all_phases
 from Group import Group
 from Strengths import Strengths, History
-from Plots import plot_graphs
+from Plots import show_plots, save_plots
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -97,15 +97,25 @@ def main():
         phases[name] = local_phases
 
     assert(groups_strengths is not None)
-    plot_graphs(
-        groups_strengths,
-        # phases = phases,
-        filename = args.savefig,
-        plot_phase = args.plot_phase,
-        plot_alpha = args.plot_alpha,
-        plot_macknhall = args.plot_macknhall,
-        title_suffix = args.title_suffix
-    )
+
+    if args.savefig is None:
+        show_plots(
+            groups_strengths,
+            phases = phases,
+            plot_phase = args.plot_phase,
+            plot_alpha = args.plot_alpha,
+            plot_macknhall = args.plot_macknhall,
+        )
+    else:
+        save_plots(
+            groups_strengths,
+            phases = phases,
+            filename = args.savefig,
+            plot_phase = args.plot_phase,
+            plot_alpha = args.plot_alpha,
+            plot_macknhall = args.plot_macknhall,
+            title_suffix = args.title_suffix
+        )
 
 if __name__ == '__main__':
     main()
