@@ -23,7 +23,7 @@ class Group:
     window_size : None | int
     xi_hall : None | float
 
-    def __init__(self, name : str, alphas : dict[str, float], default_alpha : float, betan : float, betap : float, lamda : float, gamma : float, thetaE : float, thetaI : float, cs : None | set[str] = None, use_configurals : bool = False, adaptive_type : None | str = None, window_size : None | int = None, xi_hall : None | float = None):
+    def __init__(self, name : str, alphas : dict[str, float], default_alpha : float, default_alpha_mack: None | float, default_alpha_hall: None | float, betan : float, betap : float, lamda : float, gamma : float, thetaE : float, thetaI : float, cs : None | set[str] = None, use_configurals : bool = False, adaptive_type : None | str = None, window_size : None | int = None, xi_hall : None | float = None):
         if cs is not None:
             alphas = {k: alphas.get(k, default_alpha) for k in cs | alphas.keys()}
 
@@ -31,7 +31,7 @@ class Group:
 
         self.s = Strengths(
             s = {
-                k: Individual(assoc = 0, alpha = alphas[k])
+                k: Individual(assoc = 0, alpha = alphas[k], alpha_mack = default_alpha_mack, alpha_hall = default_alpha_hall)
                 for k in alphas.keys()
             }
         )

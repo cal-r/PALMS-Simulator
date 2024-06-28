@@ -57,6 +57,8 @@ class RWArgs:
 
     # TODO: Change this to default_alpha or something like that
     alpha: float
+    alpha_mack: None | float = None
+    alpha_hall: None | float = None
 
     plot_phase: None | int = None
     plot_experiments: None | list[str] = None
@@ -75,6 +77,8 @@ def create_group_and_phase(name: str, phase_strs: list[str], args) -> tuple[Grou
         name = name,
         alphas = args.alphas,
         default_alpha = args.alpha,
+        default_alpha_mack = args.alpha_mack,
+        default_alpha_hall = args.alpha_hall,
         betan = args.beta_neg,
         betap = args.beta,
         lamda = args.lamda,

@@ -14,9 +14,12 @@ def parse_args() -> argparse.Namespace:
         epilog = '--alpha_[A-Z] ALPHA\tAssociative strength of CS A..Z. By default 0',
     )
 
-    parser.add_argument('--alpha', type = float, default = .5, help = 'Alpha for all other stimuli')
-    parser.add_argument("--beta", type = float, default = .4, help="Associativity of the US +.")
-    parser.add_argument("--beta-neg", type = float, default = .3, help="Associativity of the absence of US +. Equal to beta by default.")
+    parser.add_argument('--alpha', type = float, default = .1, help = 'Alpha for all other stimuli')
+    parser.add_argument('--alpha-mack', type = float, help = 'Alpha_mack for all other stimuli')
+    parser.add_argument('--alpha-hall', type = float, help = 'Alpha_hall for all other stimuli')
+
+    parser.add_argument("--beta", type = float, default = .3, help="Associativity of the US +.")
+    parser.add_argument("--beta-neg", type = float, default = .2, help="Associativity of the absence of US +. Equal to beta by default.")
     parser.add_argument("--lamda", type = float, default = 1, help="Asymptote of learning.")
     parser.add_argument("--gamma", type = float, default = .5, help = "Weighting how much you rely on past experinces on DualV adaptive type.")
 

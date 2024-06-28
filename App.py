@@ -160,7 +160,7 @@ class PavlovianApp(QDialog):
 
         self.plotCanvas = FigureCanvasQTAgg()
 
-        self.phaseBox = QGroupBox('Phase Selector')
+        self.phaseBox = QGroupBox()
 
         self.phaseBoxLayout = QGridLayout()
         self.leftPhaseButton = QPushButton('<')
@@ -192,6 +192,7 @@ class PavlovianApp(QDialog):
     def openFileDialog(self):
         file, _ = QFileDialog.getOpenFileName(self, 'Open File', './Experiments')
         self.tableWidget.loadFile([x.strip() for x in open(file)])
+        self.refreshExperiment()
 
     def createAdaptiveTypeGroupBox(self):
         self.adaptiveTypeGroupBox = QGroupBox("Adaptive Type")
@@ -254,6 +255,8 @@ class PavlovianApp(QDialog):
             widget = getattr(self, f'{key}').box
             widget.setDisabled(False)
 
+        self.refreshExperiment()
+
     def createParametersGroupBox(self):
         self.parametersGroupBox = QGroupBox("Parameters")
 
@@ -270,6 +273,8 @@ class PavlovianApp(QDialog):
 
         params = QFormLayout()
         self.alpha = DualLabel("α ", params, self, 'Monospace')
+        self.alpha_mack = DualLabel("αᴹ", params, self, 'Monospace')
+        self.alpha_hall = DualLabel("αᴴ", params, self, 'Monospace')
         self.lamda = DualLabel("λ ", params, self, 'Monospace')
         self.beta = DualLabel("β⁺", params, self, 'Monospace')
         self.betan = DualLabel("β⁻", params, self, 'Monospace')
@@ -300,6 +305,12 @@ class PavlovianApp(QDialog):
             widget = getattr(self, f'{key}').box
             widget.setText(value)
 
+    @staticmethod
+    def floatOrNone(text: str) -> None | float:
+        if text == '':
+            return None
+        return float(text)
+
     def generateResults(self) -> tuple[dict[str, History], dict[str, list[Phase]], RWArgs]:
         self.current_adaptive_type = self.adaptivetypeComboBox.currentText()
 
@@ -308,6 +319,9 @@ class PavlovianApp(QDialog):
 
             alphas = defaultdict(lambda: float(self.alpha.box.text())),
             alpha = float(self.alpha.box.text()),
+            alpha_mack = self.floatOrNone(self.alpha_mack.box.text()),
+            alpha_hall = self.floatOrNone(self.alpha_hall.box.text()),
+
             beta = float(self.beta.box.text()),
             beta_neg = float(self.betan.box.text()),
             lamda = float(self.lamda.box.text()),
