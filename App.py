@@ -368,6 +368,7 @@ class PavlovianApp(QDialog):
         strengths, phases, args = self.generateResults()
         self.numPhases = max(len(v) for v in phases.values())
         self.phase = min(self.phase, self.numPhases)
+        print(self.phase, self.numPhases)
 
         self.figures = generate_figures(
             strengths,
@@ -380,6 +381,7 @@ class PavlovianApp(QDialog):
     def refreshFigure(self):
         # pyplot.ion()
         self.plotCanvas.setMinimumSize(800, 400)
+        print(f'Phase is {self.phase} {self.numPhases}')
         self.plotCanvas.figure = self.figures[self.phase - 1]
         self.plotCanvas.draw()
 
