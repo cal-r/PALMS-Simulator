@@ -178,9 +178,6 @@ class Group:
                 # Ask Esther whether this is lamda^{n + 1) or lamda^n.
                 rho = lamda - (sigmaE - sigmaI)
 
-                delta_ma_hall = self.s[cs].delta_ma_hall or 0
-                self.gamma = 1 - math.exp(-delta_ma_hall**2)
-
                 if rho >= 0:
                     self.s[cs].Ve += self.betap * self.s[cs].alpha * lamda
                 else:
@@ -191,8 +188,19 @@ class Group:
 
                 #print(f'{cs}:\t𝛒 = {rho: .3f}; Ve = {self.s[cs].Ve:.3f}; Vi = {self.s[cs].Vi:.3f}')
 
-                
+            case 'newDualV':
+                rho = lamda - (sigmaE - sigmaI)
 
+                delta_ma_hall = self.s[cs].delta_ma_hall or 0
+                self.gamma = 1 - math.exp(-delta_ma_hall**2)
+
+                if rho >= 0:
+                    self.s[cs].Ve += self.betap * self.s[cs].alpha * lamda
+                else:
+                    self.s[cs].Vi += self.betan * self.s[cs].alpha * abs(rho)
+
+                self.s[cs].alpha = self.gamma * abs(rho) + (1 - self.gamma) * self.s[cs].alpha
+                self.s[cs].assoc = self.s[cs].Ve - self.s[cs].Vi
 
             case 'lepelley':
                 rho = lamda - (sigmaE - sigmaI)

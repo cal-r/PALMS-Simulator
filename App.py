@@ -123,7 +123,7 @@ class PavlovianApp(QDialog):
     def __init__(self, parent=None):
         super(PavlovianApp, self).__init__(parent)
 
-        self.adaptive_types = ['linear', 'exponential', 'mack', 'hall', 'macknhall', 'dualV', 'lepelley', 'dualmack', 'hybrid']
+        self.adaptive_types = ['linear', 'exponential', 'mack', 'hall', 'macknhall', 'dualV', 'newDualV', 'lepelley', 'dualmack', 'hybrid']
         self.current_adaptive_type = None
         self.inset_text_column_index = None
 
@@ -277,6 +277,7 @@ class PavlovianApp(QDialog):
             'hall': ['lamda', 'beta', 'gamma', 'thetaE', 'thetaI'],
             'macknhall': ['alpha', 'lamda', 'beta', 'gamma', 'window_size'],
             'dualV': ['alpha', 'lamda', 'beta', 'betan', 'gamma'],
+            'newDualV': ['alpha', 'lamda', 'beta', 'betan', 'gamma'],
             'lepelley': ['alpha', 'lamda', 'beta', 'betan', 'gamma', 'thetaE', 'thetaI'],
             'dualmack': ['alpha', 'lamda', 'beta', 'betan'],
             'hybrid': ['alpha', 'lamda', 'beta', 'betan', 'gamma', 'thetaE', 'thetaI'],
