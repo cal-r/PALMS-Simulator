@@ -277,7 +277,7 @@ class PavlovianApp(QDialog):
             'hall': ['lamda', 'beta', 'gamma', 'thetaE', 'thetaI'],
             'macknhall': ['alpha', 'lamda', 'beta', 'gamma', 'window_size'],
             'dualV': ['alpha', 'lamda', 'beta', 'betan', 'gamma'],
-            'newDualV': ['alpha', 'lamda', 'beta', 'betan', 'gamma'],
+            'newDualV': ['alpha', 'lamda', 'beta', 'betan', 'gamma', 'window_size'],
             'lepelley': ['alpha', 'lamda', 'beta', 'betan', 'gamma', 'thetaE', 'thetaI'],
             'dualmack': ['alpha', 'lamda', 'beta', 'betan'],
             'hybrid': ['alpha', 'lamda', 'beta', 'betan', 'gamma', 'thetaE', 'thetaI'],
@@ -412,13 +412,16 @@ class PavlovianApp(QDialog):
             plot_alpha = args.plot_alpha,
             plot_macknhall = args.plot_macknhall,
         )
+        
         self.refreshFigure()
 
     def refreshFigure(self):
         # pyplot.ion()
-        self.plotCanvas.setMinimumSize(800, 400)
+        self.plotCanvas.setMinimumSize(1100, 450)
         print(f'Phase is {self.phase} {self.numPhases}')
-        self.plotCanvas.figure = self.figures[self.phase - 1]
+        current_figure = self.figures[self.phase - 1]
+        current_figure.tight_layout()
+        self.plotCanvas.figure = current_figure
         self.plotCanvas.draw()
 
         self.phaseInfo.setText(f'Phase {self.phase}/{self.numPhases}')
