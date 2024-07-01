@@ -28,7 +28,7 @@ def parse_args() -> argparse.Namespace:
 
     parser.add_argument("--use-configurals", type = bool, action = argparse.BooleanOptionalAction, help = 'Use compound stimuli with configural cues')
 
-    parser.add_argument("--adaptive-type", choices = ['linear', 'exponential', 'mack', 'hall', 'macknhall', 'dualV', 'lepelley', 'dualmack', 'hybrid'], default = 'dualV', help = 'Type of adaptive attention mode to use')
+    parser.add_argument("--adaptive-type", choices = ['linear', 'exponential', 'mack', 'hall', 'macknhall', 'dualV', 'newDualV', 'lepelley', 'dualmack', 'hybrid'], default = 'dualV', help = 'Type of adaptive attention mode to use')
     parser.add_argument("--window-size", type = int, default = None, help = 'Size of sliding window for adaptive learning')
 
     parser.add_argument("--xi-hall", type = float, default = 0.2, help = 'Xi parameter for Hall alpha calculation')
