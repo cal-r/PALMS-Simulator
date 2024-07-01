@@ -1,4 +1,5 @@
 import sys
+import os
 from collections import defaultdict
 from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtGui import QFont
@@ -200,6 +201,9 @@ class PavlovianApp(QDialog):
         self.fileButton = QPushButton('Load file')
         self.fileButton.clicked.connect(self.openFileDialog)
 
+        self.saveButton = QPushButton("Save Experiment")
+        self.saveButton.clicked.connect(self.saveExperiment)
+
         self.adaptivetypeComboBox = QComboBox(self)
         self.adaptivetypeComboBox.addItems(self.adaptive_types)
         self.adaptivetypeComboBox.activated.connect(self.changeAdaptiveType)
@@ -224,6 +228,7 @@ class PavlovianApp(QDialog):
 
         layout = QVBoxLayout()
         layout.addWidget(self.fileButton)
+        layout.addWidget(self.saveButton)
         layout.addWidget(self.adaptivetypeComboBox)
         layout.addWidget(self.plotTickBoxes)
         layout.addWidget(self.setDefaultParamsButton)
@@ -231,6 +236,36 @@ class PavlovianApp(QDialog):
         layout.addWidget(self.printButton)
         layout.addStretch(1)
         self.adaptiveTypeGroupBox.setLayout(layout)
+
+    def saveExperiment(self):
+        default_directory = os.path.join(os.getcwd(), 'Experiments')
+        os.makedirs(default_directory, exist_ok=True)
+        default_file_name = os.path.join(default_directory, "experiment.rw")
+
+        fileName, _ = QFileDialog.getSaveFileName(self, "Save Experiment", default_file_name, "RW Files (*.rw);;All Files (*)")
+        if not fileName:
+            return
+
+        if not fileName.endswith(".rw"):
+            fileName += ".rw"
+
+        rowCount = self.tableWidget.rowCount()
+        columnCount = self.tableWidget.columnCount()
+        while columnCount > 0 and not any(self.tableWidget.getText(row, columnCount - 1) for row in range(rowCount)):
+            columnCount -= 1
+
+        lines = []
+        for row in range(rowCount):
+            name = self.tableWidget.verticalHeaderItem(row).text()
+            phase_strs = [self.tableWidget.getText(row, column) for column in range(columnCount)]
+            if not any(phase_strs):
+                continue
+
+            lines.append(name + '|' + '|'.join(phase_strs))
+
+        with open(fileName, 'w') as file:
+            for line in lines:
+                file.write(line + '\n')
 
     def changeAdaptiveType(self):
         self.current_adaptive_type = self.adaptivetypeComboBox.currentText()
