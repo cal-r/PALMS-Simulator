@@ -269,10 +269,5 @@ class Group:
 
                 self.s[cs].assoc = self.s[cs].alpha_mack * (self.s[cs].Ve - self.s[cs].Vi)
 
-<<<<<<< HEAD
-                #print(f'{cs}:\t𝛒 = {rho: .3f}; Ve = {self.s[cs].Ve:.3f}; Vi = {self.s[cs].Vi:.3f}, ; VNet = {self.s[cs].assoc:.3f}, ; deltaA = {-self.thetaE * (abs(lamda - self.s[cs].Ve + self.s[cs].Vi) - abs(lamda - VXe + VXi))}')
-=======
->>>>>>> e581673 (Deleting commented lines.)
-
             case _:
                 raise NameError(f'Unknown adaptive type {self.adaptive_type}!')
