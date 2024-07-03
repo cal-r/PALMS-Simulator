@@ -248,13 +248,11 @@ class Group:
                 if rho >= 0:
                     DVe = self.s[cs].alpha_hall * self.betap * (1 - self.s[cs].Ve + self.s[cs].Vi) * abs(rho)
                     NVe = self.s[cs].Ve + DVe
-                    #NVe = self.s[cs].alpha_mack * self.s[cs].Ve + self.betap * self.s[cs].alpha_hall * lamda
                     NVi = self.s[cs].Vi
                 else:
                     NVe = self.s[cs].Ve
                     DvI = self.s[cs].alpha_hall * self.betan * (1 - self.s[cs].Vi + self.s[cs].Ve) * abs(rho)
                     NVi = self.s[cs].Vi + DvI
-                    #NVi = self.s[cs].alpha_mack * self.s[cs].Vi + self.betan * self.s[cs].alpha_hall * abs(rho)
 
                 VXe = sigmaE - self.s[cs].Ve
                 VXi = sigmaI - self.s[cs].Vi
@@ -268,14 +266,13 @@ class Group:
 
                 self.s[cs].Ve = NVe
                 self.s[cs].Vi = NVi
-                #self.s[cs].Ve = min(max(self.s[cs].Ve, 0), 1)
-                #self.s[cs].Vi = min(max(self.s[cs].Vi, 0), 1)
-
-
 
                 self.s[cs].assoc = self.s[cs].alpha_mack * (self.s[cs].Ve - self.s[cs].Vi)
 
+<<<<<<< HEAD
                 #print(f'{cs}:\t𝛒 = {rho: .3f}; Ve = {self.s[cs].Ve:.3f}; Vi = {self.s[cs].Vi:.3f}, ; VNet = {self.s[cs].assoc:.3f}, ; deltaA = {-self.thetaE * (abs(lamda - self.s[cs].Ve + self.s[cs].Vi) - abs(lamda - VXe + VXi))}')
+=======
+>>>>>>> e581673 (Deleting commented lines.)
 
             case _:
                 raise NameError(f'Unknown adaptive type {self.adaptive_type}!')
