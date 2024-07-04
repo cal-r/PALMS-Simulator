@@ -38,7 +38,7 @@ def titleify(filename: str, phases: dict[str, list[Phase]], phase_num: int, suff
 
     return '\n'.join(titles)
 
-def generate_figures(data: list[dict[str, History]], *, phases: None | dict[str, list[Phase]] = None, filename = None, plot_phase = None, plot_alpha = False, plot_macknhall = False, title_suffix = None) -> list[pyplot.Figure]:
+def generate_figures(data: list[dict[str, History]], *, phases: None | dict[str, list[Phase]] = None, filename = None, plot_phase = None, plot_alpha = False, plot_macknhall = False, title_suffix = None, dpi = None) -> list[pyplot.Figure]:
     seaborn.set()
 
     if plot_phase is not None:
@@ -47,7 +47,7 @@ def generate_figures(data: list[dict[str, History]], *, phases: None | dict[str,
     figures = []
     for phase_num, experiments in enumerate(data, start = 1):
         if not plot_alpha and not plot_macknhall:
-            fig, axes = pyplot.subplots(1, 1, figsize = (8, 6))
+            fig, axes = pyplot.subplots(1, 1, figsize = (8, 6), dpi = dpi)
             axes = [axes]
         else:
             fig, axes = pyplot.subplots(1, 2, figsize = (16, 6))

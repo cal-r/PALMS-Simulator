@@ -149,6 +149,7 @@ class PavlovianApp(QDialog):
         disableWidgetsCheckBox = QCheckBox("&Disable widgets")
 
         self.tableWidget = CoolTable(2, 1)
+        self.tableWidget.setMaximumHeight(120)
 
         self.createAdaptiveTypeGroupBox()
         self.createParametersGroupBox()
@@ -176,19 +177,26 @@ class PavlovianApp(QDialog):
         self.phaseBoxLayout.addWidget(self.rightPhaseButton, 0, 6, 1, 1)
         self.phaseBox.setLayout(self.phaseBoxLayout)
 
-        self.plotBoxLayout.addWidget(self.plotCanvas, stretch = 1)
+        self.plotBoxLayout.addWidget(self.plotCanvas)
         self.plotBoxLayout.addWidget(self.phaseBox)
         self.plotBox.setLayout(self.plotBoxLayout)
 
         mainLayout = QGridLayout()
-        mainLayout.addWidget(self.tableWidget, 0, 0, 1, 6)
+        mainLayout.addWidget(self.tableWidget, 0, 0, 1, 3)
         mainLayout.addWidget(self.parametersGroupBox, 1, 0, 1, 1)
-        mainLayout.addWidget(self.plotBox, 1, 1, 1, 4)
-        mainLayout.addWidget(self.adaptiveTypeGroupBox, 1, 5, 1, 1)
+        mainLayout.addWidget(self.plotBox, 1, 1, 1, 1)
+        mainLayout.addWidget(self.adaptiveTypeGroupBox, 1, 2, 1, 1)
+        mainLayout.setRowStretch(0, 0)
+        mainLayout.setRowStretch(1, 1)
+        mainLayout.setColumnStretch(0, 0)
+        mainLayout.setColumnStretch(1, 1)
+        mainLayout.setColumnStretch(2, 0)
         self.setLayout(mainLayout)
 
         self.setWindowTitle("🐕🔔")
         self.restoreDefaultParameters()
+
+        self.resize(1250, 550)
 
     def openFileDialog(self):
         file, _ = QFileDialog.getOpenFileName(self, 'Open File', './Experiments')
@@ -404,25 +412,25 @@ class PavlovianApp(QDialog):
         strengths, phases, args = self.generateResults()
         self.numPhases = max(len(v) for v in phases.values())
         self.phase = min(self.phase, self.numPhases)
-        print(self.phase, self.numPhases)
 
         self.figures = generate_figures(
             strengths,
             phases = phases,
             plot_alpha = args.plot_alpha,
             plot_macknhall = args.plot_macknhall,
+            dpi = 175,
         )
         
         self.refreshFigure()
 
     def refreshFigure(self):
-        # pyplot.ion()
-        self.plotCanvas.setMinimumSize(1100, 450)
-        print(f'Phase is {self.phase} {self.numPhases}')
         current_figure = self.figures[self.phase - 1]
         current_figure.tight_layout()
         self.plotCanvas.figure = current_figure
         self.plotCanvas.draw()
+
+        self.plotCanvas.resize(self.plotCanvas.width() - 1, self.plotCanvas.height() - 1)
+        self.plotCanvas.resize(self.plotCanvas.width() + 1, self.plotCanvas.height() + 1)
 
         self.phaseInfo.setText(f'Phase {self.phase}/{self.numPhases}')
 
