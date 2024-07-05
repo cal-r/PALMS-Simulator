@@ -50,7 +50,7 @@ def generate_figures(data: list[dict[str, History]], *, phases: None | dict[str,
             fig, axes = pyplot.subplots(1, 1, figsize = (8, 6), dpi = dpi)
             axes = [axes]
         else:
-            fig, axes = pyplot.subplots(1, 2, figsize = (16, 6))
+            fig, axes = pyplot.subplots(1, 2, figsize = (16, 6), dpi = dpi)
 
         colors = dict(zip(experiments.keys(), seaborn.color_palette('husl', len(experiments))))
         for key, hist in experiments.items():

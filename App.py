@@ -151,14 +151,13 @@ class PavlovianApp(QDialog):
         self.tableWidget = CoolTable(2, 1)
         self.tableWidget.setMaximumHeight(120)
 
-        self.createAdaptiveTypeGroupBox()
+        self.addActionsButtons()
         self.createParametersGroupBox()
 
         disableWidgetsCheckBox.toggled.connect(self.adaptiveTypeGroupBox.setDisabled)
         disableWidgetsCheckBox.toggled.connect(self.parametersGroupBox.setDisabled)
 
         self.plotBox = QGroupBox('Plot')
-        self.plotBoxLayout = QVBoxLayout()
 
         self.plotCanvas = FigureCanvasQTAgg()
 
@@ -177,44 +176,76 @@ class PavlovianApp(QDialog):
         self.phaseBoxLayout.addWidget(self.rightPhaseButton, 0, 6, 1, 1)
         self.phaseBox.setLayout(self.phaseBoxLayout)
 
+        self.plotBoxLayout = QVBoxLayout()
         self.plotBoxLayout.addWidget(self.plotCanvas)
         self.plotBoxLayout.addWidget(self.phaseBox)
+        self.plotBoxLayout.setStretch(0, 1)
+        self.plotBoxLayout.setStretch(1, 0)
         self.plotBox.setLayout(self.plotBoxLayout)
 
+        self.adaptiveTypeButtons = self.addAdaptiveTypeButtons()
+
         mainLayout = QGridLayout()
-        mainLayout.addWidget(self.tableWidget, 0, 0, 1, 3)
-        mainLayout.addWidget(self.parametersGroupBox, 1, 0, 1, 1)
-        mainLayout.addWidget(self.plotBox, 1, 1, 1, 1)
-        mainLayout.addWidget(self.adaptiveTypeGroupBox, 1, 2, 1, 1)
+        mainLayout.addWidget(self.adaptiveTypeButtons, 1, 0, 1, 1)
+        mainLayout.addWidget(self.tableWidget, 0, 0, 1, 4)
+        mainLayout.addWidget(self.parametersGroupBox, 1, 1, 1, 1)
+        mainLayout.addWidget(self.plotBox, 1, 2, 1, 1)
+        mainLayout.addWidget(self.adaptiveTypeGroupBox, 1, 3, 1, 1)
         mainLayout.setRowStretch(0, 0)
         mainLayout.setRowStretch(1, 1)
         mainLayout.setColumnStretch(0, 0)
-        mainLayout.setColumnStretch(1, 1)
-        mainLayout.setColumnStretch(2, 0)
+        mainLayout.setColumnStretch(1, 0)
+        mainLayout.setColumnStretch(2, 1)
+        mainLayout.setColumnStretch(3, 0)
         self.setLayout(mainLayout)
 
         self.setWindowTitle("🐕🔔")
         self.restoreDefaultParameters()
 
+        self.initialAdaptiveTypeButton.click()
+
         self.resize(1250, 550)
+
+    def addAdaptiveTypeButtons(self):
+        buttons = QGroupBox('Adaptive Type')
+        layout = QVBoxLayout()
+        layout.setSpacing(0)
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        buttonGroup = QButtonGroup(self)
+        buttonGroup.setExclusive(True)
+
+        for i, adaptive_type in enumerate(self.adaptive_types):
+            button = QPushButton(adaptive_type)
+            button.setCheckable(True)
+
+            noMarginStyle = ""
+            checkedStyle = "QPushButton:checked { background-color: lightblue; font-weight: bold; border: 2px solid #0057D8; }"
+            button.setStyleSheet(noMarginStyle + checkedStyle)
+
+            buttonGroup.addButton(button, i)
+            layout.addWidget(button)
+
+            if adaptive_type == 'lepelley':
+                self.initialAdaptiveTypeButton = button
+
+        buttonGroup.buttonClicked.connect(self.changeAdaptiveType)
+        buttons.setLayout(layout)
+        return buttons
 
     def openFileDialog(self):
         file, _ = QFileDialog.getOpenFileName(self, 'Open File', './Experiments')
         self.tableWidget.loadFile([x.strip() for x in open(file)])
         self.refreshExperiment()
 
-    def createAdaptiveTypeGroupBox(self):
-        self.adaptiveTypeGroupBox = QGroupBox("Adaptive Type")
+    def addActionsButtons(self):
+        self.adaptiveTypeGroupBox = QGroupBox("Actions")
 
         self.fileButton = QPushButton('Load file')
         self.fileButton.clicked.connect(self.openFileDialog)
 
         self.saveButton = QPushButton("Save Experiment")
         self.saveButton.clicked.connect(self.saveExperiment)
-
-        self.adaptivetypeComboBox = QComboBox(self)
-        self.adaptivetypeComboBox.addItems(self.adaptive_types)
-        self.adaptivetypeComboBox.activated.connect(self.changeAdaptiveType)
 
         self.plotAlphaCheckbox = QCheckBox('Plot α')
         self.plotMnHCheckbox = QCheckBox("Mack'n'Hall")
@@ -237,7 +268,6 @@ class PavlovianApp(QDialog):
         layout = QVBoxLayout()
         layout.addWidget(self.fileButton)
         layout.addWidget(self.saveButton)
-        layout.addWidget(self.adaptivetypeComboBox)
         layout.addWidget(self.plotTickBoxes)
         layout.addWidget(self.setDefaultParamsButton)
         layout.addWidget(self.refreshButton)
@@ -275,8 +305,8 @@ class PavlovianApp(QDialog):
             for line in lines:
                 file.write(line + '\n')
 
-    def changeAdaptiveType(self):
-        self.current_adaptive_type = self.adaptivetypeComboBox.currentText()
+    def changeAdaptiveType(self, button):
+        self.current_adaptive_type = button.text()
 
         widgets_to_enable = {
             'linear': ['alpha', 'lamda', 'beta'],
@@ -303,6 +333,7 @@ class PavlovianApp(QDialog):
 
     def createParametersGroupBox(self):
         self.parametersGroupBox = QGroupBox("Parameters")
+        self.parametersGroupBox.setMaximumWidth(100)
 
         class DualLabel:
             def __init__(self, text, layout, parent, font = None):
@@ -356,8 +387,6 @@ class PavlovianApp(QDialog):
         return float(text)
 
     def generateResults(self) -> tuple[dict[str, History], dict[str, list[Phase]], RWArgs]:
-        self.current_adaptive_type = self.adaptivetypeComboBox.currentText()
-
         args = RWArgs(
             adaptive_type = self.current_adaptive_type,
 
@@ -410,6 +439,9 @@ class PavlovianApp(QDialog):
             pyplot.close(fig)
 
         strengths, phases, args = self.generateResults()
+        if len(phases) == 0:
+            return
+
         self.numPhases = max(len(v) for v in phases.values())
         self.phase = min(self.phase, self.numPhases)
 
@@ -436,6 +468,9 @@ class PavlovianApp(QDialog):
 
     def plotExperiment(self):
         strengths, phases, args = self.generateResults()
+        if len(phases) == 0:
+            return
+
         show_plots(
             strengths,
             phases = phases,
