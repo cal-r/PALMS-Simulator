@@ -222,6 +222,7 @@ class PavlovianApp(QDialog):
             noMarginStyle = ""
             checkedStyle = "QPushButton:checked { background-color: lightblue; font-weight: bold; border: 2px solid #0057D8; }"
             button.setStyleSheet(noMarginStyle + checkedStyle)
+            button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
             buttonGroup.addButton(button, i)
             layout.addWidget(button)
