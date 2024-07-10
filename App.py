@@ -462,6 +462,13 @@ class PavlovianApp(QDialog):
     def refreshFigure(self):
         current_figure = self.figures[self.phase - 1]
         current_figure.tight_layout()
+
+        canvas_width = self.plotCanvas.width() * len(current_figure.get_axes()) // max(1, len(self.plotCanvas.figure.get_axes()))
+        self.resize(
+            self.width() - self.plotCanvas.width() + canvas_width,
+            self.height(),
+        )
+
         self.plotCanvas.figure = current_figure
         self.plotCanvas.draw()
 
