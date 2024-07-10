@@ -249,7 +249,10 @@ class PavlovianApp(QDialog):
         self.saveButton.clicked.connect(self.saveExperiment)
 
         self.plotAlphaCheckbox = QCheckBox('Plot α')
+        self.plotAlphaCheckbox.clicked.connect(self.refreshExperiment)
+
         self.plotMnHCheckbox = QCheckBox("Mack'n'Hall")
+        self.plotMnHCheckbox.clicked.connect(self.refreshExperiment)
         
         self.plotTickBoxesLayout = QHBoxLayout()
         self.plotTickBoxesLayout.addWidget(self.plotAlphaCheckbox)
