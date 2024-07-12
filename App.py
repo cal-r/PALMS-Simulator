@@ -227,7 +227,9 @@ class PavlovianApp(QDialog):
             buttonGroup.addButton(button, i)
             layout.addWidget(button)
 
+            button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
             if adaptive_type == 'lepelley':
+                button.setChecked(True)
                 self.initialAdaptiveTypeButton = button
 
         buttonGroup.buttonClicked.connect(self.changeAdaptiveType)
