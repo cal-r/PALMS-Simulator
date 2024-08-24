@@ -3,7 +3,7 @@ from collections import deque, defaultdict
 from functools import reduce
 from itertools import combinations
 
-class Individual:
+class Stimulus:
     assoc : float
 
     Ve : float
@@ -32,7 +32,7 @@ class Individual:
         self.window = window.copy()
         self.delta_ma_hall = delta_ma_hall
 
-    def join(self, other : Individual, op) -> Individual:
+    def join(self, other : Stimulus, op) -> Stimulus:
         ret = {}
         for prop in self.__dict__.keys():
             this = getattr(self, prop)
@@ -48,12 +48,12 @@ class Individual:
             else:
                 raise ValueError(f'Unknown type {type(this)} for {prop}, which is equal to {this} and {that}')
 
-        return Individual(**ret)
+        return Stimulus(**ret)
 
-    def __add__(self, other : Individual) -> Individual:
+    def __add__(self, other : Stimulus) -> Stimulus:
         return self.join(other, lambda a, b: a + b)
 
-    def __truediv__(self, quot : int) -> Individual:
+    def __truediv__(self, quot : int) -> Stimulus:
         ret = {}
         for prop in self.__dict__.keys():
             this = getattr(self, prop)
@@ -65,37 +65,37 @@ class Individual:
             else:
                 raise ValueError(f'Unknown type {type(this)} for {prop}, which is equal to {this}')
 
-        return Individual(**ret)
+        return Stimulus(**ret)
 
-    def copy(self) -> Individual:
-        return Individual(**self.__dict__)
+    def copy(self) -> Stimulus:
+        return Stimulus(**self.__dict__)
 
-class History:
-    hist : list[Individual]
+class StimulusHistory:
+    hist : list[Stimulus]
 
     def __init__(self):
         self.hist = []
 
-    def add(self, ind : Individual):
+    def add(self, ind : Stimulus):
         self.hist.append(ind.copy())
 
     def __getattr__(self, key):
         return [getattr(p, key) for p in self.hist]
 
     @classmethod
-    def emptydict(cls) -> dict[str, History]:
-        return defaultdict(lambda: History())
+    def emptydict(cls) -> dict[str, StimulusHistory]:
+        return defaultdict(lambda: StimulusHistory())
 
-class Strengths:
+class Environment:
     cs : set[str]
-    s : dict[str, Individual]
+    s : dict[str, Stimulus]
 
-    def __init__(self, cs : None | set[str] = None, s : None | dict[str, Individual] = None):
+    def __init__(self, cs : None | set[str] = None, s : None | dict[str, Stimulus] = None):
         if cs is None and s is not None:
             cs = set(s.keys())
 
         if s is None and cs is not None:
-            s = {k: Individual() for k in cs}
+            s = {k: Stimulus() for k in cs}
 
         # Weird order of ifs to make mypy happy.
         if cs is None or s is None:
@@ -107,10 +107,10 @@ class Strengths:
 
     # fromHistories "transposes" a several histories of single CSs into a single list of many CSs.
     @staticmethod
-    def fromHistories(histories : dict[str, History]) -> list[Strengths]:
+    def fromHistories(histories : dict[str, StimulusHistory]) -> list[Environment]:
         longest = max(len(x.hist) for x in histories.values())
         return [
-            Strengths(
+            Environment(
                 s = {
                     cs: h.hist[i]
                     for cs, h in histories.items()
@@ -144,19 +144,19 @@ class Strengths:
 
     # Get the individual values of either a single key (len(key) == 1), or
     # the combined values of a combination of keys (sum of values).
-    def __getitem__(self, key : str) -> Individual:
+    def __getitem__(self, key : str) -> Stimulus:
         assert len(set(key)) == len(key)
         return reduce(lambda a, b: a + b, [self.s[k] for k in key])
 
-    def __add__(self, other : Strengths) -> Strengths:
+    def __add__(self, other : Environment) -> Environment:
         cs = self.cs | other.cs
-        return Strengths(cs, {k: self[k] + other[k] for k in cs})
+        return Environment(cs, {k: self[k] + other[k] for k in cs})
 
-    def __truediv__(self, quot : int) -> Strengths:
-        return Strengths(self.cs, {k: self.s[k] / quot for k in self.cs})
+    def __truediv__(self, quot : int) -> Environment:
+        return Environment(self.cs, {k: self.s[k] / quot for k in self.cs})
 
-    def copy(self) -> Strengths:
-        return Strengths(self.cs.copy(), {k: v.copy() for k, v in self.s.items()})
+    def copy(self) -> Environment:
+        return Environment(self.cs.copy(), {k: v.copy() for k, v in self.s.items()})
 
     # Returns sum of associated values
     def Sigma(self):
@@ -169,7 +169,7 @@ class Strengths:
         return sum(x.Vi for x in self.s.values())
 
     @staticmethod
-    def avg(val : list[Strengths]) -> Strengths:
+    def avg(val : list[Environment]) -> Environment:
         # We average doing `avg(X) = sum(X / n)` rather than `avg(X) = sum(X) / n`
         # since assoc values could be truncated on summation.
         val_quot = [x / len(val) for x in val]

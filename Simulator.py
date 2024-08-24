@@ -5,7 +5,7 @@ import sys
 from collections import defaultdict
 from Experiment import run_all_phases
 from Group import Group
-from Strengths import Strengths, History
+from Environment import Environment, StimulusHistory
 from Plots import show_plots, save_plots
 
 def parse_args() -> argparse.Namespace:
@@ -90,7 +90,7 @@ def main():
         name = name.strip()
 
         if groups_strengths is None:
-            groups_strengths = [History.emptydict() for _ in phase_strs]
+            groups_strengths = [StimulusHistory.emptydict() for _ in phase_strs]
 
         if args.plot_experiments is not None and name not in args.plot_experiments:
             continue

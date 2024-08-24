@@ -1,6 +1,6 @@
 import math
 from itertools import combinations
-from Strengths import Strengths, History, Individual
+from Environment import Environment, StimulusHistory, Stimulus
 
 def sigmoid(x):
   return 1 / (1 + math.exp(-x))
@@ -9,7 +9,7 @@ class Group:
     name : str
 
     cs : list[str]
-    s : Strengths
+    s : Environment
 
     betan : float
     betap : float
@@ -29,9 +29,9 @@ class Group:
 
         self.name = name
 
-        self.s = Strengths(
+        self.s = Environment(
             s = {
-                k: Individual(assoc = 0, alpha = alphas[k], alpha_mack = default_alpha_mack, alpha_hall = default_alpha_hall)
+                k: Stimulus(assoc = 0, alpha = alphas[k], alpha_mack = default_alpha_mack, alpha_hall = default_alpha_hall)
                 for k in alphas.keys()
             }
         )
@@ -95,7 +95,7 @@ class Group:
 
         return new_error
 
-    # compounds should probably be moved to Strengths.
+    # compounds should probably be moved to Environment.
     def compounds(self, part : str) -> set[str]:
         compounds = set(part)
         if self.use_configurals:
@@ -106,7 +106,7 @@ class Group:
     # runPhase runs a single trial of a phase, in order, and returns a list of the Strength values
     # of its CS at every step.
     # It also modifies `self.s` to account for all the strengths modified in this phase.
-    def runPhase(self, parts : list[tuple[str, str]], phase_lamda : None | float) -> list[Strengths]:
+    def runPhase(self, parts : list[tuple[str, str]], phase_lamda : None | float) -> list[Environment]:
         hist = dict()
 
         for part, plus in parts:
@@ -123,7 +123,7 @@ class Group:
 
             for cs in compounds:
                 if cs not in hist:
-                    hist[cs] = History()
+                    hist[cs] = StimulusHistory()
                     hist[cs].add(self.s[cs])
 
                 self.step(cs, beta, lamda, sign, sigma, sigmaE, sigmaI)
@@ -141,7 +141,7 @@ class Group:
                 hist[cs].add(self.s[cs])
             self.prev_lamda = lamda
 
-        return Strengths.fromHistories(hist)
+        return Environment.fromHistories(hist)
 
     def step(self, cs: str, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
         delta_v_factor = beta * (self.prev_lamda - sigma)

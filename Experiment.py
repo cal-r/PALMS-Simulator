@@ -3,7 +3,7 @@ import re
 from dataclasses import dataclass
 
 from Group import Group
-from Strengths import Strengths, History
+from Environment import Environment, StimulusHistory
 
 class Phase:
     # elems contains a list of ([CS], US) of an experiment.
@@ -94,7 +94,7 @@ def create_group_and_phase(name: str, phase_strs: list[str], args) -> tuple[Grou
 
     return g, phases
 
-def run_group_experiments(g : Group, experiment : list[Phase], num_trials : int) -> list[list[Strengths]]:
+def run_group_experiments(g : Group, experiment : list[Phase], num_trials : int) -> list[list[Environment]]:
     results = []
 
     for trial, phase in enumerate(experiment):
@@ -114,16 +114,16 @@ def run_group_experiments(g : Group, experiment : list[Phase], num_trials : int)
                 final_strengths.append(g.s.copy())
 
             results.append([
-                Strengths.avg([h[x] for h in hist if x < len(h)])
+                Environment.avg([h[x] for h in hist if x < len(h)])
                 for x in range(max(len(h) for h in hist))
             ])
 
-            g.s = Strengths.avg(final_strengths)
+            g.s = Environment.avg(final_strengths)
 
     return results
 
-def group_results(results: list[list[Strengths]], name: str, args: RWArgs) -> list[dict[str, History]]:
-    group_strengths = [History.emptydict() for _ in results]
+def group_results(results: list[list[Environment]], name: str, args: RWArgs) -> list[dict[str, StimulusHistory]]:
+    group_strengths = [StimulusHistory.emptydict() for _ in results]
     for phase_num, strength_hist in enumerate(results):
         for strengths in strength_hist:
             for cs in strengths.ordered_cs():

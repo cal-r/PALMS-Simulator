@@ -6,7 +6,7 @@ from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import *
 from Experiment import RWArgs, create_group_and_phase, run_group_experiments, group_results, Phase
 from Plots import show_plots, generate_figures
-from Strengths import History
+from Environment import StimulusHistory
 
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib import pyplot
@@ -392,7 +392,7 @@ class PavlovianApp(QDialog):
             return None
         return float(text)
 
-    def generateResults(self) -> tuple[dict[str, History], dict[str, list[Phase]], RWArgs]:
+    def generateResults(self) -> tuple[dict[str, StimulusHistory], dict[str, list[Phase]], RWArgs]:
         args = RWArgs(
             adaptive_type = self.current_adaptive_type,
 
@@ -423,7 +423,7 @@ class PavlovianApp(QDialog):
         while columnCount > 0 and not any(self.tableWidget.getText(row, columnCount - 1) for row in range(rowCount)):
             columnCount -= 1
 
-        strengths = [History.emptydict() for _ in range(columnCount)]
+        strengths = [StimulusHistory.emptydict() for _ in range(columnCount)]
         phases = dict()
         for row in range(rowCount):
             name = self.tableWidget.verticalHeaderItem(row).text()

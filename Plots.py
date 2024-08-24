@@ -4,7 +4,7 @@ import matplotlib
 matplotlib.use('QtAgg')
 
 from matplotlib import pyplot
-from Strengths import History
+from Environment import StimulusHistory
 from matplotlib.ticker import MaxNLocator
 
 from Experiment import Phase
@@ -38,7 +38,7 @@ def titleify(filename: str, phases: dict[str, list[Phase]], phase_num: int, suff
 
     return '\n'.join(titles)
 
-def generate_figures(data: list[dict[str, History]], *, phases: None | dict[str, list[Phase]] = None, filename = None, plot_phase = None, plot_alpha = False, plot_macknhall = False, title_suffix = None, dpi = None) -> list[pyplot.Figure]:
+def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | dict[str, list[Phase]] = None, filename = None, plot_phase = None, plot_alpha = False, plot_macknhall = False, title_suffix = None, dpi = None) -> list[pyplot.Figure]:
     seaborn.set()
 
     if plot_phase is not None:
@@ -72,7 +72,7 @@ def generate_figures(data: list[dict[str, History]], *, phases: None | dict[str,
         axes[0].legend(fontsize = 'small')
 
         if plot_alpha or plot_macknhall:
-            axes[0].set_title(f'Associative Strengths')
+            axes[0].set_title(f'Associative Environment')
             axes[1].set_xlabel('Trial Number')
             axes[1].set_ylabel('Alpha')
             axes[1].set_title(f'Alphas')
@@ -93,7 +93,7 @@ def generate_figures(data: list[dict[str, History]], *, phases: None | dict[str,
 
     return figures
 
-def show_plots(data: list[dict[str, History]], *, phases: None | dict[str, list[Phase]] = None, plot_phase = None, plot_alpha = False, plot_macknhall = False):
+def show_plots(data: list[dict[str, StimulusHistory]], *, phases: None | dict[str, list[Phase]] = None, plot_phase = None, plot_alpha = False, plot_macknhall = False):
     pyplot.ion()
 
     figures = generate_figures(
@@ -109,8 +109,9 @@ def show_plots(data: list[dict[str, History]], *, phases: None | dict[str, list[
 
     pyplot.ioff()
 
-def save_plots(data: list[dict[str, History]], *, phases: None | dict[str, list[Phase]] = None, filename: str = None, plot_phase = None, plot_alpha = False, plot_macknhall = False, title_suffix = None):
-    filename = filename.removesuffix('.png')
+def save_plots(data: list[dict[str, StimulusHistory]], *, phases: None | dict[str, list[Phase]] = None, filename: None | str = None, plot_phase = None, plot_alpha = False, plot_macknhall = False, title_suffix = None):
+    if filename is not None:
+        filename = filename.removesuffix('.png')
 
     figures = generate_figures(
         data = data,
