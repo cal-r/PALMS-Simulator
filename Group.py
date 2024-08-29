@@ -2,9 +2,6 @@ import math
 from itertools import combinations
 from Environment import Environment, StimulusHistory, Stimulus
 
-def sigmoid(x):
-  return 1 / (1 + math.exp(-x))
-
 class Group:
     name : str
 

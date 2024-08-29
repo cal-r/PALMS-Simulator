@@ -158,15 +158,7 @@ class Environment:
     def copy(self) -> Environment:
         return Environment(self.cs.copy(), {k: v.copy() for k, v in self.s.items()})
 
-    # Returns sum of associated values
-    def Sigma(self):
-        return sum(x.assoc for x in self.s.values())
-
-    def SigmaE(self):
-        return sum(x.Ve for x in self.s.values())
-
-    def SigmaI(self):
-        return sum(x.Vi for x in self.s.values())
+    # Consider adding Sigma, SigmaE, and SigmaI functions here.
 
     @staticmethod
     def avg(val : list[Environment]) -> Environment:
