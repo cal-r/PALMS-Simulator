@@ -125,16 +125,11 @@ class Environment:
         h = set()
 
         simples = {k: v for k, v in self.s.items() if len(k) == 1}
-        compounds = {k: v for k, v in self.s.items() if len(k) > 1}
         for size in range(1, len(self.s) + 1):
             for comb in combinations(simples.items(), size):
                 names = [x[0] for x in comb]
                 assocs = [x[1] for x in comb]
                 h.add(''.join(sorted(names)))
-
-        for k, v in compounds.items():
-            h.add(k)
-            h.add(f'c({k})')
 
         return h
 

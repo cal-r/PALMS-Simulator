@@ -14,13 +14,29 @@ class Group:
 
     prev_lamda : float
 
-    use_configurals : bool
     adaptive_type : None | str
 
     window_size : None | int
     xi_hall : None | float
 
-    def __init__(self, name : str, alphas : dict[str, float], default_alpha : float, default_alpha_mack: None | float, default_alpha_hall: None | float, betan : float, betap : float, lamda : float, gamma : float, thetaE : float, thetaI : float, cs : None | set[str] = None, use_configurals : bool = False, adaptive_type : None | str = None, window_size : None | int = None, xi_hall : None | float = None):
+    def __init__(
+        self,
+        name : str,
+        alphas : dict[str, float],
+        default_alpha : float,
+        default_alpha_mack: None | float,
+        default_alpha_hall: None | float,
+        betan : float,
+        betap : float,
+        lamda : float,
+        gamma : float,
+        thetaE : float,
+        thetaI : float,
+        cs : None | set[str] = None,
+        adaptive_type : None | str = None,
+        window_size : None | int = None,
+        xi_hall : None | float = None,
+    ):
         if cs is not None:
             alphas = {k: alphas.get(k, default_alpha) for k in cs | alphas.keys()}
 
@@ -42,34 +58,15 @@ class Group:
         self.thetaE = thetaE
         self.thetaI = thetaI
 
-        self.use_configurals = use_configurals
         self.adaptive_type = adaptive_type
         self.window_size = window_size
 
         self.prev_lamda = lamda
 
-        # For simplicity, if we use_configurals and some compound stimuli don't
-        # have a corresponding \alpha, then we calculate it as the product
-        # of their simple stimuli.
+        # (∃ x) len(x) > 1 if `use_configurals`.
+        # `use_configurals` was removed from the current version of the program,
+        # but we keep this line as we might re-add it later.
         self.cs = [x for x in alphas.keys() if len(x) == 1]
-
-        # use_configurals is not working with strengths - add it later.
-        '''
-        if use_configurals:
-            simples = {k: v for k, v in alphas.items() if len(k) == 1}
-            compounds = {
-                ''.join(p[0] for p in x): math.prod(p[1] for p in x)
-                for x in sum(
-                    [
-                        list(combinations(simples.items(), t))
-                        for t in range(1, len(simples) + 1)
-                    ],
-                    []
-                )
-            }
-            self.alphas = compounds | alphas
-            self.cs = self.alphas.keys()
-        '''
 
     def get_alpha_mack(self, cs : str, sigma : float) -> float:
         return 1/2 * (1 + 2*self.s[cs].assoc - sigma)
@@ -86,19 +83,7 @@ class Group:
 
         new_error = kayes
 
-        # error = 1/2 * ((1 - surprise) * self.s[cs].alpha_hall * window_term + surprise)
-        # error = 1/2 * ((1 - surprise) * self.s[cs].alpha_hall * window_term + surprise*(1-self.s[cs].alpha_hall))
-        # error = self.s[cs].alpha_hall + window_term
-
         return new_error
-
-    # compounds should probably be moved to Environment.
-    def compounds(self, part : str) -> set[str]:
-        compounds = set(part)
-        if self.use_configurals:
-            compounds.add(part)
-
-        return compounds
 
     # runPhase runs a single trial of a phase, in order, and returns a list of the Strength values
     # of its CS at every step.
@@ -112,7 +97,7 @@ class Group:
             else:
                 beta, lamda, sign = self.betan, 0., -1
 
-            compounds = self.compounds(part)
+            compounds = set(part)
 
             sigma = sum(self.s[x].assoc for x in compounds)
             sigmaE = sum(self.s[x].Ve for x in compounds)

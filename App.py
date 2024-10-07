@@ -414,7 +414,6 @@ class PavlovianApp(QDialog):
             plot_alpha = self.plotAlphaCheckbox.checkState() == Qt.CheckState.Checked,
             plot_macknhall = self.plotMnHCheckbox.checkState() == Qt.CheckState.Checked,
 
-            use_configurals = False,
             xi_hall = 0.5,
         )
 

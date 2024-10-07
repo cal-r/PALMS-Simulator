@@ -49,7 +49,6 @@ class RWArgs:
     thetaE: float
     thetaI: float
 
-    use_configurals: bool
     adaptive_type: str
     window_size: int
     xi_hall: float
@@ -86,7 +85,6 @@ def create_group_and_phase(name: str, phase_strs: list[str], args) -> tuple[Grou
         thetaE = args.thetaE,
         thetaI = args.thetaI,
         cs = stimuli,
-        use_configurals = args.use_configurals,
         adaptive_type = args.adaptive_type,
         window_size = args.window_size,
         xi_hall = args.xi_hall,

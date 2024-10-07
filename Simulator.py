@@ -26,8 +26,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--thetaE", type = float, default = .2, help = "Theta for excitatory phenomena in LePelley blocking")
     parser.add_argument("--thetaI", type = float, default = .1, help = "Theta for inhibitory phenomena in LePelley blocking")
 
-    parser.add_argument("--use-configurals", type = bool, action = argparse.BooleanOptionalAction, help = 'Use compound stimuli with configural cues')
-
     parser.add_argument("--adaptive-type", choices = ['linear', 'exponential', 'mack', 'hall', 'macknhall', 'dualV', 'newDualV', 'lepelley', 'dualmack', 'hybrid'], default = 'dualV', help = 'Type of adaptive attention mode to use')
     parser.add_argument("--window-size", type = int, default = None, help = 'Size of sliding window for adaptive learning')
 
@@ -64,9 +62,6 @@ def parse_args() -> argparse.Namespace:
             parser.error(f'Option not understood: {arg}')
 
         args.alphas[match.group(1)] = float(match.group(2))
-
-    if args.use_configurals is None:
-        args.use_configurals = False
 
     args.use_adaptive = args.adaptive_type is not None
 
