@@ -7,22 +7,22 @@ from Environment import Environment, StimulusHistory
 
 class Phase:
     # elems contains a list of ([CS], US) of an experiment.
-    elems : list[tuple[str, str]]
+    elems: list[tuple[str, str]]
 
     # Whether this phase should be randomised.
-    rand : bool
+    rand: bool
 
     # The lamda for this phase.
-    lamda : None | float
+    lamda: None | float
 
     # String description of this phase.
-    phase_str : str
+    phase_str: str
 
     # Return the set of single (one-character) CS.
     def cs(self):
         return set.union(*[set(x[0]) for x in self.elems])
 
-    def __init__(self, phase_str : str):
+    def __init__(self, phase_str: str):
         self.phase_str = phase_str
         self.rand = False
         self.lamda = None
@@ -92,7 +92,7 @@ def create_group_and_phase(name: str, phase_strs: list[str], args) -> tuple[Grou
 
     return g, phases
 
-def run_group_experiments(g : Group, experiment : list[Phase], num_trials : int) -> list[list[Environment]]:
+def run_group_experiments(g: Group, experiment: list[Phase], num_trials: int) -> list[list[Environment]]:
     results = []
 
     for trial, phase in enumerate(experiment):

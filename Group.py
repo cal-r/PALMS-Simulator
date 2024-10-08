@@ -3,39 +3,39 @@ from itertools import combinations
 from Environment import Environment, StimulusHistory, Stimulus
 
 class Group:
-    name : str
+    name: str
 
-    cs : list[str]
-    s : Environment
+    cs: list[str]
+    s: Environment
 
-    betan : float
-    betap : float
-    lamda : float
+    betan: float
+    betap: float
+    lamda: float
 
-    prev_lamda : float
+    prev_lamda: float
 
-    adaptive_type : None | str
+    adaptive_type: None | str
 
-    window_size : None | int
-    xi_hall : None | float
+    window_size: None | int
+    xi_hall: None | float
 
     def __init__(
         self,
-        name : str,
-        alphas : dict[str, float],
-        default_alpha : float,
+        name: str,
+        alphas: dict[str, float],
+        default_alpha: float,
         default_alpha_mack: None | float,
         default_alpha_hall: None | float,
-        betan : float,
-        betap : float,
-        lamda : float,
-        gamma : float,
-        thetaE : float,
-        thetaI : float,
-        cs : None | set[str] = None,
-        adaptive_type : None | str = None,
-        window_size : None | int = None,
-        xi_hall : None | float = None,
+        betan: float,
+        betap: float,
+        lamda: float,
+        gamma: float,
+        thetaE: float,
+        thetaI: float,
+        cs: None | set[str] = None,
+        adaptive_type: None | str = None,
+        window_size: None | int = None,
+        xi_hall: None | float = None,
     ):
         if cs is not None:
             alphas = {k: alphas.get(k, default_alpha) for k in cs | alphas.keys()}
@@ -68,10 +68,10 @@ class Group:
         # but we keep this line as we might re-add it later.
         self.cs = [x for x in alphas.keys() if len(x) == 1]
 
-    def get_alpha_mack(self, cs : str, sigma : float) -> float:
+    def get_alpha_mack(self, cs: str, sigma: float) -> float:
         return 1/2 * (1 + 2*self.s[cs].assoc - sigma)
 
-    def get_alpha_hall(self, cs : str, sigma : float, lamda : float) -> float:
+    def get_alpha_hall(self, cs: str, sigma: float, lamda: float) -> float:
         assert self.xi_hall is not None
 
         delta_ma_hall = self.s[cs].delta_ma_hall or 0
@@ -88,7 +88,7 @@ class Group:
     # runPhase runs a single trial of a phase, in order, and returns a list of the Strength values
     # of its CS at every step.
     # It also modifies `self.s` to account for all the strengths modified in this phase.
-    def runPhase(self, parts : list[tuple[str, str]], phase_lamda : None | float) -> list[Environment]:
+    def runPhase(self, parts: list[tuple[str, str]], phase_lamda: None | float) -> list[Environment]:
         hist = dict()
 
         for part, plus in parts:

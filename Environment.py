@@ -4,17 +4,17 @@ from functools import reduce
 from itertools import combinations
 
 class Stimulus:
-    assoc : float
+    assoc: float
 
-    Ve : float
-    Vi : float
+    Ve: float
+    Vi: float
 
-    alpha : float
-    alpha_mack : float
-    alpha_hall : float
+    alpha: float
+    alpha_mack: float
+    alpha_hall: float
 
-    window : deque[float]
-    delta_ma_hall : float
+    window: deque[float]
+    delta_ma_hall: float
 
     def __init__(self, *, assoc = 0., Ve = 0., Vi = 0., alpha = .5, alpha_mack = None, alpha_hall = None, delta_ma_hall = .2, window = None):
         self.assoc = assoc
@@ -32,7 +32,7 @@ class Stimulus:
         self.window = window.copy()
         self.delta_ma_hall = delta_ma_hall
 
-    def join(self, other : Stimulus, op) -> Stimulus:
+    def join(self, other: Stimulus, op) -> Stimulus:
         ret = {}
         for prop in self.__dict__.keys():
             this = getattr(self, prop)
@@ -50,10 +50,10 @@ class Stimulus:
 
         return Stimulus(**ret)
 
-    def __add__(self, other : Stimulus) -> Stimulus:
+    def __add__(self, other: Stimulus) -> Stimulus:
         return self.join(other, lambda a, b: a + b)
 
-    def __truediv__(self, quot : int) -> Stimulus:
+    def __truediv__(self, quot: int) -> Stimulus:
         ret = {}
         for prop in self.__dict__.keys():
             this = getattr(self, prop)
@@ -71,12 +71,12 @@ class Stimulus:
         return Stimulus(**self.__dict__)
 
 class StimulusHistory:
-    hist : list[Stimulus]
+    hist: list[Stimulus]
 
     def __init__(self):
         self.hist = []
 
-    def add(self, ind : Stimulus):
+    def add(self, ind: Stimulus):
         self.hist.append(ind.copy())
 
     def __getattr__(self, key):
@@ -87,10 +87,10 @@ class StimulusHistory:
         return defaultdict(lambda: StimulusHistory())
 
 class Environment:
-    cs : set[str]
-    s : dict[str, Stimulus]
+    cs: set[str]
+    s: dict[str, Stimulus]
 
-    def __init__(self, cs : None | set[str] = None, s : None | dict[str, Stimulus] = None):
+    def __init__(self, cs: None | set[str] = None, s: None | dict[str, Stimulus] = None):
         if cs is None and s is not None:
             cs = set(s.keys())
 
@@ -107,7 +107,7 @@ class Environment:
 
     # fromHistories "transposes" a several histories of single CSs into a single list of many CSs.
     @staticmethod
-    def fromHistories(histories : dict[str, StimulusHistory]) -> list[Environment]:
+    def fromHistories(histories: dict[str, StimulusHistory]) -> list[Environment]:
         longest = max(len(x.hist) for x in histories.values())
         return [
             Environment(
@@ -139,15 +139,15 @@ class Environment:
 
     # Get the individual values of either a single key (len(key) == 1), or
     # the combined values of a combination of keys (sum of values).
-    def __getitem__(self, key : str) -> Stimulus:
+    def __getitem__(self, key: str) -> Stimulus:
         assert len(set(key)) == len(key)
         return reduce(lambda a, b: a + b, [self.s[k] for k in key])
 
-    def __add__(self, other : Environment) -> Environment:
+    def __add__(self, other: Environment) -> Environment:
         cs = self.cs | other.cs
         return Environment(cs, {k: self[k] + other[k] for k in cs})
 
-    def __truediv__(self, quot : int) -> Environment:
+    def __truediv__(self, quot: int) -> Environment:
         return Environment(self.cs, {k: self.s[k] / quot for k in self.cs})
 
     def copy(self) -> Environment:
@@ -156,7 +156,7 @@ class Environment:
     # Consider adding Sigma, SigmaE, and SigmaI functions here.
 
     @staticmethod
-    def avg(val : list[Environment]) -> Environment:
+    def avg(val: list[Environment]) -> Environment:
         # We average doing `avg(X) = sum(X / n)` rather than `avg(X) = sum(X) / n`
         # since assoc values could be truncated on summation.
         val_quot = [x / len(val) for x in val]
