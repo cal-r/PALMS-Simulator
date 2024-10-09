@@ -3,7 +3,7 @@ import random
 import re
 import sys
 from collections import defaultdict
-from Experiment import Experiment
+from Experiment import Experiment, Phase
 from Group import Group
 from Environment import Environment, StimulusHistory
 from Plots import show_plots, save_plots
@@ -90,7 +90,7 @@ def parse_args() -> argparse.Namespace:
 
     return args
 
-def main():
+def main() -> None:
     args = parse_args()
 
     groups_strengths = None

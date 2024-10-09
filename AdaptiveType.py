@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import math
+from typing import Type
 
 from Environment import Stimulus
 
@@ -24,7 +27,7 @@ class AdaptiveType:
         self.prev_lamda = lamda
 
     @classmethod
-    def types(cls) -> dict[str, 'AdaptiveType']:
+    def types(cls) -> dict[str, Type[AdaptiveType]]:
         return {
             'rescorla_wagner': RescorlaWagner,
             'rescorla_wagner_linear': RescorlaWagnerLinear,
@@ -41,7 +44,7 @@ class AdaptiveType:
         }
 
     @classmethod
-    def get(cls, adaptive_type_name, *args, **kwargs) -> 'AdaptiveType':
+    def get(cls, adaptive_type_name, *args, **kwargs) -> AdaptiveType:
         return cls.types()[adaptive_type_name](*args, **kwargs)
 
     def get_alpha_mack(self, s: Stimulus, sigma: float) -> float:
