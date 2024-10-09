@@ -8,11 +8,29 @@ from Group import Group
 from Environment import Environment, StimulusHistory
 from Plots import show_plots, save_plots
 
+# Given a list of arguments, matches the ones corresponding to a particular name
+# combined with a CS and returns them as a dictionary, along with the remaining
+# arguments.
+def match_args(name: str, args: list[str]) -> tuple[dict[str, float], list[str]]:
+    values = dict()
+    rest = list()
+
+    for arg in args:
+        match = re.fullmatch(rf'--{name}[-_]([A-Z])\s*=?\s*([0-9]*\.?[0-9]*)', arg)
+        if match:
+            values[match.group(1)] = float(match.group(2))
+        else:
+            rest.append(arg)
+
+    return values, rest
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Behold! My Rescorla-Wagnerinator!",
         epilog = '--alpha_[A-Z] ALPHA\tAssociative strength of CS A..Z. By default 0',
     )
+
+    parser.add_argument("--adaptive-type", choices = ['rescorla_wagner', 'rescorla_wagner_linear', 'pearce_hall', 'pearce_kaye_hall', 'le_pelley', '_rescorla_wagner_exponential', '_mack', '_hall', '_macknhall', '_newDualV', '_dualmack', '_hybrid'], default = 'rescorla_wagner', help = 'Type of adaptive attention mode to use')
 
     parser.add_argument('--alpha', type = float, default = .1, help = 'Alpha for all other stimuli')
     parser.add_argument('--alpha-mack', type = float, help = 'Alpha_mack for all other stimuli')
@@ -26,9 +44,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--thetaE", type = float, default = .2, help = "Theta for excitatory phenomena in LePelley blocking")
     parser.add_argument("--thetaI", type = float, default = .1, help = "Theta for inhibitory phenomena in LePelley blocking")
 
-    parser.add_argument("--adaptive-type", choices = ['linear', 'exponential', 'mack', 'hall', 'macknhall', 'dualV', 'newDualV', 'lepelley', 'dualmack', 'hybrid'], default = 'dualV', help = 'Type of adaptive attention mode to use')
     parser.add_argument("--window-size", type = int, default = None, help = 'Size of sliding window for adaptive learning')
 
+    parser.add_argument('--salience', type = float, default = .5, help = 'Salience for all parameters without an individually defined salience. This is used in the Pearce & Hall model.')
     parser.add_argument("--xi-hall", type = float, default = 0.2, help = 'Xi parameter for Hall alpha calculation')
 
     parser.add_argument("--num-trials", type = int, default = 1000, help = 'Amount of trials done in randomised phases')
@@ -53,15 +71,12 @@ def parse_args() -> argparse.Namespace:
         help="Path to the experiment file."
     )
 
-    # Also accept arguments of the form --alpha_[A-Z]=n.
+    # Accept parameters for alphas and saliences
     args, rest = parser.parse_known_args()
-    args.alphas = dict()
-    for arg in rest:
-        match = re.fullmatch(r'--alpha[-_]([A-Z])\s*=?\s*([0-9]*\.?[0-9]*)', arg)
-        if not match:
-            parser.error(f'Option not understood: {arg}')
-
-        args.alphas[match.group(1)] = float(match.group(2))
+    args.alphas, rest = match_args('alpha', rest)
+    args.saliences, rest = match_args('salience', rest)
+    if rest:
+        raise KeyError(f"Arguments not recognised: {' '.join(rest)}.")
 
     args.use_adaptive = args.adaptive_type is not None
 

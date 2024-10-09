@@ -19,6 +19,10 @@ class Group:
     window_size: None | int
     xi_hall: None | float
 
+    gamma: float
+    thetaE: float
+    thetaI: float
+
     def __init__(
         self,
         name: str,
@@ -26,6 +30,8 @@ class Group:
         default_alpha: float,
         default_alpha_mack: None | float,
         default_alpha_hall: None | float,
+        saliences: dict[str, float],
+        default_salience: float,
         betan: float,
         betap: float,
         lamda: float,
@@ -37,15 +43,17 @@ class Group:
         window_size: None | int = None,
         xi_hall: None | float = None,
     ):
+        cs = cs | alphas.keys() | saliences.keys()
         if cs is not None:
-            alphas = {k: alphas.get(k, default_alpha) for k in cs | alphas.keys()}
+            alphas = {k: alphas.get(k, default_alpha) for k in cs}
+            saliences = {k: saliences.get(k, default_salience) for k in cs}
 
         self.name = name
 
         self.s = Environment(
             s = {
-                k: Stimulus(assoc = 0, alpha = alphas[k], alpha_mack = default_alpha_mack, alpha_hall = default_alpha_hall)
-                for k in alphas.keys()
+                k: Stimulus(assoc = 0, alpha = alphas[k], salience = saliences[k], alpha_mack = default_alpha_mack, alpha_hall = default_alpha_hall)
+                for k in cs
             }
         )
 
@@ -129,35 +137,18 @@ class Group:
         delta_v_factor = beta * (self.prev_lamda - sigma)
 
         match self.adaptive_type:
-            case 'linear':
+            case 'rescorla_wagner':
+                self.s[cs].assoc += self.s[cs].alpha * delta_v_factor
+
+            case 'rescorla_wagner_linear':
                 self.s[cs].alpha *= 1 + sign * 0.05
                 self.s[cs].assoc += self.s[cs].alpha * delta_v_factor
 
-            case 'exponential':
-                if sign == 1:
-                    self.s[cs].alpha *= (self.s[cs].alpha ** 0.05) ** sign
-                self.s[cs].assoc += self.s[cs].alpha * delta_v_factor
+            case 'pearce_hall':
+                self.s[cs].alpha = abs(lamda - sigma)
+                self.s[cs].assoc += self.s[cs].salience * self.s[cs].alpha * abs(lamda)
 
-            case 'mack':
-                self.s[cs].alpha_mack = self.get_alpha_mack(cs, sigma)
-                self.s[cs].alpha = self.s[cs].alpha_mack
-                #self.s[cs].assoc = self.s[cs].assoc + self.s[cs].alpha * delta_v_factor
-                self.s[cs].assoc = self.s[cs].assoc * delta_v_factor + delta_v_factor/2*beta
-
-            case 'hall':
-                self.s[cs].alpha_hall = self.get_alpha_hall(cs, sigma, self.prev_lamda)
-                self.s[cs].alpha = self.s[cs].alpha_hall
-                delta_v_factor = 0.5 * abs(self.prev_lamda)
-                self.s[cs].assoc += self.s[cs].alpha * beta * (lamda - sigma)
-
-            case 'macknhall':
-                self.s[cs].alpha_mack = self.get_alpha_mack(cs, sigma)
-                self.s[cs].alpha_hall = self.get_alpha_hall(cs, sigma, self.prev_lamda)
-                self.s[cs].alpha = (1 - abs(self.prev_lamda - sigma)) * self.s[cs].alpha_mack + self.s[cs].alpha_hall
-                self.s[cs].assoc += self.s[cs].alpha * delta_v_factor
-
-            case 'dualV':
-                # Ask Esther whether this is lamda^{n + 1) or lamda^n.
+            case 'pearce_kaye_hall':
                 rho = lamda - (sigmaE - sigmaI)
 
                 if rho >= 0:
@@ -168,23 +159,7 @@ class Group:
                 self.s[cs].alpha = self.gamma * abs(rho) + (1 - self.gamma) * self.s[cs].alpha
                 self.s[cs].assoc = self.s[cs].Ve - self.s[cs].Vi
 
-                #print(f'{cs}:\t𝛒 = {rho: .3f}; Ve = {self.s[cs].Ve:.3f}; Vi = {self.s[cs].Vi:.3f}')
-
-            case 'newDualV':
-                rho = lamda - (sigmaE - sigmaI)
-
-                delta_ma_hall = self.s[cs].delta_ma_hall or 0
-                self.gamma = 1 - math.exp(-delta_ma_hall**2)
-
-                if rho >= 0:
-                    self.s[cs].Ve += self.betap * self.s[cs].alpha * lamda
-                else:
-                    self.s[cs].Vi += self.betan * self.s[cs].alpha * abs(rho)
-
-                self.s[cs].alpha = self.gamma * abs(rho) + (1 - self.gamma) * self.s[cs].alpha
-                self.s[cs].assoc = self.s[cs].Ve - self.s[cs].Vi
-
-            case 'lepelley':
+            case 'le_pelley':
                 rho = lamda - (sigmaE - sigmaI)
 
                 VXe = sigmaE - self.s[cs].Ve
@@ -207,8 +182,43 @@ class Group:
 
                 self.s[cs].assoc = self.s[cs].Ve - self.s[cs].Vi
 
+            case '_rescorla_wagner_exponential':
+                if sign == 1:
+                    self.s[cs].alpha *= (self.s[cs].alpha ** 0.05) ** sign
+                self.s[cs].assoc += self.s[cs].alpha * delta_v_factor
 
-            case 'dualmack':
+            case '_mack':
+                self.s[cs].alpha_mack = self.get_alpha_mack(cs, sigma)
+                self.s[cs].alpha = self.s[cs].alpha_mack
+                self.s[cs].assoc = self.s[cs].assoc * delta_v_factor + delta_v_factor/2*beta
+
+            case '_hall':
+                self.s[cs].alpha_hall = self.get_alpha_hall(cs, sigma, self.prev_lamda)
+                self.s[cs].alpha = self.s[cs].alpha_hall
+                delta_v_factor = 0.5 * abs(self.prev_lamda)
+                self.s[cs].assoc += self.s[cs].alpha * beta * (lamda - sigma)
+
+            case '_macknhall':
+                self.s[cs].alpha_mack = self.get_alpha_mack(cs, sigma)
+                self.s[cs].alpha_hall = self.get_alpha_hall(cs, sigma, self.prev_lamda)
+                self.s[cs].alpha = (1 - abs(self.prev_lamda - sigma)) * self.s[cs].alpha_mack + self.s[cs].alpha_hall
+                self.s[cs].assoc += self.s[cs].alpha * delta_v_factor
+
+            case '_newDualV':
+                rho = lamda - (sigmaE - sigmaI)
+
+                delta_ma_hall = self.s[cs].delta_ma_hall or 0
+                self.gamma = 1 - math.exp(-delta_ma_hall**2)
+
+                if rho >= 0:
+                    self.s[cs].Ve += self.betap * self.s[cs].alpha * lamda
+                else:
+                    self.s[cs].Vi += self.betan * self.s[cs].alpha * abs(rho)
+
+                self.s[cs].alpha = self.gamma * abs(rho) + (1 - self.gamma) * self.s[cs].alpha
+                self.s[cs].assoc = self.s[cs].Ve - self.s[cs].Vi
+
+            case '_dualmack':
                 rho = lamda - (sigmaE - sigmaI)
 
                 VXe = sigmaE - self.s[cs].Ve
@@ -222,7 +232,7 @@ class Group:
                 self.s[cs].alpha = 1/2 * (1 + self.s[cs].assoc - (VXe - VXi))
                 self.s[cs].assoc = self.s[cs].Ve - self.s[cs].Vi
 
-            case 'hybrid':
+            case '_hybrid':
                 rho = lamda - (sigmaE - sigmaI)
                 
                 NVe = 0.

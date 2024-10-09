@@ -59,6 +59,9 @@ class RWArgs:
     alpha_mack: None | float = None
     alpha_hall: None | float = None
 
+    saliences: dict[str, float]
+    salience: float
+
     plot_phase: None | int = None
     plot_experiments: None | list[str] = None
     plot_stimuli: None | list[str] = None
@@ -91,6 +94,8 @@ class Experiment:
             default_alpha = args.alpha,
             default_alpha_mack = args.alpha_mack,
             default_alpha_hall = args.alpha_hall,
+            saliences = args.saliences,
+            default_salience = args.salience,
             betan = args.beta_neg,
             betap = args.beta,
             lamda = args.lamda,

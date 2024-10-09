@@ -70,6 +70,7 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
         axes[0].set_ylabel('Associative Strength')
         axes[0].xaxis.set_major_locator(MaxNLocator(integer = True))
         axes[0].legend(fontsize = 'small')
+        axes[0].ticklabel_format(useOffset = False, style = 'plain', axis = 'y')
 
         if plot_alpha or plot_macknhall:
             axes[0].set_title(f'Associative Environment')
