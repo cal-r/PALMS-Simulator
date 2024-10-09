@@ -8,10 +8,6 @@ class Group:
     cs: list[str]
     s: Environment
 
-    betan: float
-    betap: float
-    lamda: float
-
     prev_lamda: float
 
     adaptive_type: None | str
@@ -76,23 +72,6 @@ class Group:
         # but we keep this line as we might re-add it later.
         self.cs = [x for x in alphas.keys() if len(x) == 1]
 
-    def get_alpha_mack(self, cs: str, sigma: float) -> float:
-        return 1/2 * (1 + 2*self.s[cs].assoc - sigma)
-
-    def get_alpha_hall(self, cs: str, sigma: float, lamda: float) -> float:
-        assert self.xi_hall is not None
-
-        delta_ma_hall = self.s[cs].delta_ma_hall or 0
-
-        surprise = abs(lamda - sigma)
-        window_term =  1 - self.xi_hall * math.exp(-delta_ma_hall**2 / 2)
-        gamma = 0.99
-        kayes = gamma*surprise +  (1-gamma)*self.s[cs].alpha_hall
-
-        new_error = kayes
-
-        return new_error
-
     # runPhase runs a single trial of a phase, in order, and returns a list of the Strength values
     # of its CS at every step.
     # It also modifies `self.s` to account for all the strengths modified in this phase.
@@ -135,6 +114,8 @@ class Group:
 
     def step(self, cs: str, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
         delta_v_factor = beta * (self.prev_lamda - sigma)
+
+        self.adaptive_type_but_the_class(self.s[cs], beta, lamda, sign, sigma, sigmaE, sigmaI)
 
         match self.adaptive_type:
             case 'rescorla_wagner':
