@@ -3,7 +3,7 @@ import random
 import re
 import sys
 from collections import defaultdict
-from Experiment import run_all_phases
+from Experiment import Experiment
 from Group import Group
 from Environment import Environment, StimulusHistory
 from Plots import show_plots, save_plots
@@ -90,9 +90,10 @@ def main():
         if args.plot_experiments is not None and name not in args.plot_experiments:
             continue
 
-        local_strengths, local_phases = run_all_phases(name, phase_strs, args)
+        experiment = Experiment(name, phase_strs)
+        local_strengths = experiment.run_all_phases(args)
         groups_strengths = [a | b for a, b in zip(groups_strengths, local_strengths)]
-        phases[name] = local_phases
+        phases[name] = experiment.phases
 
     assert(groups_strengths is not None)
 

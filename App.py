@@ -4,7 +4,7 @@ from collections import defaultdict
 from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import *
-from Experiment import RWArgs, create_group_and_phase, run_group_experiments, group_results, Phase
+from Experiment import RWArgs, Experiment, Phase
 from Plots import show_plots, generate_figures
 from Environment import StimulusHistory
 
@@ -430,12 +430,11 @@ class PavlovianApp(QDialog):
             if not any(phase_strs):
                 continue
 
-            group, local_phases = create_group_and_phase(name, phase_strs, args)
-            results = run_group_experiments(group, local_phases, args.num_trials)
-            local_strengths = group_results(results, name, args)
+            experiment = Experiment(name, phase_strs)
+            local_strengths = experiment.run_all_phases(args)
 
             strengths = [a | b for a, b in zip(strengths, local_strengths)]
-            phases[name] = local_phases
+            phases[name] = experiment.phases
 
         return strengths, phases, args
 

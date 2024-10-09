@@ -68,71 +68,77 @@ class RWArgs:
     title_suffix: None | str = None
     savefig: None | str = None
 
-def create_group_and_phase(name: str, phase_strs: list[str], args) -> tuple[Group, list[Phase]]:
-    phases = [Phase(phase_str) for phase_str in phase_strs]
+class Experiment:
+    name: str
+    phases: list[Phase]
 
-    stimuli = set.union(*[x.cs() for x in phases])
-    g = Group(
-        name = name,
-        alphas = args.alphas,
-        default_alpha = args.alpha,
-        default_alpha_mack = args.alpha_mack,
-        default_alpha_hall = args.alpha_hall,
-        betan = args.beta_neg,
-        betap = args.beta,
-        lamda = args.lamda,
-        gamma = args.gamma,
-        thetaE = args.thetaE,
-        thetaI = args.thetaI,
-        cs = stimuli,
-        adaptive_type = args.adaptive_type,
-        window_size = args.window_size,
-        xi_hall = args.xi_hall,
-    )
+    def __init__(self, name: str, phase_strs: list[str]):
+        self.name = name
+        self.phases = [Phase(phase_str) for phase_str in phase_strs]
 
-    return g, phases
+    def run_all_phases(self, args: RWArgs) -> list[dict[str, StimulusHistory]]:
+        group = self.initial_group(args)
+        results = self.run_group_experiments(group, args.num_trials)
+        strengths = self.group_results(results, args)
 
-def run_group_experiments(g: Group, experiment: list[Phase], num_trials: int) -> list[list[Environment]]:
-    results = []
+        return strengths
 
-    for trial, phase in enumerate(experiment):
-        if not phase.rand:
-            strength_hist = g.runPhase(phase.elems, phase.lamda)
-            results.append(strength_hist)
-        else:
-            initial_strengths = g.s.copy()
-            final_strengths = []
-            hist = []
+    def initial_group(self, args: RWArgs) -> Group:
+        stimuli = set.union(*[x.cs() for x in self.phases])
+        g = Group(
+            name = self.name,
+            alphas = args.alphas,
+            default_alpha = args.alpha,
+            default_alpha_mack = args.alpha_mack,
+            default_alpha_hall = args.alpha_hall,
+            betan = args.beta_neg,
+            betap = args.beta,
+            lamda = args.lamda,
+            gamma = args.gamma,
+            thetaE = args.thetaE,
+            thetaI = args.thetaI,
+            cs = stimuli,
+            adaptive_type = args.adaptive_type,
+            window_size = args.window_size,
+            xi_hall = args.xi_hall,
+        )
 
-            for trial in range(num_trials):
-                random.shuffle(phase.elems)
+        return g
 
-                g.s = initial_strengths.copy()
-                hist.append(g.runPhase(phase.elems, phase.lamda))
-                final_strengths.append(g.s.copy())
+    def run_group_experiments(self, g: Group, num_trials: int) -> list[list[Environment]]:
+        results = []
 
-            results.append([
-                Environment.avg([h[x] for h in hist if x < len(h)])
-                for x in range(max(len(h) for h in hist))
-            ])
+        for trial, phase in enumerate(self.phases):
+            if not phase.rand:
+                strength_hist = g.runPhase(phase.elems, phase.lamda)
+                results.append(strength_hist)
+            else:
+                initial_strengths = g.s.copy()
+                final_strengths = []
+                hist = []
 
-            g.s = Environment.avg(final_strengths)
+                for trial in range(num_trials):
+                    random.shuffle(phase.elems)
 
-    return results
+                    g.s = initial_strengths.copy()
+                    hist.append(g.runPhase(phase.elems, phase.lamda))
+                    final_strengths.append(g.s.copy())
 
-def group_results(results: list[list[Environment]], name: str, args: RWArgs) -> list[dict[str, StimulusHistory]]:
-    group_strengths = [StimulusHistory.emptydict() for _ in results]
-    for phase_num, strength_hist in enumerate(results):
-        for strengths in strength_hist:
-            for cs in strengths.ordered_cs():
-                if args.plot_stimuli is None or cs in args.plot_stimuli:
-                    group_strengths[phase_num][f'{name} - {cs}'].add(strengths[cs])
+                results.append([
+                    Environment.avg([h[x] for h in hist if x < len(h)])
+                    for x in range(max(len(h) for h in hist))
+                ])
 
-    return group_strengths
+                g.s = Environment.avg(final_strengths)
 
-def run_all_phases(name: str, phase_strs: list[str], args: RWArgs):
-    group, phases = create_group_and_phase(name, phase_strs, args)
-    results = run_group_experiments(group, phases, args.num_trials)
-    strengths = group_results(results, name, args)
+        return results
 
-    return strengths, phases
+    def group_results(self, results: list[list[Environment]], args: RWArgs) -> list[dict[str, StimulusHistory]]:
+        group_strengths = [StimulusHistory.emptydict() for _ in results]
+        for phase_num, strength_hist in enumerate(results):
+            for strengths in strength_hist:
+                for cs in strengths.ordered_cs():
+                    if args.plot_stimuli is None or cs in args.plot_stimuli:
+                        group_strengths[phase_num][f'{self.name} - {cs}'].add(strengths[cs])
+
+        return group_strengths
