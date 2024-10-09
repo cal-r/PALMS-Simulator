@@ -47,8 +47,8 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
     figures = []
     for phase_num, experiments in enumerate(data, start = 1):
         if not plot_alpha and not plot_macknhall:
-            fig, axes = pyplot.subplots(1, 1, figsize = (8, 6), dpi = dpi)
-            axes = [axes]
+            fig, axes_ = pyplot.subplots(1, 1, figsize = (8, 6), dpi = dpi)
+            axes = [axes_]
         else:
             fig, axes = pyplot.subplots(1, 2, figsize = (16, 6), dpi = dpi)
 

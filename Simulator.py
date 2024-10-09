@@ -7,6 +7,7 @@ from Experiment import Experiment
 from Group import Group
 from Environment import Environment, StimulusHistory
 from Plots import show_plots, save_plots
+from AdaptiveType import AdaptiveType
 
 # Given a list of arguments, matches the ones corresponding to a particular name
 # combined with a CS and returns them as a dictionary, along with the remaining
@@ -30,7 +31,7 @@ def parse_args() -> argparse.Namespace:
         epilog = '--alpha_[A-Z] ALPHA\tAssociative strength of CS A..Z. By default 0',
     )
 
-    parser.add_argument("--adaptive-type", choices = ['rescorla_wagner', 'rescorla_wagner_linear', 'pearce_hall', 'pearce_kaye_hall', 'le_pelley', '_rescorla_wagner_exponential', '_mack', '_hall', '_macknhall', '_newDualV', '_dualmack', '_hybrid'], default = 'rescorla_wagner', help = 'Type of adaptive attention mode to use')
+    parser.add_argument("--adaptive-type", choices = AdaptiveType.types().keys(), default = 'rescorla_wagner', help = 'Type of adaptive attention mode to use')
 
     parser.add_argument('--alpha', type = float, default = .1, help = 'Alpha for all other stimuli')
     parser.add_argument('--alpha-mack', type = float, help = 'Alpha_mack for all other stimuli')

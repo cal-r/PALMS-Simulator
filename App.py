@@ -378,7 +378,7 @@ class PavlovianApp(QDialog):
             'thetaI': '0.1',
             'salience': '0.5',
             'window_size': '10',
-            'num_trials': '1000'
+            'num_trials': '100'
         }
 
         for key, value in defaults.items():

@@ -1,66 +1,90 @@
+import math
+
+from Environment import Stimulus
+
 class AdaptiveType:
     betan: float
     betap: float
     lamda: float
+    xi_hall: None | float
+    gamma: float
+    thetaE: float
+    thetaI: float
 
-    def __init__(self, betan: float, betap: float, lamda: float) -> float:
+    prev_lamda: float
+
+    def __init__(self, betan: float, betap: float, lamda: float, xi_hall: None | float, gamma: float, thetaE: float, thetaI: float):
         self.betan = betan
         self.betap = betap
         self.lamda = lamda
+        self.xi_hall = xi_hall
+        self.gamma = gamma
+        self.thetaE = thetaE
+        self.thetaI = thetaI
+        self.prev_lamda = lamda
 
-    def get_alpha_mack(self, cs: str, sigma: float) -> float:
-        return 1/2 * (1 + 2*self.s[cs].assoc - sigma)
+    @classmethod
+    def types(cls) -> dict[str, 'AdaptiveType']:
+        return {
+            'rescorla_wagner': RescorlaWagner,
+            'rescorla_wagner_linear': RescorlaWagnerLinear,
+            'pearce_hall': PearceHall,
+            'pearce_kaye_hall': PearceKayeHall,
+            'le_pelley': LePelley,
+            'rescorla_wagner_exponential': RescorlaWagnerExponential,
+            'mack': Mack,
+            'hall': Hall,
+            'macknhall': Macknhall,
+            'new_dual_v': NewDualV,
+            'dualmack': Dualmack,
+            'hybrid': Hybrid,
+        }
 
-    def get_alpha_hall(self, cs: str, sigma: float, lamda: float) -> float:
+    @classmethod
+    def get(cls, adaptive_type_name, *args, **kwargs) -> 'AdaptiveType':
+        return cls.types()[adaptive_type_name](*args, **kwargs)
+
+    def get_alpha_mack(self, s: Stimulus, sigma: float) -> float:
+        return 1/2 * (1 + 2*s.assoc - sigma)
+
+    def get_alpha_hall(self, s: Stimulus, sigma: float, lamda: float) -> float:
         assert self.xi_hall is not None
 
-        delta_ma_hall = self.s[cs].delta_ma_hall or 0
+        delta_ma_hall = s.delta_ma_hall or 0
 
         surprise = abs(lamda - sigma)
         window_term =  1 - self.xi_hall * math.exp(-delta_ma_hall**2 / 2)
         gamma = 0.99
-        kayes = gamma*surprise +  (1-gamma)*self.s[cs].alpha_hall
+        kayes = gamma*surprise +  (1-gamma)*s.alpha_hall
 
         new_error = kayes
 
         return new_error
 
+    def run_step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
+        self.delta_v_factor = beta * (self.prev_lamda - sigma)
+        self.step(s, beta, lamda, sign, sigma, sigmaE, sigmaI)
+        self.prev_lamda = lamda
+
     def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
-        raise NotImplemented('Calling step in virtual function.')
+        raise NotImplementedError('Calling step in abstract function is undefined.')
 
-class Linear(AdaptiveType):
-	def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
+class RescorlaWagner(AdaptiveType):
+    def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
+        s.assoc += s.alpha * self.delta_v_factor
+
+class RescorlaWagnerLinear(AdaptiveType):
+    def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
         s.alpha *= 1 + sign * 0.05
-        s.assoc += s.alpha * delta_v_factor
+        s.assoc += s.alpha * self.delta_v_factor
 
-class Exponential(AdaptiveType):
-	def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
-        if sign == 1:
-            s.alpha *= (s.alpha ** 0.05) ** sign
-        s.assoc += s.alpha * delta_v_factor
+class PearceHall(AdaptiveType):
+    def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
+        s.alpha = abs(lamda - sigma)
+        s.assoc += s.salience * s.alpha * abs(lamda)
 
-class Mack(AdaptiveType):
-	def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
-        s.alpha = s.alpha_mack
-        #s.assoc = s.assoc + s.alpha * delta_v_factor
-        s.assoc = s.assoc * delta_v_factor + delta_v_factor/2*beta
-
-class Hall(AdaptiveType):
-	def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
-        s.alpha_hall = self.get_alpha_hall(cs, sigma, self.prev_lamda)
-        s.alpha = s.alpha_hall
-        s.assoc += s.alpha * beta * (lamda - sigma)
-
-class Macknhall(AdaptiveType):
-	def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
-        s.alpha_mack = self.get_alpha_mack(cs, sigma)
-        s.alpha_hall = self.get_alpha_hall(cs, sigma, self.prev_lamda)
-        s.alpha = (1 - abs(self.prev_lamda - sigma)) * s.alpha_mack + s.alpha_hall
-        s.assoc += s.alpha * delta_v_factor
-
-class DualV(AdaptiveType):
-	def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
-        # Ask Esther whether this is lamda^{n + 1) or lamda^n.
+class PearceKayeHall(AdaptiveType):
+    def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
         rho = lamda - (sigmaE - sigmaI)
 
         if rho >= 0:
@@ -71,23 +95,8 @@ class DualV(AdaptiveType):
         s.alpha = self.gamma * abs(rho) + (1 - self.gamma) * s.alpha
         s.assoc = s.Ve - s.Vi
 
-class NewDualV(AdaptiveType):
-	def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
-        rho = lamda - (sigmaE - sigmaI)
-
-        delta_ma_hall = s.delta_ma_hall or 0
-        self.gamma = 1 - math.exp(-delta_ma_hall**2)
-
-        if rho >= 0:
-            s.Ve += self.betap * s.alpha * lamda
-        else:
-            s.Vi += self.betan * s.alpha * abs(rho)
-
-        s.alpha = self.gamma * abs(rho) + (1 - self.gamma) * s.alpha
-        s.assoc = s.Ve - s.Vi
-
-class Lepelley(AdaptiveType):
-	def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
+class LePelley(AdaptiveType):
+    def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
         rho = lamda - (sigmaE - sigmaI)
 
         VXe = sigmaE - s.Ve
@@ -110,9 +119,49 @@ class Lepelley(AdaptiveType):
 
         s.assoc = s.Ve - s.Vi
 
+class RescorlaWagnerExponential(AdaptiveType):
+    def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
+        if sign == 1:
+            s.alpha *= (s.alpha ** 0.05) ** sign
+        s.assoc += s.alpha * self.delta_v_factor
+
+class Mack(AdaptiveType):
+    def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
+        s.alpha_mack = self.get_alpha_mack(s, sigma)
+        s.alpha = s.alpha_mack
+        s.assoc = s.assoc * self.delta_v_factor + self.delta_v_factor/2*beta
+
+class Hall(AdaptiveType):
+    def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
+        s.alpha_hall = self.get_alpha_hall(s, sigma, self.prev_lamda)
+        s.alpha = s.alpha_hall
+        self.delta_v_factor = 0.5 * abs(self.prev_lamda)
+        s.assoc += s.alpha * beta * (lamda - sigma)
+
+class Macknhall(AdaptiveType):
+    def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
+        s.alpha_mack = self.get_alpha_mack(s, sigma)
+        s.alpha_hall = self.get_alpha_hall(s, sigma, self.prev_lamda)
+        s.alpha = (1 - abs(self.prev_lamda - sigma)) * s.alpha_mack + s.alpha_hall
+        s.assoc += s.alpha * self.delta_v_factor
+
+class NewDualV(AdaptiveType):
+    def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
+        rho = lamda - (sigmaE - sigmaI)
+
+        delta_ma_hall = s.delta_ma_hall or 0
+        self.gamma = 1 - math.exp(-delta_ma_hall**2)
+
+        if rho >= 0:
+            s.Ve += self.betap * s.alpha * lamda
+        else:
+            s.Vi += self.betan * s.alpha * abs(rho)
+
+        s.alpha = self.gamma * abs(rho) + (1 - self.gamma) * s.alpha
+        s.assoc = s.Ve - s.Vi
 
 class Dualmack(AdaptiveType):
-	def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
+    def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
         rho = lamda - (sigmaE - sigmaI)
 
         VXe = sigmaE - s.Ve
@@ -127,9 +176,9 @@ class Dualmack(AdaptiveType):
         s.assoc = s.Ve - s.Vi
 
 class Hybrid(AdaptiveType):
-	def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
+    def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
         rho = lamda - (sigmaE - sigmaI)
-        
+
         NVe = 0.
         NVi = 0.
         if rho >= 0:
@@ -155,6 +204,3 @@ class Hybrid(AdaptiveType):
         s.Vi = NVi
 
         s.assoc = s.alpha_mack * (s.Ve - s.Vi)
-
-case _:
-        raise NameError(f'Unknown adaptive type {self.adaptive_type}!')
