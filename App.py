@@ -1,5 +1,6 @@
-import sys
 import os
+import re
+import sys
 from collections import defaultdict
 from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtGui import QFont
@@ -191,7 +192,7 @@ class PavlovianApp(QDialog):
         mainLayout.addWidget(self.parametersGroupBox, 1, 1, 1, 1)
         mainLayout.addWidget(self.plotBox, 1, 2, 1, 1)
         mainLayout.addWidget(self.adaptiveTypeGroupBox, 1, 3, 1, 1)
-        mainLayout.setRowStretch(0, 0)
+        mainLayout.setRowStretch(0, 1)
         mainLayout.setRowStretch(1, 1)
         mainLayout.setColumnStretch(0, 0)
         mainLayout.setColumnStretch(1, 0)
@@ -204,7 +205,7 @@ class PavlovianApp(QDialog):
 
         self.initialAdaptiveTypeButton.click()
 
-        self.resize(1250, 550)
+        self.resize(1250, 600)
 
     def addAdaptiveTypeButtons(self):
         buttons = QGroupBox('Adaptive Type')
@@ -216,7 +217,8 @@ class PavlovianApp(QDialog):
         buttonGroup.setExclusive(True)
 
         for i, adaptive_type in enumerate(self.adaptive_types):
-            button = QPushButton(adaptive_type)
+            button = QPushButton(' '.join(x.capitalize() for x in re.findall(r'[a-z]+', adaptive_type)))
+            button.adaptive_type = adaptive_type
             button.setCheckable(True)
 
             noMarginStyle = ""
@@ -312,7 +314,7 @@ class PavlovianApp(QDialog):
                 file.write(line + '\n')
 
     def changeAdaptiveType(self, button):
-        self.current_adaptive_type = button.text()
+        self.current_adaptive_type = button.adaptive_type
 
         widgets_to_enable = {
             'rescorla_wagner': ['alpha', 'beta', 'lamda'],
