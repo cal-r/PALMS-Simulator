@@ -123,7 +123,7 @@ class PavlovianApp(QDialog):
     def __init__(self, parent=None):
         super(PavlovianApp, self).__init__(parent)
 
-        self.adaptive_types = ['linear', 'exponential', 'mack', 'hall', 'macknhall', 'dualV', 'newDualV', 'lepelley', 'dualmack', 'hybrid']
+        self.adaptive_types = ['rescorla_wagner', 'rescorla_wagner_linear', 'pearce_hall', 'pearce_kaye_hall', 'le_pelley']
         self.current_adaptive_type = None
         self.inset_text_column_index = None
 
@@ -228,7 +228,7 @@ class PavlovianApp(QDialog):
             layout.addWidget(button)
 
             button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-            if adaptive_type == 'lepelley':
+            if adaptive_type == 'le_pelley':
                 button.setChecked(True)
                 self.initialAdaptiveTypeButton = button
 
@@ -315,19 +315,14 @@ class PavlovianApp(QDialog):
         self.current_adaptive_type = button.text()
 
         widgets_to_enable = {
-            'linear': ['alpha', 'lamda', 'beta'],
-            'exponential': ['alpha', 'lamda', 'beta'],
-            'mack': ['alpha', 'lamda', 'beta', 'thetaE', 'thetaI'],
-            'hall': ['lamda', 'beta', 'gamma', 'thetaE', 'thetaI'],
-            'macknhall': ['alpha', 'lamda', 'beta', 'gamma', 'window_size'],
-            'dualV': ['alpha', 'lamda', 'beta', 'betan', 'gamma'],
-            'newDualV': ['alpha', 'lamda', 'beta', 'betan', 'gamma', 'window_size'],
-            'lepelley': ['alpha', 'lamda', 'beta', 'betan', 'gamma', 'thetaE', 'thetaI'],
-            'dualmack': ['alpha', 'lamda', 'beta', 'betan'],
-            'hybrid': ['alpha', 'lamda', 'beta', 'betan', 'gamma', 'thetaE', 'thetaI'],
+            'rescorla_wagner': ['alpha', 'beta', 'lamda'],
+            'rescorla_wagner_linear': ['alpha', 'beta', 'lamda'],
+            'pearce_hall': ['alpha', 'lamda', 'salience'],
+            'pearce_kaye_hall': ['alpha', 'betan', 'beta', 'gamma', 'lamda', 'lamda'],
+            'le_pelley': ['alpha', 'betan', 'beta', 'lamda', 'thetaE', 'thetaI'],
         }
 
-        for key in ['alpha', 'lamda', 'beta', 'betan', 'gamma', 'thetaE', 'thetaI', 'window_size']:
+        for key in ['alpha', 'lamda', 'beta', 'betan', 'gamma', 'thetaE', 'thetaI', 'window_size', 'salience']:
             widget = getattr(self, f'{key}').box
             widget.setDisabled(True)
 
@@ -362,8 +357,9 @@ class PavlovianApp(QDialog):
         self.gamma = DualLabel("γ ", params, self, 'Monospace')
         self.thetaE = DualLabel("θᴱ", params, self, 'Monospace')
         self.thetaI = DualLabel("θᴵ", params, self, 'Monospace')
-        self.window_size = DualLabel("Window Size", params, self)
-        self.num_trials = DualLabel("Number Trials", params, self)
+        self.salience = DualLabel("S ", params, self, 'Monospace')
+        self.window_size = DualLabel("WS", params, self)
+        self.num_trials = DualLabel("№", params, self)
 
         params.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
 
@@ -378,6 +374,7 @@ class PavlovianApp(QDialog):
             'gamma': '0.5',
             'thetaE': '0.3',
             'thetaI': '0.1',
+            'salience': '0.5',
             'window_size': '10',
             'num_trials': '1000'
         }
@@ -407,6 +404,9 @@ class PavlovianApp(QDialog):
             gamma = float(self.gamma.box.text()),
             thetaE = float(self.thetaE.box.text()),
             thetaI = float(self.thetaI.box.text()),
+
+            salience = float(self.salience.box.text()),
+            saliences = defaultdict(lambda: float(self.salience.box.text())),
 
             window_size = int(self.window_size.box.text()),
             num_trials = int(self.num_trials.box.text()),
