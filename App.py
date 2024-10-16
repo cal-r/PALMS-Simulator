@@ -2,7 +2,7 @@ import os
 import re
 import sys
 from collections import defaultdict
-from PyQt6.QtCore import QTimer, Qt
+from PyQt6.QtCore import QTimer, Qt, QSize
 from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import *
 from Experiment import RWArgs, Experiment, Phase
@@ -155,9 +155,6 @@ class PavlovianApp(QDialog):
         self.addActionsButtons()
         self.createParametersGroupBox()
 
-        disableWidgetsCheckBox.toggled.connect(self.adaptiveTypeGroupBox.setDisabled)
-        disableWidgetsCheckBox.toggled.connect(self.parametersGroupBox.setDisabled)
-
         self.plotBox = QGroupBox('Plot')
 
         self.plotCanvas = FigureCanvasQTAgg()
@@ -187,13 +184,15 @@ class PavlovianApp(QDialog):
         self.adaptiveTypeButtons = self.addAdaptiveTypeButtons()
 
         mainLayout = QGridLayout()
-        mainLayout.addWidget(self.adaptiveTypeButtons, 1, 0, 1, 1)
         mainLayout.addWidget(self.tableWidget, 0, 0, 1, 4)
-        mainLayout.addWidget(self.parametersGroupBox, 1, 1, 1, 1)
-        mainLayout.addWidget(self.plotBox, 1, 2, 1, 1)
-        mainLayout.addWidget(self.adaptiveTypeGroupBox, 1, 3, 1, 1)
+        mainLayout.addWidget(self.adaptiveTypeButtons, 1, 0, 2, 1)
+        mainLayout.addWidget(self.parametersGroupBox, 1, 1, 2, 1)
+        mainLayout.addWidget(self.plotBox, 1, 2, 2, 1)
+        mainLayout.addWidget(self.plotOptionsGroupBox, 1, 3, 1, 1)
+        mainLayout.addWidget(self.fileOptionsGroupBox, 2, 3, 1, 1)
         mainLayout.setRowStretch(0, 1)
-        mainLayout.setRowStretch(1, 1)
+        mainLayout.setRowStretch(1, 0)
+        mainLayout.setRowStretch(2, 1)
         mainLayout.setColumnStretch(0, 0)
         mainLayout.setColumnStretch(1, 0)
         mainLayout.setColumnStretch(2, 1)
@@ -244,7 +243,8 @@ class PavlovianApp(QDialog):
         self.refreshExperiment()
 
     def addActionsButtons(self):
-        self.adaptiveTypeGroupBox = QGroupBox("Actions")
+        self.plotOptionsGroupBox = QGroupBox("Plot Options")
+        self.fileOptionsGroupBox = QGroupBox("File Options")
 
         self.fileButton = QPushButton('Load file')
         self.fileButton.clicked.connect(self.openFileDialog)
@@ -252,13 +252,14 @@ class PavlovianApp(QDialog):
         self.saveButton = QPushButton("Save Experiment")
         self.saveButton.clicked.connect(self.saveExperiment)
 
-        self.plotAlphaCheckbox = QCheckBox('Plot α')
-        self.plotAlphaCheckbox.clicked.connect(self.refreshExperiment)
-
-        self.plotTickBoxesLayout = QHBoxLayout()
-        self.plotTickBoxesLayout.addWidget(self.plotAlphaCheckbox)
-        self.plotTickBoxes = QGroupBox('')
-        self.plotTickBoxes.setLayout(self.plotTickBoxesLayout)
+        self.plotAlphaButton = QPushButton('Plot α')
+        checkedStyle = "QPushButton:checked { background-color: lightblue; font-weight: bold; border: 2px solid #0057D8; }"
+        self.plotAlphaButton.setStyleSheet(checkedStyle)
+        self.plotAlphaButton.setFixedHeight(50)
+        self.plotAlphaButton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        self.plotAlphaButton.clicked.connect(self.togglePlotAlpha)
+        self.plotAlphaButton.setCheckable(True)
+        self.plot_alpha = False
 
         self.setDefaultParamsButton = QPushButton("Restore Default Parameters")
         self.setDefaultParamsButton.clicked.connect(self.restoreDefaultParameters)
@@ -269,15 +270,22 @@ class PavlovianApp(QDialog):
         self.printButton = QPushButton("Plot")
         self.printButton.clicked.connect(self.plotExperiment)
 
-        layout = QVBoxLayout()
-        layout.addWidget(self.fileButton)
-        layout.addWidget(self.saveButton)
-        layout.addWidget(self.plotTickBoxes)
-        layout.addWidget(self.setDefaultParamsButton)
-        layout.addWidget(self.refreshButton)
-        layout.addWidget(self.printButton)
-        layout.addStretch(1)
-        self.adaptiveTypeGroupBox.setLayout(layout)
+        plotOptionsLayout = QVBoxLayout()
+        plotOptionsLayout.addWidget(self.plotAlphaButton)
+        plotOptionsLayout.addWidget(self.refreshButton)
+        plotOptionsLayout.addWidget(self.printButton)
+        self.plotOptionsGroupBox.setLayout(plotOptionsLayout)
+
+        fileOptionsLayout = QVBoxLayout()
+        fileOptionsLayout.addWidget(self.fileButton)
+        fileOptionsLayout.addWidget(self.saveButton)
+        fileOptionsLayout.addWidget(self.setDefaultParamsButton)
+        fileOptionsLayout.addStretch()
+        self.fileOptionsGroupBox.setLayout(fileOptionsLayout)
+
+    def togglePlotAlpha(self):
+        self.plot_alpha = not self.plot_alpha
+        self.refreshExperiment()
 
     def saveExperiment(self):
         default_directory = os.path.join(os.getcwd(), 'Experiments')
@@ -409,7 +417,7 @@ class PavlovianApp(QDialog):
             window_size = int(self.window_size.box.text()),
             num_trials = int(self.num_trials.box.text()),
 
-            plot_alpha = self.plotAlphaCheckbox.checkState() == Qt.CheckState.Checked,
+            plot_alpha = self.plot_alpha,
 
             xi_hall = 0.5,
         )
