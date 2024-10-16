@@ -113,6 +113,7 @@ class CoolTable(QTableWidget):
             if len(phase_strs) > maxCols:
                 maxCols = len(phase_strs)
                 self.setColumnCount(maxCols)
+                self.setHorizontalHeaderLabels([f'Phase {x}' for x in range(1, maxCols + 1)])
 
             self.setVerticalHeaderItem(row, QTableWidgetItem(name))
             for col, phase in enumerate(phase_strs):
@@ -456,7 +457,6 @@ class PavlovianApp(QDialog):
 
         self.figures = generate_figures(
             strengths,
-            phases = phases,
             plot_alpha = args.plot_alpha,
             dpi = 175,
         )
