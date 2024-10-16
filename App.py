@@ -12,6 +12,8 @@ from Environment import StimulusHistory
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib import pyplot
 
+from itertools import chain
+
 class CoolTable(QTableWidget):
     def __init__(self, rows: int, cols: int):
         super().__init__(rows, cols)
@@ -159,7 +161,6 @@ class PavlovianApp(QDialog):
         self.plotBox = QGroupBox('Plot')
 
         self.plotCanvas = FigureCanvasQTAgg()
-
         self.phaseBox = QGroupBox()
 
         self.phaseBoxLayout = QGridLayout()
@@ -459,13 +460,17 @@ class PavlovianApp(QDialog):
             strengths,
             plot_alpha = args.plot_alpha,
             dpi = 175,
+            ticker_threshold = 5,
         )
+        for f in self.figures:
+            f.set_canvas(self.plotCanvas)
         
         self.refreshFigure()
 
     def refreshFigure(self):
         current_figure = self.figures[self.phase - 1]
         current_figure.tight_layout()
+        self.plotCanvas.figure = current_figure
 
         self.tableWidget.setRangeSelected(
             QTableWidgetSelectionRange(0, 0, self.tableWidget.rowCount() - 1, self.tableWidget.columnCount() - 1),
@@ -483,13 +488,28 @@ class PavlovianApp(QDialog):
             self.height(),
         )
 
-        self.plotCanvas.figure = current_figure
-        self.plotCanvas.draw()
-
         self.plotCanvas.resize(self.plotCanvas.width() - 1, self.plotCanvas.height() - 1)
         self.plotCanvas.resize(self.plotCanvas.width() + 1, self.plotCanvas.height() + 1)
 
+        self.plotCanvas.mpl_connect('pick_event', self.pickLine)
+        self.plotCanvas.draw()
+
         self.phaseInfo.setText(f'Phase {self.phase}/{self.numPhases}')
+
+    def pickLine(self, event):
+        line = event.artist
+        label = line.get_label()
+
+        for ax in line.figure.get_axes():
+            for line in ax.get_lines():
+                if line.get_label() == label:
+                    line.set_alpha(.5 - line.get_alpha())
+
+            for line in ax.get_legend().get_lines():
+                if line.get_label() == label:
+                    line.set_alpha(.75 - line.get_alpha())
+
+        line.figure.canvas.draw_idle()
 
     def plotExperiment(self):
         strengths, phases, args = self.generateResults()

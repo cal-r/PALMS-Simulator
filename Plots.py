@@ -6,6 +6,7 @@ matplotlib.use('QtAgg')
 from matplotlib import pyplot
 from Environment import StimulusHistory
 from matplotlib.ticker import MaxNLocator
+from itertools import chain
 
 from Experiment import Phase
 
@@ -38,7 +39,7 @@ def titleify(filename: str, phases: dict[str, list[Phase]], phase_num: int, suff
 
     return '\n'.join(titles)
 
-def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | dict[str, list[Phase]] = None, filename = None, plot_phase = None, plot_alpha = False, plot_macknhall = False, title_suffix = None, dpi = None) -> list[pyplot.Figure]:
+def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | dict[str, list[Phase]] = None, filename = None, plot_phase = None, plot_alpha = False, plot_macknhall = False, title_suffix = None, dpi = None, ticker_threshold = 10) -> list[pyplot.Figure]:
     seaborn.set()
 
     if plot_phase is not None:
@@ -54,23 +55,23 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
 
         colors = dict(zip(experiments.keys(), seaborn.color_palette('husl', len(experiments))))
         for key, hist in experiments.items():
-            axes[0].plot(hist.assoc, label=key, marker='D', color = colors[key], markersize=4, alpha=.5)
+            line = axes[0].plot(hist.assoc, label=key, marker='D', color = colors[key], markersize=4, alpha=.5, picker = ticker_threshold)
 
             if len(axes) > 1:
                 if plot_alpha:
-                    axes[1].plot(hist.alpha, label=key, color = colors[key], marker='D', markersize=8, alpha=.5)
+                    axes[1].plot(hist.alpha, label=key, color = colors[key], marker='D', markersize=8, alpha=.5, picker = ticker_threshold)
                 else:
-                    axes[1].plot([], label=key, color = colors[key], marker='D', markersize=8, alpha=.5)
+                    axes[1].plot([], label=key, color = colors[key], marker='D', markersize=8, alpha=.5, picker = ticker_threshold)
 
                 if plot_macknhall:
-                    axes[1].plot(hist.alpha_mack, color = colors[key], marker='$M$', markersize=8, alpha=.5)
-                    axes[1].plot(hist.alpha_hall, color = colors[key], marker='$H$', markersize=8, alpha=.5)
+                    axes[1].plot(hist.alpha_mack, color = colors[key], marker='$M$', markersize=8, alpha=.5, picker = ticker_threshold)
+                    axes[1].plot(hist.alpha_hall, color = colors[key], marker='$H$', markersize=8, alpha=.5, picker = ticker_threshold)
 
         axes[0].set_xlabel('Trial Number')
         axes[0].set_ylabel('Associative Strength')
         axes[0].xaxis.set_major_locator(MaxNLocator(integer = True))
-        axes[0].legend(fontsize = 'small')
         axes[0].ticklabel_format(useOffset = False, style = 'plain', axis = 'y')
+        axes[0].legend(fontsize = 'small')
 
         if plot_alpha or plot_macknhall:
             axes[0].set_title(f'Associative Environment')
@@ -82,6 +83,10 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
             axes[1].tick_params(axis = 'y', which = 'both', right = True, length = 0)
             axes[1].yaxis.set_label_position('right')
             axes[1].legend(fontsize = 'small')
+
+        legend_lines = chain.from_iterable([ax.get_legend().get_lines() for ax in axes])
+        for line in legend_lines:
+            line.set_picker(ticker_threshold)
 
         if phases is not None:
             fig.suptitle(titleify(filename, phases, phase_num, title_suffix), fontdict = {'family': 'monospace'}, fontsize = 12)
