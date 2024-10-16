@@ -255,12 +255,8 @@ class PavlovianApp(QDialog):
         self.plotAlphaCheckbox = QCheckBox('Plot α')
         self.plotAlphaCheckbox.clicked.connect(self.refreshExperiment)
 
-        self.plotMnHCheckbox = QCheckBox("Mack'n'Hall")
-        self.plotMnHCheckbox.clicked.connect(self.refreshExperiment)
-        
         self.plotTickBoxesLayout = QHBoxLayout()
         self.plotTickBoxesLayout.addWidget(self.plotAlphaCheckbox)
-        self.plotTickBoxesLayout.addWidget(self.plotMnHCheckbox)
         self.plotTickBoxes = QGroupBox('')
         self.plotTickBoxes.setLayout(self.plotTickBoxesLayout)
 
@@ -414,7 +410,6 @@ class PavlovianApp(QDialog):
             num_trials = int(self.num_trials.box.text()),
 
             plot_alpha = self.plotAlphaCheckbox.checkState() == Qt.CheckState.Checked,
-            plot_macknhall = self.plotMnHCheckbox.checkState() == Qt.CheckState.Checked,
 
             xi_hall = 0.5,
         )
@@ -455,7 +450,6 @@ class PavlovianApp(QDialog):
             strengths,
             phases = phases,
             plot_alpha = args.plot_alpha,
-            plot_macknhall = args.plot_macknhall,
             dpi = 175,
         )
         
@@ -488,7 +482,6 @@ class PavlovianApp(QDialog):
             strengths,
             phases = phases,
             plot_alpha = args.plot_alpha,
-            plot_macknhall = args.plot_macknhall,
         )
 
         return strengths
