@@ -18,16 +18,44 @@ from argparse import ArgumentParser
 
 import ipdb
 
-class CoolTable(QTableWidget):
-    def __init__(self, rows: int, cols: int):
-        super().__init__(rows, cols)
-        self.setVerticalHeaders()
+class CoolTable(QWidget):
+    def __init__(self, rows: int, cols: int, parent: None | QWidget = None):
+        super().__init__(parent = parent)
+
+        self.table = QTableWidget(rows, cols)
+        self.table.setHorizontalHeaderItem(0, QTableWidgetItem('Phase 1'))
+
+        self.table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+
+        self.rightPlus = QPushButton('+')
+        self.rightPlus.clicked.connect(self.addColumn)
+
+        self.bottomPlus = QPushButton('+')
+        self.bottomPlus.clicked.connect(self.addRow)
+
+        self.cButton = QPushButton('C')
+        self.cButton.clicked.connect(self.removeEmptyCells)
+
+        self.rightPlus.setFixedWidth(20)
+        self.bottomPlus.setFixedHeight(20)
+        self.cButton.setFixedSize(20, 20)
+
+        self.layout = QGridLayout(parent = self)
+        self.layout.setSpacing(0)
+        self.layout.addWidget(self.table, 0, 0, Qt.AlignmentFlag.AlignLeft)
+        self.layout.addWidget(self.rightPlus, 0, 1, Qt.AlignmentFlag.AlignLeft)
+        self.layout.addWidget(self.bottomPlus, 1, 0, Qt.AlignmentFlag.AlignLeft)
+        self.layout.addWidget(self.cButton, 1, 1, Qt.AlignmentFlag.AlignLeft)
+
+        # QTimer.singleShot(100, self.updateSizes)
+        self.updateSizes()
+
         self.setHorizontalHeaderItem(0, QTableWidgetItem('Phase 1'))
         self.itemChanged.connect(self.autoResize)
         self.freeze = False
 
     def getText(self, row: int, col: int) -> str:
-        item = self.item(row, col)
+        item = self.table.item(row, col)
         if item is None:
             return ""
 
@@ -36,81 +64,62 @@ class CoolTable(QTableWidget):
     def setVerticalHeaders(self):
         rows = self.rowCount()
 
-        self.setVerticalHeaderItem(0, QTableWidgetItem('Control'))
-        self.setVerticalHeaderItem(1, QTableWidgetItem('Test'))
+        self.table.setVerticalHeaderItem(0, QTableWidgetItem('Control'))
+        self.table.setVerticalHeaderItem(1, QTableWidgetItem('Test'))
 
         firstNum = 2 if rows <= 3 else 1
         for e in range(firstNum, rows):
-            self.setVerticalHeaderItem(e, QTableWidgetItem(f'Test {e}'))
+            self.table.setVerticalHeaderItem(e, QTableWidgetItem(f'Test {e}'))
 
     def keyPressEvent(self, event):
         if event.key() in (Qt.Key.Key_Backspace, Qt.Key.Key_Delete):
-            for item in self.selectedItems():
+            for item in self.table.selectedItems():
                 item.setText('')
-        else:
-            super().keyPressEvent(event)
 
-    def addInsetTextColumn(self):
-        currentColumnCount = self.columnCount()
-        self.setColumnCount(currentColumnCount + 1)
-        self.inset_text_column_index = currentColumnCount
-        self.setHorizontalHeaderItem(
-            self.inset_text_column_index,
-            QTableWidgetItem("Inset Text"),
-        )
+    def updateSizes(self):
+        self.setVerticalHeaders()
 
-    def removeInsetTextColumn(self):
-        currentColumnCount = self.columnCount()
-        if currentColumnCount > 1 and self.inset_text_column_index is not None:
-            self.removeColumn(self.inset_text_column_index)
-            self.inset_text_column_index = None
+        w, h = self.table.width(), self.table.height()
+        self.table.setFixedSize(90 * (1 + self.columnCount()), 30 * (1 + self.rowCount()))
 
-    def autoResize(self, item):
-        if self.freeze:
-            return
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
-        col = item.column()
-        row = item.row()
-
-        colCount = self.columnCount()
-        rowCount = self.rowCount()
-
-        if item.text():
-            if col == colCount - 1:
-                self.addColumn()
-
-            if row == rowCount - 1:
-                self.addRow()
-        else:
-            if col == colCount - 2 and not any(self.getText(x, col) for x in range(colCount)):
-                self.removeColumn()
-
-            if row == rowCount - 2 and not any(self.getText(x, row) for x in range(rowCount)):
-                self.removeRow()
+        self.bottomPlus.setFixedWidth(self.table.width())
+        self.rightPlus.setFixedHeight(self.table.height())
 
     def addColumn(self):
         cols = self.columnCount()
-        self.insertColumn(cols)
-        self.setHorizontalHeaderItem(cols, QTableWidgetItem(f'Phase {cols + 1}'))
+        self.table.insertColumn(cols)
+        self.table.setHorizontalHeaderItem(cols, QTableWidgetItem(f'Phase {cols + 1}'))
+        self.updateSizes()
 
     def removeColumn(self):
         currentColumnCount = self.columnCount()
-        self.setColumnCount(currentColumnCount - 1)
+        self.table.setColumnCount(currentColumnCount - 1)
+        self.updateSizes()
 
     def addRow(self):
         rows = self.rowCount()
-        self.insertRow(rows)
-        self.setVerticalHeaders()
+        self.table.insertRow(rows)
+        self.updateSizes()
 
     def removeRow(self):
         currentRowCount = self.rowCount()
-        self.setRowCount(currentRowCount - 1)
-        self.setVerticalHeaders()
+        self.table.setRowCount(currentRowCount - 1)
+        self.updateSizes()
+
+    def removeEmptyCells(self):
+        pass
+
+    def rowCount(self):
+        return self.table.rowCount()
+
+    def columnCount(self):
+        return self.table.columnCount()
 
     def loadFile(self, lines):
-        self.freeze = True
-
-        self.setRowCount(len(lines))
+        self.table.setRowCount(len(lines))
 
         maxCols = 0
         for row, group in enumerate(lines):
@@ -118,14 +127,14 @@ class CoolTable(QTableWidget):
 
             if len(phase_strs) > maxCols:
                 maxCols = len(phase_strs)
-                self.setColumnCount(maxCols)
-                self.setHorizontalHeaderLabels([f'Phase {x}' for x in range(1, maxCols + 1)])
+                self.table.setColumnCount(maxCols)
+                self.table.setHorizontalHeaderLabels([f'Phase {x}' for x in range(1, maxCols + 1)])
 
-            self.setVerticalHeaderItem(row, QTableWidgetItem(name))
+            self.table.setVerticalHeaderItem(row, QTableWidgetItem(name))
             for col, phase in enumerate(phase_strs):
-                self.setItem(row, col, QTableWidgetItem(phase))
+                self.table.setItem(row, col, QTableWidgetItem(phase))
 
-        self.freeze = False
+        self.updateSizes()
 
 class PavlovianApp(QDialog):
     def __init__(self, dpi = 200, parent=None):
@@ -157,8 +166,8 @@ class PavlovianApp(QDialog):
 
         disableWidgetsCheckBox = QCheckBox("&Disable widgets")
 
-        self.tableWidget = CoolTable(2, 1)
-        self.tableWidget.setMaximumHeight(120)
+        self.tableWidget = CoolTable(2, 1, parent = self)
+        self.tableWidget.table.setMaximumHeight(120)
 
         self.addActionsButtons()
         self.createParametersGroupBox()
@@ -327,7 +336,7 @@ class PavlovianApp(QDialog):
 
         lines = []
         for row in range(rowCount):
-            name = self.tableWidget.verticalHeaderItem(row).text()
+            name = self.tableWidget.table.verticalHeaderItem(row).text()
             phase_strs = [self.tableWidget.getText(row, column) for column in range(columnCount)]
             if not any(phase_strs):
                 continue
@@ -464,7 +473,7 @@ class PavlovianApp(QDialog):
         strengths = [StimulusHistory.emptydict() for _ in range(columnCount)]
         phases = dict()
         for row in range(rowCount):
-            name = self.tableWidget.verticalHeaderItem(row).text()
+            name = self.tableWidget.table.verticalHeaderItem(row).text()
             phase_strs = [self.tableWidget.getText(row, column) for column in range(columnCount)]
             if not any(phase_strs):
                 continue
@@ -557,6 +566,7 @@ class PavlovianApp(QDialog):
     def updateWidgets(self):
         self.tableWidget.update()
         self.tableWidget.repaint()
+        self.tableWidget.updateSizes()
         self.update()
         self.repaint()
 
