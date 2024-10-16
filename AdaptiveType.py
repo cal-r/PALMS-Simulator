@@ -79,6 +79,7 @@ class RescorlaWagner(AdaptiveType):
 class RescorlaWagnerLinear(AdaptiveType):
     def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
         s.alpha *= 1 + sign * 0.05
+        s.alpha = min(max(s.alpha, 0.05), 1)
         s.assoc += s.alpha * self.delta_v_factor
 
 class PearceHall(AdaptiveType):
