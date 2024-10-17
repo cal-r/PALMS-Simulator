@@ -474,7 +474,6 @@ class PavlovianApp(QDialog):
 
     def refreshFigure(self):
         current_figure = self.figures[self.phase - 1]
-        ipdb.set_trace()
         current_figure.tight_layout()
         self.plotCanvas.figure = current_figure
 
