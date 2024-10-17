@@ -48,7 +48,7 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
     figures = []
     for phase_num, experiments in enumerate(data, start = 1):
         if not plot_alpha and not plot_macknhall:
-            fig, axes_ = pyplot.subplots(1, 1, figsize = (8, 6), dpi = dpi)
+            fig, axes_ = pyplot.subplots(1, 1, figsize = (8, 4), dpi = dpi)
             axes = [axes_]
         else:
             fig, axes = pyplot.subplots(1, 2, figsize = (16, 6), dpi = dpi)
@@ -67,19 +67,21 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
                     axes[1].plot(hist.alpha_mack, color = colors[key], marker='$M$', markersize=8, alpha=.5, picker = ticker_threshold)
                     axes[1].plot(hist.alpha_hall, color = colors[key], marker='$H$', markersize=8, alpha=.5, picker = ticker_threshold)
 
-        axes[0].set_xlabel('Trial Number', fontsize = 'small')
-        axes[0].set_ylabel('Associative Strength', fontsize = 'small')
+        axes[0].set_xlabel('Trial Number', fontsize = 'small', labelpad = 3)
+        axes[0].set_ylabel('Associative Strength', fontsize = 'small', labelpad = 3)
         axes[0].xaxis.set_major_locator(MaxNLocator(integer = True))
+        axes[0].tick_params(axis = 'both', labelsize = 'x-small', pad = 1)
         axes[0].ticklabel_format(useOffset = False, style = 'plain', axis = 'y')
         axes[0].legend(prop = {'size': 8 * 200 / dpi})
 
         if plot_alpha or plot_macknhall:
             axes[0].set_title(f'Associative Environment')
-            axes[1].set_xlabel('Trial Number', fontsize = 'small')
-            axes[1].set_ylabel('Alpha', fontsize = 'small')
+            axes[1].set_xlabel('Trial Number', fontsize = 'small', labelpad = 3)
+            axes[1].set_ylabel('Alpha', fontsize = 'small', labelpad = 3)
             axes[1].set_title(f'Alphas')
             axes[1].xaxis.set_major_locator(MaxNLocator(integer = True))
             axes[1].yaxis.tick_right()
+            axes[1].tick_params(axis = 'both', labelsize = 'x-small', pad = 1)
             axes[1].tick_params(axis = 'y', which = 'both', right = True, length = 0)
             axes[1].yaxis.set_label_position('right')
             axes[1].legend(prop = {'size': 8 * 200 / dpi})
@@ -91,8 +93,8 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
         if phases is not None:
             fig.suptitle(titleify(filename, phases, phase_num, title_suffix), fontdict = {'family': 'monospace'}, fontsize = 12)
 
-        if len(axes) > 1:
-            fig.subplots_adjust(top = .85)
+            if len(axes) > 1:
+                fig.subplots_adjust(top = .85)
 
         fig.tight_layout()
         figures.append(fig)

@@ -292,6 +292,12 @@ class PavlovianApp(QDialog):
 
     def togglePlotAlpha(self):
         self.plot_alpha = not self.plot_alpha
+
+        if self.plot_alpha:
+            self.resize(self.width() + self.plotCanvas.width(), self.height())
+        else:
+            self.resize(self.width() - self.plotCanvas.width() // 2, self.height())
+
         self.refreshExperiment()
 
     def saveExperiment(self):
@@ -469,31 +475,20 @@ class PavlovianApp(QDialog):
         )
         for f in self.figures:
             f.set_canvas(self.plotCanvas)
-        
+
         self.refreshFigure()
 
     def refreshFigure(self):
         current_figure = self.figures[self.phase - 1]
-        current_figure.tight_layout()
         self.plotCanvas.figure = current_figure
+
+        self.plotCanvas.resize(self.plotCanvas.width() + 1, self.plotCanvas.height() + 1)
+        self.plotCanvas.resize(self.plotCanvas.width() - 1, self.plotCanvas.height() - 1)
 
         self.plotCanvas.mpl_connect('pick_event', self.pickLine)
 
-        # self.plotCanvas.resize(self.plotCanvas.width() - 1, self.plotCanvas.height() - 1)
-        # self.plotCanvas.resize(self.plotCanvas.width() + 1, self.plotCanvas.height() + 1)
-
-        # w, h = current_figure.get_size_inches()
-        # print(f'{self.plotCanvas.width()} {self.plotCanvas.height()}')
-        # self.plotCanvas.resize(int(w), int(h))
-        # self.plotCanvas.draw()
-
         w, h = current_figure.get_size_inches()
-        # self.plotCanvas.resize(int(1000 * w / self.dpi), int(1000 * h / self.dpi))
-        self.plotCanvas.resize(int(w), int(h))
-        print(f'{self.plotCanvas.width()} {self.plotCanvas.height()}')
-        current_figure.tight_layout()
         self.plotCanvas.draw()
-        current_figure.tight_layout()
 
         self.tableWidget.setRangeSelected(
             QTableWidgetSelectionRange(0, 0, self.tableWidget.rowCount() - 1, self.tableWidget.columnCount() - 1),
