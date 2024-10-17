@@ -67,22 +67,22 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
                     axes[1].plot(hist.alpha_mack, color = colors[key], marker='$M$', markersize=8, alpha=.5, picker = ticker_threshold)
                     axes[1].plot(hist.alpha_hall, color = colors[key], marker='$H$', markersize=8, alpha=.5, picker = ticker_threshold)
 
-        axes[0].set_xlabel('Trial Number')
-        axes[0].set_ylabel('Associative Strength')
+        axes[0].set_xlabel('Trial Number', fontsize = 'small')
+        axes[0].set_ylabel('Associative Strength', fontsize = 'small')
         axes[0].xaxis.set_major_locator(MaxNLocator(integer = True))
         axes[0].ticklabel_format(useOffset = False, style = 'plain', axis = 'y')
-        axes[0].legend(fontsize = 'small')
+        axes[0].legend(prop = {'size': 8 * 200 / dpi})
 
         if plot_alpha or plot_macknhall:
             axes[0].set_title(f'Associative Environment')
-            axes[1].set_xlabel('Trial Number')
-            axes[1].set_ylabel('Alpha')
+            axes[1].set_xlabel('Trial Number', fontsize = 'small')
+            axes[1].set_ylabel('Alpha', fontsize = 'small')
             axes[1].set_title(f'Alphas')
             axes[1].xaxis.set_major_locator(MaxNLocator(integer = True))
             axes[1].yaxis.tick_right()
             axes[1].tick_params(axis = 'y', which = 'both', right = True, length = 0)
             axes[1].yaxis.set_label_position('right')
-            axes[1].legend(fontsize = 'small')
+            axes[1].legend(prop = {'size': 8 * 200 / dpi})
 
         legend_lines = chain.from_iterable([ax.get_legend().get_lines() for ax in axes])
         for line in legend_lines:
@@ -99,7 +99,7 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
 
     return figures
 
-def show_plots(data: list[dict[str, StimulusHistory]], *, phases: None | dict[str, list[Phase]] = None, plot_phase = None, plot_alpha = False, plot_macknhall = False):
+def show_plots(data: list[dict[str, StimulusHistory]], *, phases: None | dict[str, list[Phase]] = None, plot_phase = None, plot_alpha = False, plot_macknhall = False, dpi = None):
     pyplot.ion()
 
     figures = generate_figures(
@@ -108,6 +108,7 @@ def show_plots(data: list[dict[str, StimulusHistory]], *, phases: None | dict[st
         plot_phase = plot_phase,
         plot_alpha = plot_alpha,
         plot_macknhall = plot_macknhall,
+        dpi = dpi,
     )
 
     for fig in figures:
@@ -115,7 +116,7 @@ def show_plots(data: list[dict[str, StimulusHistory]], *, phases: None | dict[st
 
     pyplot.ioff()
 
-def save_plots(data: list[dict[str, StimulusHistory]], *, phases: None | dict[str, list[Phase]] = None, filename: None | str = None, plot_phase = None, plot_alpha = False, plot_macknhall = False, title_suffix = None):
+def save_plots(data: list[dict[str, StimulusHistory]], *, phases: None | dict[str, list[Phase]] = None, filename: None | str = None, plot_phase = None, plot_alpha = False, plot_macknhall = False, title_suffix = None, dpi = None):
     if filename is not None:
         filename = filename.removesuffix('.png')
 
@@ -127,7 +128,8 @@ def save_plots(data: list[dict[str, StimulusHistory]], *, phases: None | dict[st
         plot_macknhall = plot_macknhall,
         filename = filename,
         title_suffix = title_suffix,
+        dpi = dpi,
     )
 
     for phase_num, fig in enumerate(figures, start = 1):
-        fig.savefig(f'{filename}_{phase_num}.png', dpi = 150, bbox_inches = 'tight')
+        fig.savefig(f'{filename}_{phase_num}.png', dpi = dpi or 150, bbox_inches = 'tight')

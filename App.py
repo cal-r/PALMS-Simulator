@@ -14,6 +14,10 @@ from matplotlib import pyplot
 
 from itertools import chain
 
+from argparse import ArgumentParser
+
+import ipdb
+
 class CoolTable(QTableWidget):
     def __init__(self, rows: int, cols: int):
         super().__init__(rows, cols)
@@ -124,7 +128,7 @@ class CoolTable(QTableWidget):
         self.freeze = False
 
 class PavlovianApp(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, dpi = 200, parent=None):
         super(PavlovianApp, self).__init__(parent)
 
         self.adaptive_types = ['rescorla_wagner', 'rescorla_wagner_linear', 'pearce_hall', 'pearce_kaye_hall', 'le_pelley']
@@ -136,6 +140,7 @@ class PavlovianApp(QDialog):
         self.phase = 1
         self.numPhases = 0
         self.figures = []
+        self.dpi = dpi
         self.initUI()
 
         QTimer.singleShot(100, self.updateWidgets)
@@ -459,7 +464,7 @@ class PavlovianApp(QDialog):
         self.figures = generate_figures(
             strengths,
             plot_alpha = args.plot_alpha,
-            dpi = 175,
+            dpi = self.dpi,
             ticker_threshold = 5,
         )
         for f in self.figures:
@@ -469,8 +474,25 @@ class PavlovianApp(QDialog):
 
     def refreshFigure(self):
         current_figure = self.figures[self.phase - 1]
+        ipdb.set_trace()
         current_figure.tight_layout()
         self.plotCanvas.figure = current_figure
+
+        self.plotCanvas.mpl_connect('pick_event', self.pickLine)
+
+        # self.plotCanvas.resize(self.plotCanvas.width() - 1, self.plotCanvas.height() - 1)
+        # self.plotCanvas.resize(self.plotCanvas.width() + 1, self.plotCanvas.height() + 1)
+
+        # w, h = current_figure.get_size_inches()
+        # print(f'{self.plotCanvas.width()} {self.plotCanvas.height()}')
+        # self.plotCanvas.resize(int(w), int(h))
+        # self.plotCanvas.draw()
+
+        w, h = current_figure.get_size_inches()
+        # self.plotCanvas.resize(int(1000 * w / self.dpi), int(1000 * h / self.dpi))
+        self.plotCanvas.resize(int(w), int(h))
+        print(f'{self.plotCanvas.width()} {self.plotCanvas.height()}')
+        self.plotCanvas.draw()
 
         self.tableWidget.setRangeSelected(
             QTableWidgetSelectionRange(0, 0, self.tableWidget.rowCount() - 1, self.tableWidget.columnCount() - 1),
@@ -481,18 +503,6 @@ class PavlovianApp(QDialog):
             QTableWidgetSelectionRange(0, self.phase - 1, self.tableWidget.rowCount() - 1, self.phase - 1),
             True,
         )
-
-        canvas_width = self.plotCanvas.width() * len(current_figure.get_axes()) // max(1, len(self.plotCanvas.figure.get_axes()))
-        self.resize(
-            self.width() - self.plotCanvas.width() + canvas_width,
-            self.height(),
-        )
-
-        self.plotCanvas.resize(self.plotCanvas.width() - 1, self.plotCanvas.height() - 1)
-        self.plotCanvas.resize(self.plotCanvas.width() + 1, self.plotCanvas.height() + 1)
-
-        self.plotCanvas.mpl_connect('pick_event', self.pickLine)
-        self.plotCanvas.draw()
 
         self.phaseInfo.setText(f'Phase {self.phase}/{self.numPhases}')
 
@@ -520,6 +530,7 @@ class PavlovianApp(QDialog):
             strengths,
             phases = phases,
             plot_alpha = args.plot_alpha,
+            dpi = self.dpi,
         )
 
         return strengths
@@ -544,8 +555,14 @@ class PavlovianApp(QDialog):
         self.phase += 1 
         self.refreshFigure()
 
+def parse_args():
+    args = ArgumentParser('Display a GUI for simulating models.')
+    args.add_argument('--dpi', type = int, default = 200, help = 'DPI for shown and outputted figures.')
+    return args.parse_args()
+
 if __name__ == '__main__':
+    args = parse_args()
     app = QApplication(sys.argv)
-    gallery = PavlovianApp()
+    gallery = PavlovianApp(dpi = args.dpi)
     gallery.show()
     sys.exit(app.exec())
