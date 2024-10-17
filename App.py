@@ -491,7 +491,9 @@ class PavlovianApp(QDialog):
         # self.plotCanvas.resize(int(1000 * w / self.dpi), int(1000 * h / self.dpi))
         self.plotCanvas.resize(int(w), int(h))
         print(f'{self.plotCanvas.width()} {self.plotCanvas.height()}')
+        current_figure.tight_layout()
         self.plotCanvas.draw()
+        current_figure.tight_layout()
 
         self.tableWidget.setRangeSelected(
             QTableWidgetSelectionRange(0, 0, self.tableWidget.rowCount() - 1, self.tableWidget.columnCount() - 1),
