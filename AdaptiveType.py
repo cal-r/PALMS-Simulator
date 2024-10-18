@@ -148,7 +148,6 @@ class LePelleyHybrid(AdaptiveType):
 
         s.Ve += DVe
         s.Vi += DVi
-
         s.assoc = s.Ve - s.Vi
 
 class RescorlaWagnerExponential(AdaptiveType):

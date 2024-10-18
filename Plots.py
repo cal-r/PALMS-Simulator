@@ -75,7 +75,7 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
         axes[0].legend(prop = {'size': 8 * 200 / dpi})
 
         if plot_alpha or plot_macknhall:
-            axes[0].set_title(f'Associative Environment')
+            axes[0].set_title(f'Associative Strengths')
             axes[1].set_xlabel('Trial Number', fontsize = 'small', labelpad = 3)
             axes[1].set_ylabel('Alpha', fontsize = 'small', labelpad = 3)
             axes[1].set_title(f'Alphas')
