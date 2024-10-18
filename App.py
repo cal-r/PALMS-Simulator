@@ -259,6 +259,15 @@ class PavlovianApp(QDialog):
         self.saveButton = QPushButton("Save Experiment")
         self.saveButton.clicked.connect(self.saveExperiment)
 
+        self.plotAlphaHybridButton = QPushButton('Plot Hybrid α')
+        checkedStyle = "QPushButton:checked { background-color: lightblue; font-weight: bold; border: 2px solid #0057D8; }"
+        self.plotAlphaHybridButton.setStyleSheet(checkedStyle)
+        self.plotAlphaHybridButton.setFixedHeight(50)
+        self.plotAlphaHybridButton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        # self.plotAlphaButton.clicked.connect(self.)
+        self.plotAlphaHybridButton.setCheckable(True)
+        self.plot_alpha = False
+
         self.plotAlphaButton = QPushButton('Plot α')
         checkedStyle = "QPushButton:checked { background-color: lightblue; font-weight: bold; border: 2px solid #0057D8; }"
         self.plotAlphaButton.setStyleSheet(checkedStyle)
@@ -279,6 +288,7 @@ class PavlovianApp(QDialog):
 
         plotOptionsLayout = QVBoxLayout()
         plotOptionsLayout.addWidget(self.plotAlphaButton)
+        plotOptionsLayout.addWidget(self.plotAlphaHybridButton)
         plotOptionsLayout.addWidget(self.refreshButton)
         plotOptionsLayout.addWidget(self.printButton)
         self.plotOptionsGroupBox.setLayout(plotOptionsLayout)
