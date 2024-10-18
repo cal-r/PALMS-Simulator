@@ -365,6 +365,9 @@ class PavlovianApp(QDialog):
             self.plot_alpha = True
             self.plot_macknhall = False
 
+        if self.current_adaptive_type == 'le_pelley_hybrid':
+            self.alpha.box.setText('0.9')
+
         self.refreshExperiment()
 
     def createParametersGroupBox(self):
