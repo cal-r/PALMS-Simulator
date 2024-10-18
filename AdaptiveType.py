@@ -34,6 +34,7 @@ class AdaptiveType:
             'pearce_hall': PearceHall,
             'pearce_kaye_hall': PearceKayeHall,
             'le_pelley': LePelley,
+            'le_pelley_hybrid': LePelleyHybrid, 
             'rescorla_wagner_exponential': RescorlaWagnerExponential,
             'mack': Mack,
             'hall': Hall,
@@ -118,6 +119,33 @@ class LePelley(AdaptiveType):
             s.alpha += -self.thetaI * (abs(abs(rho) - s.Vi + s.Ve) - abs(abs(rho) - VXi + VXe))
 
         s.alpha = min(max(s.alpha, 0.05), 1)
+        s.Ve += DVe
+        s.Vi += DVi
+
+        s.assoc = s.Ve - s.Vi
+
+class LePelleyHybrid(AdaptiveType):
+    def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
+        rho = lamda - (sigmaE - sigmaI)
+
+        VXe = sigmaE - s.Ve
+        VXi = sigmaI - s.Vi
+
+        DVe = 0.
+        DVi = 0.
+        if rho >= 0:
+            DVe = s.alpha * self.betap * s.alpha_hall * (1 - s.Ve + s.Vi) * abs(rho)
+
+            if rho > 0:
+                s.alpha += -self.thetaE * s.alpha_hall * (abs(lamda - s.Ve + s.Vi) - abs(lamda - VXe + VXi))
+        else:
+            DVi = s.alpha * self.betan * s.alpha_hall * (1 - s.Vi + s.Ve) * abs(rho)
+            s.alpha += -self.thetaI * (abs(abs(rho) - s.Vi + s.Ve) - abs(abs(rho) - VXi + VXe))
+
+        s.alpha_hall = self.gamma * abs(rho) + (1 - self.gamma) * s.alpha
+        s.alpha = min(max(s.alpha, 0.05), 1)
+        s.alpha_hall = min(max(s.alpha_hall, 0.5), 1)
+
         s.Ve += DVe
         s.Vi += DVi
 
