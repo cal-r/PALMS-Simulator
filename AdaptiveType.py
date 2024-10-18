@@ -134,16 +134,16 @@ class LePelleyHybrid(AdaptiveType):
         DVe = 0.
         DVi = 0.
         if rho >= 0:
-            DVe = s.alpha * self.betap * s.alpha_hall * (1 - s.Ve + s.Vi) * abs(rho)
+            DVe = s.alpha_mack * self.betap * s.alpha_hall * (1 - s.Ve + s.Vi) * abs(rho)
 
             if rho > 0:
-                s.alpha += -self.thetaE * s.alpha_hall * (abs(lamda - s.Ve + s.Vi) - abs(lamda - VXe + VXi))
+                s.alpha_mack += -self.thetaE * s.alpha_hall * (abs(lamda - s.Ve + s.Vi) - abs(lamda - VXe + VXi))
         else:
-            DVi = s.alpha * self.betan * s.alpha_hall * (1 - s.Vi + s.Ve) * abs(rho)
-            s.alpha += -self.thetaI * (abs(abs(rho) - s.Vi + s.Ve) - abs(abs(rho) - VXi + VXe))
+            DVi = s.alpha_mack * self.betan * s.alpha_hall * (1 - s.Vi + s.Ve) * abs(rho)
+            s.alpha_mack += -self.thetaI * (abs(abs(rho) - s.Vi + s.Ve) - abs(abs(rho) - VXi + VXe))
 
-        s.alpha_hall = self.gamma * abs(rho) + (1 - self.gamma) * s.alpha
-        s.alpha = min(max(s.alpha, 0.05), 1)
+        s.alpha_hall = self.gamma * abs(rho) + (1 - self.gamma) * s.alpha_hall
+        s.alpha_mack = min(max(s.alpha_mack, 0.05), 1)
         s.alpha_hall = min(max(s.alpha_hall, 0.5), 1)
 
         s.Ve += DVe

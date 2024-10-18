@@ -58,7 +58,7 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
             line = axes[0].plot(hist.assoc, label=key, marker='D', color = colors[key], markersize=4, alpha=.5, picker = ticker_threshold)
 
             if len(axes) > 1:
-                if plot_alpha:
+                if plot_alpha and not plot_macknhall:
                     axes[1].plot(hist.alpha, label=key, color = colors[key], marker='D', markersize=8, alpha=.5, picker = ticker_threshold)
                 else:
                     axes[1].plot([], label=key, color = colors[key], marker='D', markersize=8, alpha=.5, picker = ticker_threshold)
