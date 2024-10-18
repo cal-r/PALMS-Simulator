@@ -347,10 +347,10 @@ class PavlovianApp(QDialog):
             'pearce_hall': ['alpha', 'lamda', 'salience'],
             'pearce_kaye_hall': ['alpha', 'betan', 'beta', 'gamma', 'lamda', 'lamda'],
             'le_pelley': ['alpha', 'betan', 'beta', 'lamda', 'thetaE', 'thetaI'],
-            'le_pelley_hybrid': ['alpha', 'betan', 'beta', 'lamda', 'thetaE', 'thetaI'],
+            'le_pelley_hybrid': ['alpha', 'alpha_mack', 'alpha_hall', 'betan', 'beta', 'lamda', 'thetaE', 'thetaI'],
         }
 
-        for key in ['alpha', 'lamda', 'beta', 'betan', 'gamma', 'thetaE', 'thetaI', 'window_size', 'salience']:
+        for key in ['alpha', 'alpha_mack', 'alpha_hall', 'lamda', 'beta', 'betan', 'gamma', 'thetaE', 'thetaI', 'window_size', 'salience']:
             widget = getattr(self, f'{key}').box
             widget.setDisabled(True)
 
@@ -422,29 +422,30 @@ class PavlovianApp(QDialog):
             widget.setText(value)
 
     @staticmethod
-    def floatOrNone(text: str) -> None | float:
+    def floatOr(text: str, default: None | float = None) -> None | float:
         if text == '':
-            return None
+            return default
+
         return float(text)
 
     def generateResults(self) -> tuple[dict[str, StimulusHistory], dict[str, list[Phase]], RWArgs]:
         args = RWArgs(
             adaptive_type = self.current_adaptive_type,
 
-            alphas = defaultdict(lambda: float(self.alpha.box.text())),
-            alpha = float(self.alpha.box.text()),
-            alpha_mack = self.floatOrNone(self.alpha_mack.box.text()),
-            alpha_hall = self.floatOrNone(self.alpha_hall.box.text()),
+            alphas = defaultdict(lambda: self.floatOr(self.alpha.box.text(), 0)),
+            alpha = self.floatOr(self.alpha.box.text(), 0),
+            alpha_mack = self.floatOr(self.alpha_mack.box.text()),
+            alpha_hall = self.floatOr(self.alpha_hall.box.text()),
 
-            beta = float(self.beta.box.text()),
-            beta_neg = float(self.betan.box.text()),
-            lamda = float(self.lamda.box.text()),
-            gamma = float(self.gamma.box.text()),
-            thetaE = float(self.thetaE.box.text()),
-            thetaI = float(self.thetaI.box.text()),
+            beta = self.floatOr(self.beta.box.text(), 0),
+            beta_neg = self.floatOr(self.betan.box.text(), 0),
+            lamda = self.floatOr(self.lamda.box.text(), 0),
+            gamma = self.floatOr(self.gamma.box.text(), 0),
+            thetaE = self.floatOr(self.thetaE.box.text(), 0),
+            thetaI = self.floatOr(self.thetaI.box.text(), 0),
 
-            salience = float(self.salience.box.text()),
-            saliences = defaultdict(lambda: float(self.salience.box.text())),
+            salience = self.floatOr(self.salience.box.text(), 0),
+            saliences = defaultdict(lambda: self.floatOr(self.salience.box.text(), 0)),
 
             window_size = int(self.window_size.box.text()),
             num_trials = int(self.num_trials.box.text()),
