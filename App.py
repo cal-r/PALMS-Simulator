@@ -260,15 +260,6 @@ class PavlovianApp(QDialog):
         self.saveButton.clicked.connect(self.saveExperiment)
         
         self.expand_canvas = False
-        
-        self.plotAlphaHybridButton = QPushButton('Plot Hybrid α')
-        checkedStyle = "QPushButton:checked { background-color: lightblue; font-weight: bold; border: 2px solid #0057D8; }"
-        self.plotAlphaHybridButton.setStyleSheet(checkedStyle)
-        self.plotAlphaHybridButton.setFixedHeight(50)
-        self.plotAlphaHybridButton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-        self.plotAlphaHybridButton.clicked.connect(self.togglePlotMacknhall)
-        self.plotAlphaHybridButton.setCheckable(True)
-        self.plot_macknhall = False
 
         self.plotAlphaButton = QPushButton('Plot α')
         checkedStyle = "QPushButton:checked { background-color: lightblue; font-weight: bold; border: 2px solid #0057D8; }"
@@ -278,6 +269,7 @@ class PavlovianApp(QDialog):
         self.plotAlphaButton.clicked.connect(self.togglePlotAlpha)
         self.plotAlphaButton.setCheckable(True)
         self.plot_alpha = False
+        self.plot_macknhall = False
 
         self.setDefaultParamsButton = QPushButton("Restore Default Parameters")
         self.setDefaultParamsButton.clicked.connect(self.restoreDefaultParameters)
@@ -290,7 +282,6 @@ class PavlovianApp(QDialog):
 
         plotOptionsLayout = QVBoxLayout()
         plotOptionsLayout.addWidget(self.plotAlphaButton)
-        plotOptionsLayout.addWidget(self.plotAlphaHybridButton)
         plotOptionsLayout.addWidget(self.refreshButton)
         plotOptionsLayout.addWidget(self.printButton)
         self.plotOptionsGroupBox.setLayout(plotOptionsLayout)
@@ -303,29 +294,16 @@ class PavlovianApp(QDialog):
         self.fileOptionsGroupBox.setLayout(fileOptionsLayout)
 
     def togglePlotAlpha(self):
-        self.plot_alpha = not self.plot_alpha
-
-        if not (self.plot_alpha or self.plot_macknhall):
-            self.expand_canvas = False
+        if self.plot_alpha or self.plot_macknhall:
+            self.plot_alpha = False
+            self.plot_macknhall = False
             self.resize(self.width() - self.plotCanvas.width() // 2, self.height())
-        elif(self.expand_canvas):
-            self.expand_canvas = True  
         else:
-            self.expand_canvas = True
-            self.resize(self.width() + self.plotCanvas.width(), self.height())
+            if self.current_adaptive_type != 'le_pelley_hybrid':
+                self.plot_alpha = True
+            else:
+                self.plot_macknhall = True
 
-        self.refreshExperiment()
-        
-    def togglePlotMacknhall(self):
-        self.plot_macknhall = not self.plot_macknhall
-
-        if not (self.plot_alpha or self.plot_macknhall):
-            self.expand_canvas = False
-            self.resize(self.width() - self.plotCanvas.width() // 2, self.height())
-        elif(self.expand_canvas):
-            self.expand_canvas = True  
-        else:
-            self.expand_canvas = True
             self.resize(self.width() + self.plotCanvas.width(), self.height())
 
         self.refreshExperiment()
@@ -379,6 +357,13 @@ class PavlovianApp(QDialog):
         for key in widgets_to_enable[self.current_adaptive_type]:
             widget = getattr(self, f'{key}').box
             widget.setDisabled(False)
+
+        if self.plot_alpha and self.current_adaptive_type == 'le_pelley_hybrid':
+            self.plot_alpha = False
+            self.plot_macknhall = True
+        elif self.plot_macknhall and self.current_adaptive_type != 'le_pelley_hybrid':
+            self.plot_alpha = True
+            self.plot_macknhall = False
 
         self.refreshExperiment()
 
