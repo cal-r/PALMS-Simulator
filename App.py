@@ -258,15 +258,17 @@ class PavlovianApp(QDialog):
 
         self.saveButton = QPushButton("Save Experiment")
         self.saveButton.clicked.connect(self.saveExperiment)
-
+        
+        self.expand_canvas = False
+        
         self.plotAlphaHybridButton = QPushButton('Plot Hybrid α')
         checkedStyle = "QPushButton:checked { background-color: lightblue; font-weight: bold; border: 2px solid #0057D8; }"
         self.plotAlphaHybridButton.setStyleSheet(checkedStyle)
         self.plotAlphaHybridButton.setFixedHeight(50)
         self.plotAlphaHybridButton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-        # self.plotAlphaButton.clicked.connect(self.)
+        self.plotAlphaHybridButton.clicked.connect(self.togglePlotMacknhall)
         self.plotAlphaHybridButton.setCheckable(True)
-        self.plot_alpha = False
+        self.plot_macknhall = False
 
         self.plotAlphaButton = QPushButton('Plot α')
         checkedStyle = "QPushButton:checked { background-color: lightblue; font-weight: bold; border: 2px solid #0057D8; }"
@@ -303,10 +305,28 @@ class PavlovianApp(QDialog):
     def togglePlotAlpha(self):
         self.plot_alpha = not self.plot_alpha
 
-        if self.plot_alpha:
-            self.resize(self.width() + self.plotCanvas.width(), self.height())
-        else:
+        if not (self.plot_alpha or self.plot_macknhall):
+            self.expand_canvas = False
             self.resize(self.width() - self.plotCanvas.width() // 2, self.height())
+        elif(self.expand_canvas):
+            self.expand_canvas = True  
+        else:
+            self.expand_canvas = True
+            self.resize(self.width() + self.plotCanvas.width(), self.height())
+
+        self.refreshExperiment()
+        
+    def togglePlotMacknhall(self):
+        self.plot_macknhall = not self.plot_macknhall
+
+        if not (self.plot_alpha or self.plot_macknhall):
+            self.expand_canvas = False
+            self.resize(self.width() - self.plotCanvas.width() // 2, self.height())
+        elif(self.expand_canvas):
+            self.expand_canvas = True  
+        else:
+            self.expand_canvas = True
+            self.resize(self.width() + self.plotCanvas.width(), self.height())
 
         self.refreshExperiment()
 
@@ -442,6 +462,7 @@ class PavlovianApp(QDialog):
             num_trials = int(self.num_trials.box.text()),
 
             plot_alpha = self.plot_alpha,
+            plot_macknhall = self.plot_macknhall,
 
             xi_hall = 0.5,
         )
@@ -481,6 +502,7 @@ class PavlovianApp(QDialog):
         self.figures = generate_figures(
             strengths,
             plot_alpha = args.plot_alpha,
+            plot_macknhall = args.plot_macknhall,
             dpi = self.dpi,
             ticker_threshold = 5,
         )
@@ -537,6 +559,7 @@ class PavlovianApp(QDialog):
             strengths,
             phases = phases,
             plot_alpha = args.plot_alpha,
+            plot_macknhall = args.plot_macknhall,
             dpi = self.dpi,
         )
 
