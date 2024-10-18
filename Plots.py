@@ -59,13 +59,13 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
 
             if len(axes) > 1:
                 if plot_alpha and not plot_macknhall:
-                    axes[1].plot(hist.alpha, label=key, color = colors[key], marker='D', markersize=8, alpha=.5, picker = ticker_threshold)
+                    axes[1].plot(hist.alpha, label='α: '+str(key), color = colors[key], marker='D', markersize=8, alpha=.5, picker = ticker_threshold)
                 #else:
                     #axes[1].plot([], label=key, color = colors[key], marker='D', markersize=8, alpha=.5, picker = ticker_threshold)
 
                 if plot_macknhall:
-                    axes[1].plot(hist.alpha_mack, label=key, color = colors[key], marker='$M$', markersize=8, alpha=.5, picker = ticker_threshold)
-                    axes[1].plot(hist.alpha_hall, label=key, color = colors[key], marker='$H$', markersize=8, alpha=.5, picker = ticker_threshold)
+                    axes[1].plot(hist.alpha_mack, label='Mack: '+str(key), color = colors[key], marker='$M$', markersize=8, alpha=.5, picker = ticker_threshold)
+                    axes[1].plot(hist.alpha_hall, label='Hall: '+str(key), color = colors[key], marker='$H$', markersize=8, alpha=.5, picker = ticker_threshold)
 
         axes[0].set_xlabel('Trial Number', fontsize = 'small', labelpad = 3)
         axes[0].set_ylabel('Associative Strength', fontsize = 'small', labelpad = 3)
