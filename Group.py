@@ -56,7 +56,7 @@ class Group:
     # of its CS at every step.
     # It also modifies `self.s` to account for all the strengths modified in this phase.
     def runPhase(self, parts: list[tuple[str, str]], phase_lamda: None | float) -> list[Environment]:
-        hist = dict()
+        hist = StimulusHistory.emptydict()
 
         for part, plus in parts:
             if plus == '+':
@@ -72,7 +72,6 @@ class Group:
 
             for cs in compounds:
                 if cs not in hist:
-                    hist[cs] = StimulusHistory()
                     hist[cs].add(self.s[cs])
 
                 self.adaptive_type.run_step(self.s[cs], beta, lamda, sign, sigma, sigmaE, sigmaI)
