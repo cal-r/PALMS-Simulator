@@ -18,99 +18,130 @@ from argparse import ArgumentParser
 
 import ipdb
 
-class CoolTable(QTableWidget):
-    def __init__(self, rows: int, cols: int):
-        super().__init__(rows, cols)
-        self.setVerticalHeaders()
-        self.setHorizontalHeaderItem(0, QTableWidgetItem('Phase 1'))
-        self.itemChanged.connect(self.autoResize)
-        self.freeze = False
+class CoolTable(QWidget):
+    def __init__(self, rows: int, cols: int, parent: None | QWidget = None):
+        super().__init__(parent = parent)
+
+        self.table = QTableWidget(rows, cols)
+        self.table.setHorizontalHeaderItem(0, QTableWidgetItem('Phase 1'))
+        self.table.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+
+        self.rightPlus = QPushButton('+')
+        self.rightPlus.clicked.connect(self.addColumn)
+
+        self.bottomPlus = QPushButton('+')
+        self.bottomPlus.clicked.connect(self.addRow)
+
+        self.cButton = QPushButton('C')
+        self.cButton.clicked.connect(self.clearEmptyCells)
+
+        self.rightPlus.setFixedWidth(20)
+        self.bottomPlus.setFixedHeight(20)
+        self.cButton.setFixedSize(20, 20)
+
+        self.layout = QGridLayout(parent = self)
+        self.layout.addWidget(self.table, 0, 0, Qt.AlignmentFlag.AlignLeft)
+        self.layout.addWidget(self.rightPlus, 0, 1, Qt.AlignmentFlag.AlignLeft)
+        self.layout.addWidget(self.bottomPlus, 1, 0, Qt.AlignmentFlag.AlignTop)
+        self.layout.addWidget(self.cButton, 1, 1, Qt.AlignmentFlag.AlignLeft)
+        self.layout.setColumnStretch(1, 1)
+        self.layout.setRowStretch(1, 1)
+        self.layout.setSpacing(0)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+
+        self.updateSizes()
 
     def getText(self, row: int, col: int) -> str:
-        item = self.item(row, col)
+        item = self.table.item(row, col)
         if item is None:
             return ""
 
         return item.text()
 
     def setVerticalHeaders(self):
-        rows = self.rowCount()
+        self.table.setVerticalHeaderItem(0, QTableWidgetItem('Control'))
+        self.table.setVerticalHeaderItem(1, QTableWidgetItem('Test'))
 
-        self.setVerticalHeaderItem(0, QTableWidgetItem('Control'))
-        self.setVerticalHeaderItem(1, QTableWidgetItem('Test'))
-
-        firstNum = 2 if rows <= 3 else 1
-        for e in range(firstNum, rows):
-            self.setVerticalHeaderItem(e, QTableWidgetItem(f'Test {e}'))
+        if self.rowCount() > 2:
+            for e in range(1, self.rowCount()):
+                self.table.setVerticalHeaderItem(e, QTableWidgetItem(f'Test {e}'))
 
     def keyPressEvent(self, event):
         if event.key() in (Qt.Key.Key_Backspace, Qt.Key.Key_Delete):
-            for item in self.selectedItems():
+            for item in self.table.selectedItems():
                 item.setText('')
-        else:
-            super().keyPressEvent(event)
 
-    def addInsetTextColumn(self):
-        currentColumnCount = self.columnCount()
-        self.setColumnCount(currentColumnCount + 1)
-        self.inset_text_column_index = currentColumnCount
-        self.setHorizontalHeaderItem(
-            self.inset_text_column_index,
-            QTableWidgetItem("Inset Text"),
-        )
+    def updateSizes(self):
+        self.setVerticalHeaders()
 
-    def removeInsetTextColumn(self):
-        currentColumnCount = self.columnCount()
-        if currentColumnCount > 1 and self.inset_text_column_index is not None:
-            self.removeColumn(self.inset_text_column_index)
-            self.inset_text_column_index = None
+        width = 90 * (1 + self.columnCount())
+        height = 30 * (1 + self.rowCount())
+        self.table.setFixedSize(width, height)
+        self.rightPlus.setFixedHeight(height)
+        self.bottomPlus.setFixedWidth(width)
 
-    def autoResize(self, item):
-        if self.freeze:
-            return
-
-        col = item.column()
-        row = item.row()
-
-        colCount = self.columnCount()
-        rowCount = self.rowCount()
-
-        if item.text():
-            if col == colCount - 1:
-                self.addColumn()
-
-            if row == rowCount - 1:
-                self.addRow()
-        else:
-            if col == colCount - 2 and not any(self.getText(x, col) for x in range(colCount)):
-                self.removeColumn()
-
-            if row == rowCount - 2 and not any(self.getText(x, row) for x in range(rowCount)):
-                self.removeRow()
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
     def addColumn(self):
         cols = self.columnCount()
-        self.insertColumn(cols)
-        self.setHorizontalHeaderItem(cols, QTableWidgetItem(f'Phase {cols + 1}'))
-
-    def removeColumn(self):
-        currentColumnCount = self.columnCount()
-        self.setColumnCount(currentColumnCount - 1)
+        self.table.insertColumn(cols)
+        self.table.setHorizontalHeaderItem(cols, QTableWidgetItem(f'Phase {cols + 1}'))
+        self.updateSizes()
 
     def addRow(self):
         rows = self.rowCount()
-        self.insertRow(rows)
-        self.setVerticalHeaders()
+        self.table.insertRow(rows)
+        self.updateSizes()
 
-    def removeRow(self):
-        currentRowCount = self.rowCount()
-        self.setRowCount(currentRowCount - 1)
-        self.setVerticalHeaders()
+    def clearEmptyRows(self):
+        toRemove = []
+        for row in range(self.rowCount()):
+            if not any(self.table.item(row, x) for x in range(self.columnCount())):
+                toRemove.append(row)
+
+        if len(toRemove) == self.rowCount():
+            toRemove = toRemove[1:]
+
+        for row in toRemove[::-1]:
+            self.table.removeRow(row)
+
+    def clearEmptyColumns(self):
+        toRemove = []
+        for col in range(self.columnCount()):
+            if not any(self.table.item(x, col) for x in range(self.rowCount())):
+                toRemove.append(col)
+
+        if len(toRemove) == self.columnCount():
+            toRemove = toRemove[1:]
+
+        for col in toRemove[::-1]:
+            self.table.removeColumn(col)
+
+    def clearEmptyCells(self):
+        self.clearEmptyRows()
+        self.clearEmptyColumns()
+        self.updateSizes()
+
+    def rowCount(self):
+        return self.table.rowCount()
+
+    def columnCount(self):
+        return self.table.columnCount()
+
+    def selectColumn(self, col):
+        self.table.setRangeSelected(
+            QTableWidgetSelectionRange(0, 0, self.rowCount() - 1, self.columnCount() - 1),
+            False,
+        )
+
+        self.table.setRangeSelected(
+            QTableWidgetSelectionRange(0, col, self.rowCount() - 1, col),
+            True,
+        )
 
     def loadFile(self, lines):
-        self.freeze = True
-
-        self.setRowCount(len(lines))
+        self.table.setRowCount(len(lines))
 
         maxCols = 0
         for row, group in enumerate(lines):
@@ -118,14 +149,14 @@ class CoolTable(QTableWidget):
 
             if len(phase_strs) > maxCols:
                 maxCols = len(phase_strs)
-                self.setColumnCount(maxCols)
-                self.setHorizontalHeaderLabels([f'Phase {x}' for x in range(1, maxCols + 1)])
+                self.table.setColumnCount(maxCols)
+                self.table.setHorizontalHeaderLabels([f'Phase {x}' for x in range(1, maxCols + 1)])
 
-            self.setVerticalHeaderItem(row, QTableWidgetItem(name))
+            self.table.setVerticalHeaderItem(row, QTableWidgetItem(name))
             for col, phase in enumerate(phase_strs):
-                self.setItem(row, col, QTableWidgetItem(phase))
+                self.table.setItem(row, col, QTableWidgetItem(phase))
 
-        self.freeze = False
+        self.updateSizes()
 
 class PavlovianApp(QDialog):
     def __init__(self, dpi = 200, parent=None):
@@ -157,8 +188,8 @@ class PavlovianApp(QDialog):
 
         disableWidgetsCheckBox = QCheckBox("&Disable widgets")
 
-        self.tableWidget = CoolTable(2, 1)
-        self.tableWidget.setMaximumHeight(120)
+        self.tableWidget = CoolTable(2, 1, parent = self)
+        self.tableWidget.table.setMaximumHeight(120)
 
         self.addActionsButtons()
         self.createParametersGroupBox()
@@ -327,7 +358,7 @@ class PavlovianApp(QDialog):
 
         lines = []
         for row in range(rowCount):
-            name = self.tableWidget.verticalHeaderItem(row).text()
+            name = self.tableWidget.table.verticalHeaderItem(row).text()
             phase_strs = [self.tableWidget.getText(row, column) for column in range(columnCount)]
             if not any(phase_strs):
                 continue
@@ -464,7 +495,7 @@ class PavlovianApp(QDialog):
         strengths = [StimulusHistory.emptydict() for _ in range(columnCount)]
         phases = dict()
         for row in range(rowCount):
-            name = self.tableWidget.verticalHeaderItem(row).text()
+            name = self.tableWidget.table.verticalHeaderItem(row).text()
             phase_strs = [self.tableWidget.getText(row, column) for column in range(columnCount)]
             if not any(phase_strs):
                 continue
@@ -511,16 +542,7 @@ class PavlovianApp(QDialog):
 
         w, h = current_figure.get_size_inches()
         self.plotCanvas.draw()
-
-        self.tableWidget.setRangeSelected(
-            QTableWidgetSelectionRange(0, 0, self.tableWidget.rowCount() - 1, self.tableWidget.columnCount() - 1),
-            False,
-        )
-
-        self.tableWidget.setRangeSelected(
-            QTableWidgetSelectionRange(0, self.phase - 1, self.tableWidget.rowCount() - 1, self.phase - 1),
-            True,
-        )
+        self.tableWidget.selectColumn(self.phase - 1)
 
         self.phaseInfo.setText(f'Phase {self.phase}/{self.numPhases}')
 
@@ -557,6 +579,7 @@ class PavlovianApp(QDialog):
     def updateWidgets(self):
         self.tableWidget.update()
         self.tableWidget.repaint()
+        self.tableWidget.updateSizes()
         self.update()
         self.repaint()
 
