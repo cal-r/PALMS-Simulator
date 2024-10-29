@@ -24,8 +24,7 @@ class CoolTable(QWidget):
 
         self.table = QTableWidget(rows, cols)
         self.table.setHorizontalHeaderItem(0, QTableWidgetItem('Phase 1'))
-
-        self.table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.table.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
 
         self.rightPlus = QPushButton('+')
         self.rightPlus.clicked.connect(self.addColumn)
@@ -41,18 +40,15 @@ class CoolTable(QWidget):
         self.cButton.setFixedSize(20, 20)
 
         self.layout = QGridLayout(parent = self)
-        self.layout.setSpacing(0)
         self.layout.addWidget(self.table, 0, 0, Qt.AlignmentFlag.AlignLeft)
         self.layout.addWidget(self.rightPlus, 0, 1, Qt.AlignmentFlag.AlignLeft)
         self.layout.addWidget(self.bottomPlus, 1, 0, Qt.AlignmentFlag.AlignLeft)
         self.layout.addWidget(self.cButton, 1, 1, Qt.AlignmentFlag.AlignLeft)
+        self.layout.setColumnStretch(1, 1)
+        self.layout.setSpacing(0)
 
-        # QTimer.singleShot(100, self.updateSizes)
         self.updateSizes()
-
-        self.setHorizontalHeaderItem(0, QTableWidgetItem('Phase 1'))
-        self.itemChanged.connect(self.autoResize)
-        self.freeze = False
+        self.table.setHorizontalHeaderItem(0, QTableWidgetItem('Phase 1'))
 
     def getText(self, row: int, col: int) -> str:
         item = self.table.item(row, col)
