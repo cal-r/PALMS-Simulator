@@ -1,10 +1,15 @@
 import os
 import re
 import sys
+
+from argparse import ArgumentParser
 from collections import defaultdict
+from contextlib import nullcontext
+from itertools import chain, zip_longest
 from PyQt6.QtCore import QTimer, Qt, QSize
 from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import *
+
 from Experiment import RWArgs, Experiment, Phase
 from Plots import show_plots, generate_figures
 from Environment import StimulusHistory
@@ -12,18 +17,13 @@ from Environment import StimulusHistory
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib import pyplot
 
-from itertools import chain
-
-from argparse import ArgumentParser
-
-import ipdb
-
 class CoolTable(QWidget):
     def __init__(self, rows: int, cols: int, parent: None | QWidget = None):
         super().__init__(parent = parent)
 
+        self.freeze = True
+
         self.table = QTableWidget(rows, cols)
-        self.table.setHorizontalHeaderItem(0, QTableWidgetItem('Phase 1'))
         self.table.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
 
         self.rightPlus = QPushButton('+')
@@ -53,6 +53,7 @@ class CoolTable(QWidget):
         self.layout.setContentsMargins(0, 0, 0, 0)
 
         self.updateSizes()
+        self.freeze = False
 
     def getText(self, row: int, col: int) -> str:
         item = self.table.item(row, col)
@@ -76,6 +77,13 @@ class CoolTable(QWidget):
         if event.key() in (Qt.Key.Key_Backspace, Qt.Key.Key_Delete):
             for item in self.table.selectedItems():
                 item.setText('')
+
+    def onCellChange(self, func):
+        def cellChanged(*args, **kwargs):
+            if not self.freeze:
+                func()
+
+        self.table.cellChanged.connect(cellChanged)
 
     def updateSizes(self):
         self.setHeaders()
@@ -146,6 +154,7 @@ class CoolTable(QWidget):
         )
 
     def loadFile(self, lines):
+        self.freeze = True
         self.table.setRowCount(len(lines))
 
         maxCols = 0
@@ -162,6 +171,7 @@ class CoolTable(QWidget):
                 self.table.setItem(row, col, QTableWidgetItem(phase))
 
         self.updateSizes()
+        self.freeze = False
 
 class PavlovianApp(QDialog):
     def __init__(self, dpi = 200, parent=None):
@@ -195,6 +205,7 @@ class PavlovianApp(QDialog):
 
         self.tableWidget = CoolTable(2, 1, parent = self)
         self.tableWidget.table.setMaximumHeight(120)
+        self.tableWidget.onCellChange(self.refreshExperiment)
 
         self.addActionsButtons()
         self.createParametersGroupBox()
@@ -464,7 +475,7 @@ class PavlovianApp(QDialog):
 
         return float(text)
 
-    def generateResults(self) -> tuple[dict[str, StimulusHistory], dict[str, list[Phase]], RWArgs]:
+    def generateResults(self) -> tuple[list[dict[str, StimulusHistory]], dict[str, list[Phase]], RWArgs]:
         args = RWArgs(
             adaptive_type = self.current_adaptive_type,
 
@@ -494,8 +505,6 @@ class PavlovianApp(QDialog):
 
         rowCount = self.tableWidget.rowCount()
         columnCount = self.tableWidget.columnCount()
-        while columnCount > 0 and not any(self.tableWidget.getText(row, columnCount - 1) for row in range(rowCount)):
-            columnCount -= 1
 
         strengths = [StimulusHistory.emptydict() for _ in range(columnCount)]
         phases = dict()
@@ -508,7 +517,7 @@ class PavlovianApp(QDialog):
             experiment = Experiment(name, phase_strs)
             local_strengths = experiment.run_all_phases(args)
 
-            strengths = [a | b for a, b in zip(strengths, local_strengths)]
+            strengths = [a | b for a, b in zip_longest(strengths, local_strengths, fillvalue = {})]
             phases[name] = experiment.phases
 
         return strengths, phases, args
@@ -605,11 +614,16 @@ class PavlovianApp(QDialog):
 def parse_args():
     args = ArgumentParser('Display a GUI for simulating models.')
     args.add_argument('--dpi', type = int, default = 200, help = 'DPI for shown and outputted figures.')
+    args.add_argument('--debug', action = 'store_true', help = 'Whether to go to a debugging console if there is an exception')
     return args.parse_args()
 
-if __name__ == '__main__':
+def main():
     args = parse_args()
+
     app = QApplication(sys.argv)
     gallery = PavlovianApp(dpi = args.dpi)
     gallery.show()
     sys.exit(app.exec())
+
+if __name__ == '__main__':
+    main()

@@ -23,12 +23,12 @@ class Phase:
         return set.union(*[set(x[0]) for x in self.elems])
 
     def __init__(self, phase_str: str):
-        self.phase_str = phase_str
+        self.phase_str = phase_str.upper()
         self.rand = False
         self.lamda = None
         self.elems = []
 
-        for part in phase_str.strip().split('/'):
+        for part in self.phase_str.strip().split('/'):
             if part == 'rand':
                 self.rand = True
             elif (match := re.fullmatch(r'lamb?da *= *([0-9]*(?:\.[0-9]*)?)', part)) is not None:
@@ -36,8 +36,10 @@ class Phase:
             elif (match := re.fullmatch(r'([0-9]*)([A-Z]+)([+-]?)', part)) is not None:
                 num, cs, sign = match.groups()
                 self.elems += int(num or '1') * [(cs, sign or '+')]
+            elif not part.strip():
+                continue
             else:
-                raise ValueError(f'Part not understood: {part}')
+                raise ValueError(f'Part not understood: "{part}"')
 
 @dataclass(kw_only = True)
 class RWArgs:
@@ -77,7 +79,7 @@ class Experiment:
 
     def __init__(self, name: str, phase_strs: list[str]):
         self.name = name
-        self.phases = [Phase(phase_str) for phase_str in phase_strs]
+        self.phases = [Phase(phase_str) for phase_str in phase_strs if phase_str.strip()]
 
     def run_all_phases(self, args: RWArgs) -> list[dict[str, StimulusHistory]]:
         group = self.initial_group(args)
