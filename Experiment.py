@@ -23,7 +23,7 @@ class Phase:
         return set.union(*[set(x[0]) for x in self.elems])
 
     def __init__(self, phase_str: str):
-        self.phase_str = phase_str.upper()
+        self.phase_str = phase_str
         self.rand = False
         self.lamda = None
         self.elems = []
@@ -33,8 +33,9 @@ class Phase:
                 self.rand = True
             elif (match := re.fullmatch(r'lamb?da *= *([0-9]*(?:\.[0-9]*)?)', part)) is not None:
                 self.lamda = float(match.group(1))
-            elif (match := re.fullmatch(r'([0-9]*)([A-Z]+)([+-]?)', part)) is not None:
+            elif (match := re.fullmatch(r'([0-9]*)([A-Za-z]+)([+-]?)', part)) is not None:
                 num, cs, sign = match.groups()
+                cs = cs.upper()
                 self.elems += int(num or '1') * [(cs, sign or '+')]
             elif not part.strip():
                 continue

@@ -192,17 +192,6 @@ class PavlovianApp(QDialog):
         QTimer.singleShot(100, self.updateWidgets)
 
     def initUI(self):
-        styleComboBox = QComboBox()
-        styleComboBox.addItems(QStyleFactory.keys())
-
-        styleLabel = QLabel("&Style:")
-        styleLabel.setBuddy(styleComboBox)
-
-        self.useStylePaletteCheckBox = QCheckBox("&Use style's standard palette")
-        self.useStylePaletteCheckBox.setChecked(True)
-
-        disableWidgetsCheckBox = QCheckBox("&Disable widgets")
-
         self.tableWidget = CoolTable(2, 1, parent = self)
         self.tableWidget.table.setMaximumHeight(120)
         self.tableWidget.onCellChange(self.refreshExperiment)
@@ -445,6 +434,7 @@ class PavlovianApp(QDialog):
         self.salience = DualLabel("S ", params, self, 'Monospace')
         self.window_size = DualLabel("WS", params, self)
         self.num_trials = DualLabel("№", params, self)
+        self.num_trials.box.setDisabled(True)
 
         params.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
 
@@ -542,6 +532,9 @@ class PavlovianApp(QDialog):
         )
         for f in self.figures:
             f.set_canvas(self.plotCanvas)
+
+        any_rand = any(phase.rand for groups in phases.values() for phase in groups)
+        self.num_trials.box.setDisabled(not any_rand)
 
         self.refreshFigure()
 
