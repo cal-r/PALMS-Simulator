@@ -51,7 +51,8 @@ jobs:
             --exclude-module scipy.spatial --exclude-module scipy.special --exclude-module scipy.stats
             --exclude-module pandas.tests --exclude-module numpy.testing
             --exclude-module IPython --exclude-module jupyter
-            --exclude-module pytz
+            --exclude-module pytz --exclude-module tzdata --exclude-module python-dateutil --exclude-module six
+            --exclude-module contourpy --exclude-module cycler --exclude-module fonttools --exclude-module kiwisolver --exclude-module pillow --exclude-module pyparsing
             --strip PALMS.py
           "
 

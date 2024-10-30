@@ -1,2 +1,7 @@
-PyQt6
-seaborn
+PyQt6==6.2.0
+PyQt6-Qt6==6.2.0
+PyQt6-sip==13.1.0
+seaborn==0.11.2
+matplotlib==3.4.3
+pandas==1.3.3
+numpy==1.21.2
