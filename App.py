@@ -62,6 +62,24 @@ class CoolTable(QWidget):
 
         return item.text()
 
+    def isSelectionMostlyRand(self) -> bool:
+        rands = 0
+        for item in self.table.selectedItems():
+            if item is not None and 'rand/' in item.text():
+                rands += 1
+
+        return 2 * rands >= len(self.table.selectedItems())
+
+    def setRandInSelection(self, set_rand: bool):
+        self.freeze = True
+        for item in self.table.selectedItems():
+            item.setText(item.text().replace('rand/', ''))
+
+            if set_rand:
+                item.setText('rand/' + item.text())
+
+        self.freeze = False
+
     def setHeaders(self):
         self.table.setVerticalHeaderItem(0, QTableWidgetItem('Control'))
         self.table.setVerticalHeaderItem(1, QTableWidgetItem('Test'))
@@ -228,14 +246,16 @@ class PavlovianApp(QDialog):
 
         mainLayout = QGridLayout()
         mainLayout.addWidget(self.tableWidget, 0, 0, 1, 4)
-        mainLayout.addWidget(self.adaptiveTypeButtons, 1, 0, 2, 1)
-        mainLayout.addWidget(self.parametersGroupBox, 1, 1, 2, 1)
-        mainLayout.addWidget(self.plotBox, 1, 2, 2, 1)
-        mainLayout.addWidget(self.plotOptionsGroupBox, 1, 3, 1, 1)
-        mainLayout.addWidget(self.fileOptionsGroupBox, 2, 3, 1, 1)
+        mainLayout.addWidget(self.adaptiveTypeButtons, 1, 0, 3, 1)
+        mainLayout.addWidget(self.parametersGroupBox, 1, 1, 3, 1)
+        mainLayout.addWidget(self.plotBox, 1, 2, 3, 1)
+        mainLayout.addWidget(self.phaseOptionsGroupBox, 1, 3, 1, 1)
+        mainLayout.addWidget(self.plotOptionsGroupBox, 2, 3, 1, 1)
+        mainLayout.addWidget(self.fileOptionsGroupBox, 3, 3, 1, 1)
         mainLayout.setRowStretch(0, 1)
         mainLayout.setRowStretch(1, 0)
         mainLayout.setRowStretch(2, 1)
+        mainLayout.setRowStretch(3, 1)
         mainLayout.setColumnStretch(0, 0)
         mainLayout.setColumnStretch(1, 0)
         mainLayout.setColumnStretch(2, 1)
@@ -280,12 +300,17 @@ class PavlovianApp(QDialog):
         buttons.setLayout(layout)
         return buttons
 
+    def loadFile(self, filename):
+        lines = [x.strip() for x in open(filename)]
+        self.tableWidget.loadFile(lines)
+
     def openFileDialog(self):
         file, _ = QFileDialog.getOpenFileName(self, 'Open File', './Experiments')
-        self.tableWidget.loadFile([x.strip() for x in open(file)])
+        self.loadFile(file)
         self.refreshExperiment()
 
     def addActionsButtons(self):
+        self.phaseOptionsGroupBox = QGroupBox('Phase Options')
         self.plotOptionsGroupBox = QGroupBox("Plot Options")
         self.fileOptionsGroupBox = QGroupBox("File Options")
 
@@ -307,6 +332,12 @@ class PavlovianApp(QDialog):
         self.plot_alpha = False
         self.plot_macknhall = False
 
+        self.toggleRandButton = QPushButton('Toggle Rand')
+        self.toggleRandButton.clicked.connect(self.toggleRand)
+        self.toggleRandButton.setCheckable(True)
+
+        self.phaseLambdaButton = QPushButton('Phase λ')
+
         self.setDefaultParamsButton = QPushButton("Restore Default Parameters")
         self.setDefaultParamsButton.clicked.connect(self.restoreDefaultParameters)
 
@@ -315,6 +346,11 @@ class PavlovianApp(QDialog):
 
         self.printButton = QPushButton("Plot")
         self.printButton.clicked.connect(self.plotExperiment)
+
+        phaseOptionsLayout = QVBoxLayout()
+        phaseOptionsLayout.addWidget(self.toggleRandButton)
+        phaseOptionsLayout.addWidget(self.phaseLambdaButton)
+        self.phaseOptionsGroupBox.setLayout(phaseOptionsLayout)
 
         plotOptionsLayout = QVBoxLayout()
         plotOptionsLayout.addWidget(self.plotAlphaButton)
@@ -328,6 +364,11 @@ class PavlovianApp(QDialog):
         fileOptionsLayout.addWidget(self.setDefaultParamsButton)
         fileOptionsLayout.addStretch()
         self.fileOptionsGroupBox.setLayout(fileOptionsLayout)
+
+    def toggleRand(self):
+        set_rand = not self.tableWidget.isSelectionMostlyRand()
+        self.tableWidget.setRandInSelection(set_rand)
+        self.refreshExperiment()
 
     def togglePlotAlpha(self):
         if self.plot_alpha or self.plot_macknhall:
@@ -451,7 +492,7 @@ class PavlovianApp(QDialog):
             'thetaI': '0.1',
             'salience': '0.5',
             'window_size': '10',
-            'num_trials': '100'
+            'num_trials': '1'
         }
 
         for key, value in defaults.items():
@@ -608,6 +649,7 @@ def parse_args():
     args = ArgumentParser('Display a GUI for simulating models.')
     args.add_argument('--dpi', type = int, default = 200, help = 'DPI for shown and outputted figures.')
     args.add_argument('--debug', action = 'store_true', help = 'Whether to go to a debugging console if there is an exception')
+    args.add_argument('load_file', nargs = '?', help = 'File to load initially')
     return args.parse_args()
 
 def main():
@@ -616,6 +658,11 @@ def main():
     app = QApplication(sys.argv)
     gallery = PavlovianApp(dpi = args.dpi)
     gallery.show()
+
+    if args.load_file:
+        gallery.loadFile(args.load_file)
+        gallery.refreshExperiment()
+
     sys.exit(app.exec())
 
 if __name__ == '__main__':

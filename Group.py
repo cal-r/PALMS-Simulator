@@ -1,6 +1,8 @@
 from Environment import Environment, StimulusHistory, Stimulus
 from AdaptiveType import AdaptiveType
 
+import ipdb
+
 class Group:
     name: str
 
@@ -9,6 +11,8 @@ class Group:
 
     adaptive_type: AdaptiveType
     window_size: None | int
+
+    prev_lamda: None | float
 
     def __init__(
         self,
@@ -51,6 +55,7 @@ class Group:
         # `use_configurals` was removed from the current version of the program,
         # but we keep this line as we might re-add it later.
         self.cs = [x for x in alphas.keys() if len(x) == 1]
+        self.prev_lamda = lamda
 
     # runPhase runs a single trial of a phase, in order, and returns a list of the Strength values
     # of its CS at every step.
@@ -74,7 +79,7 @@ class Group:
                 if cs not in hist:
                     hist[cs].add(self.s[cs])
 
-                self.adaptive_type.run_step(self.s[cs], beta, lamda, sign, sigma, sigmaE, sigmaI)
+                self.adaptive_type.run_step(self.s[cs], beta, lamda, sign, sigma, sigmaE, sigmaI, self.prev_lamda)
 
                 if self.window_size is not None:
                     if len(self.s[cs].window) >= self.window_size:

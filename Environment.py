@@ -21,8 +21,8 @@ class Stimulus:
     def __init__(self, *, assoc = 0., Ve = 0., Vi = 0., alpha = .5, alpha_mack = None, alpha_hall = None, delta_ma_hall = .2, window = None, salience = None):
         self.assoc = assoc
 
-        self.Ve = self.assoc
-        self.Vi = self.assoc
+        self.Ve = Ve
+        self.Vi = Vi
 
         self.alpha = alpha
         self.alpha_mack = alpha_mack or alpha
@@ -157,8 +157,6 @@ class Environment:
     def copy(self) -> Environment:
         return Environment(self.cs.copy(), {k: v.copy() for k, v in self.s.items()})
 
-    # Consider adding Sigma, SigmaE, and SigmaI functions here.
-
     @staticmethod
     def avg(val: list[Environment]) -> Environment:
         # We average doing `avg(X) = sum(X / n)` rather than `avg(X) = sum(X) / n`
@@ -168,3 +166,6 @@ class Environment:
         # We use reduce rather than sum since we don't have a zero value.
         # Python reduce is the equivalent of Haskell foldl1'.
         return reduce(lambda a, b: a + b, val_quot)
+
+    def assocs(self) -> dict[str, float]:
+        return {k: v.assoc for k, v in self.s.items()}
