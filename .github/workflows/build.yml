@@ -30,9 +30,14 @@ jobs:
 
     - name: Build executable
       run: |
-        pyinstaller --onefile --windowed PALMS.py --icon NONE
+        if [[ "${{ matrix.os }}" == "macos-latest" ]]
+        then
+          touch blank.icns
+          pyinstaller --onefile --windowed PALMS.py --icon blank.icns
+        else
+          pyinstaller --onefile --windowed PALMS.py
+        fi
       shell: bash
-
 
     - name: Archive Linux executable
       if: ${{ matrix.os == 'ubuntu-latest' }}
