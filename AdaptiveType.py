@@ -5,8 +5,6 @@ from typing import Type
 
 from Environment import Stimulus
 
-import ipdb
-
 class AdaptiveType:
     betan: float
     betap: float
@@ -116,12 +114,9 @@ class LePelley(AdaptiveType):
             DVi = s.alpha * self.betan * (1 - s.Vi + s.Ve) * abs(rho)
             s.alpha += -self.thetaI * (abs(abs(rho) - s.Vi + s.Ve) - abs(abs(rho) - VXi + VXe))
 
-        oldVe, oldVi = s.Ve, s.Vi
         s.alpha = min(max(s.alpha, 0.05), 1)
         s.Ve += DVe
         s.Vi += DVi
-
-        print(f'{oldVe:.4f}\t{oldVi:.4f}\t->\t{s.Ve:.4f}\t{s.Vi:.4f}')
 
         s.assoc = s.Ve - s.Vi
 

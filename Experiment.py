@@ -5,8 +5,6 @@ from dataclasses import dataclass
 from Group import Group
 from Environment import Environment, StimulusHistory
 
-import ipdb
-
 class Phase:
     # elems contains a list of ([CS], US) of an experiment.
     elems: list[tuple[str, str]]
@@ -133,8 +131,8 @@ class Experiment:
 
                     g.s = initial_strengths.copy()
                     g.prev_lamda = initial_lamda
-                    a = g.runPhase(phase.elems, phase.lamda)
-                    hist.append(a)
+                    strength_hist = g.runPhase(phase.elems, phase.lamda)
+                    hist.append(strength_hist)
                     final_strengths.append(g.s.copy())
 
                 results.append([

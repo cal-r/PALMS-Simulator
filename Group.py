@@ -1,8 +1,6 @@
 from Environment import Environment, StimulusHistory, Stimulus
 from AdaptiveType import AdaptiveType
 
-import ipdb
-
 class Group:
     name: str
 
