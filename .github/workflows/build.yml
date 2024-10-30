@@ -48,8 +48,11 @@ jobs:
             --exclude-module email --exclude-module html
             --exclude-module http --exclude-module xmlrpc
             --exclude-module logging
-            --exclude-module matplotlib.tests
-            --exclude-module numpy.testing
+            --exclude-module matplotlib.tests --exclude-module mpl_toolkits.tests
+            --exclude-module scipy.spatial --exclude-module scipy.special --exclude-module scipy.stats
+            --exclude-module pandas.tests --exclude-module numpy.testing
+            --exclude-module IPython --exclude-module jupyter
+            --exclude-module pytz --exclude-module dateutil --exclude-module calendar
             --strip PALMS.py
           "
 
