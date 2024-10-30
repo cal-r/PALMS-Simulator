@@ -22,14 +22,6 @@ jobs:
       with:
         python-version: '3.12.6'
 
-    - name: Install UPX on Linux
-      if: ${{ matrix.os == 'ubuntu-latest' }}
-      run: sudo apt-get install -y upx
-
-    - name: Install UPX on Windows
-      if: ${{ matrix.os == 'windows-latest' }}
-      run: choco install upx
-
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -55,24 +47,23 @@ jobs:
             --exclude-module unittest
             --exclude-module email --exclude-module html
             --exclude-module http --exclude-module xmlrpc
-            --exclude-module logging
             --exclude-module matplotlib.tests --exclude-module mpl_toolkits.tests
             --exclude-module scipy.spatial --exclude-module scipy.special --exclude-module scipy.stats
             --exclude-module pandas.tests --exclude-module numpy.testing
             --exclude-module IPython --exclude-module jupyter
-            --exclude-module pytz --exclude-module dateutil --exclude-module calendar
+            --exclude-module pytz
             --strip PALMS.py
           "
 
         if [[ "${{ matrix.os }}" == "macos-latest" ]]
         then
-          $PYINSTALLER --icon bell_icon.icns --upx-dir /usr/local/bin
+          $PYINSTALLER --icon bell_icon.icns
         elif [[ "${{ matrix.os }}" == "ubuntu-latest" ]]
         then
-          $PYINSTALLER --upx-dir /usr/bin
+          $PYINSTALLER
         elif [[ "${{ matrix.os }}" == "windows-latest" ]]
         then
-          $PYINSTALLER --upx-dix "C:\Program Files\upx"
+          $PYINSTALLER
         fi
       shell: bash
 
