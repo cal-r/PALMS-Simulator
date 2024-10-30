@@ -30,12 +30,12 @@ jobs:
 
     - name: Build executable
       run: |
+        PYINSTALLER=pyinstaller --onefile --windowed --noconfirm --clean --exclude-module PyQt6.QtWebEngineCore PyQt6.Qt3DCode PyQt6.QtNetwork matplotlib.tests numpy.testing --strip PALMS.py
         if [[ "${{ matrix.os }}" == "macos-latest" ]]
         then
-          pyinstaller --onefile --windowed --noconfirm --clean PALMS.py --icon bell_icon.icns
-        else
-          pyinstaller --onefile --windowed --noconfirm --clean PALMS.py
+          PYINSTALLER="$PYINSTALLER --icon bell_icon.icns"
         fi
+        $PYINSTALLER
       shell: bash
 
     - name: Archive Linux executable
