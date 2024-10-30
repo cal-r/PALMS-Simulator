@@ -262,7 +262,7 @@ class PavlovianApp(QDialog):
         mainLayout.setColumnStretch(3, 0)
         self.setLayout(mainLayout)
 
-        self.setWindowTitle("🐕🔔")
+        self.setWindowTitle("PALMS Simulator")
         self.restoreDefaultParameters()
 
         self.initialAdaptiveTypeButton.click()

@@ -32,9 +32,9 @@ jobs:
       run: |
         if [[ "${{ matrix.os }}" == "macos-latest" ]]
         then
-          pyinstaller --onefile --windowed PALMS.py --icon bell_icon.icns
+          pyinstaller --onefile --windowed --noconfirm --clean PALMS.py --icon bell_icon.icns
         else
-          pyinstaller --onefile --windowed PALMS.py
+          pyinstaller --onefile --windowed --noconfirm --clean PALMS.py
         fi
       shell: bash
 
