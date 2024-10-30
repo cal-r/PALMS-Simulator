@@ -70,7 +70,7 @@ jobs:
         elif [[ "${{ matrix.os }}" == "ubuntu-latest" ]]
         then
           $PYINSTALLER --upx-dir /usr/bin
-        elif [[ $"{{ matrix.os }}" == "windows-latest" ]]
+        elif [[ "${{ matrix.os }}" == "windows-latest" ]]
         then
           $PYINSTALLER --upx-dix "C:\Program Files\upx"
         fi
