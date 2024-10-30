@@ -30,7 +30,7 @@ jobs:
 
     - name: Build executable
       run: |
-        pyinstaller --onefile --windowed PALMS.py
+        pyinstaller --onefile --windowed PALMS.py --icon NONE
       shell: bash
 
 
