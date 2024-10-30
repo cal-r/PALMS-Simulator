@@ -61,7 +61,7 @@ class CoolTable(QWidget):
 
         return item.text()
 
-    def setVerticalHeaders(self):
+    def setHeaders(self):
         self.table.setVerticalHeaderItem(0, QTableWidgetItem('Control'))
         self.table.setVerticalHeaderItem(1, QTableWidgetItem('Test'))
 
@@ -69,13 +69,16 @@ class CoolTable(QWidget):
             for e in range(1, self.rowCount()):
                 self.table.setVerticalHeaderItem(e, QTableWidgetItem(f'Test {e}'))
 
+        for col in range(self.columnCount()):
+            self.table.setHorizontalHeaderItem(col, QTableWidgetItem(f'Phase {col + 1}'))
+
     def keyPressEvent(self, event):
         if event.key() in (Qt.Key.Key_Backspace, Qt.Key.Key_Delete):
             for item in self.table.selectedItems():
                 item.setText('')
 
     def updateSizes(self):
-        self.setVerticalHeaders()
+        self.setHeaders()
 
         width = 90 * (1 + self.columnCount())
         height = 30 * (1 + self.rowCount())
@@ -89,7 +92,6 @@ class CoolTable(QWidget):
     def addColumn(self):
         cols = self.columnCount()
         self.table.insertColumn(cols)
-        self.table.setHorizontalHeaderItem(cols, QTableWidgetItem(f'Phase {cols + 1}'))
         self.updateSizes()
 
     def addRow(self):
@@ -100,7 +102,7 @@ class CoolTable(QWidget):
     def clearEmptyRows(self):
         toRemove = []
         for row in range(self.rowCount()):
-            if not any(self.table.item(row, x) for x in range(self.columnCount())):
+            if not any(self.getText(row, x) for x in range(self.columnCount())):
                 toRemove.append(row)
 
         if len(toRemove) == self.rowCount():
@@ -112,7 +114,7 @@ class CoolTable(QWidget):
     def clearEmptyColumns(self):
         toRemove = []
         for col in range(self.columnCount()):
-            if not any(self.table.item(x, col) for x in range(self.rowCount())):
+            if not any(self.getText(x, col) for x in range(self.rowCount())):
                 toRemove.append(col)
 
         if len(toRemove) == self.columnCount():
