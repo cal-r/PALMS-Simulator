@@ -30,23 +30,27 @@ jobs:
 
     - name: Build executable
       run: |
-        pyinstaller --onefile --windowed your_script.py
+        pyinstaller --onefile --windowed PALMS.py
       shell: bash
 
-    - name: Archive executable
+
+    - name: Archive Linux executable
       if: ${{ matrix.os == 'ubuntu-latest' }}
-      run: mv dist/your_script ./your_script_linux
+      run: mv dist/PALMS ./PALMS
+
+    - name: Archive Windows executable
       if: ${{ matrix.os == 'windows-latest' }}
-      run: mv dist/your_script.exe ./your_script_windows.exe
+      run: mv dist/PALMS.exe ./PALMS_windows.exe
+
+    - name: Archive MacOS executable
       if: ${{ matrix.os == 'macos-latest' }}
-      run: mv dist/your_script ./your_script_macos
+      run: mv dist/PALMS ./PALMS_macos
 
     - name: Upload executable
       uses: actions/upload-artifact@v3
       with:
         name: ${{ matrix.os }}-executable
         path: |
-          ./your_script_windows.exe
-          ./your_script_macos
-          ./your_script_linux
-
+          ./PALMS
+          ./PALMS_windows.exe
+          ./PALMS_macos
