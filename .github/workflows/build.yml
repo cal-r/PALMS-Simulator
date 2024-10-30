@@ -64,7 +64,7 @@ jobs:
             --strip PALMS.py
           "
 
-        if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+        if [[ "${{ matrix.os }}" == "macos-latest" ]]
         then
           $PYINSTALLER --icon bell_icon.icns --upx-dir /usr/local/bin
         elif [[ "${{ matrix.os }}" == "ubuntu-latest" ]]
