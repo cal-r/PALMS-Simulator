@@ -30,7 +30,17 @@ jobs:
 
     - name: Build executable
       run: |
-        PYINSTALLER=pyinstaller --onefile --windowed --noconfirm --clean --exclude-module PyQt6.QtWebEngineCore PyQt6.Qt3DCode PyQt6.QtNetwork matplotlib.tests numpy.testing --strip PALMS.py
+        PYINSTALLER="
+          pyinstaller
+            --onefile --windowed --noconfirm --clean
+            --exclude-module PyQt6.QtWebEngineCore
+            --exclude-module PyQt6.Qt3DCode
+            --exclude-module PyQt6.QtNetwork
+            --exclude-module matplotlib.tests
+            --exclude-module numpy.testing
+            --strip PALMS.py
+          "
+
         if [[ "${{ matrix.os }}" == "macos-latest" ]]
         then
           PYINSTALLER="$PYINSTALLER --icon bell_icon.icns"
