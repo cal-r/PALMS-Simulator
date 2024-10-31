@@ -9,6 +9,7 @@ This simulator will be presented in the paper ``PALMS: Pavlovian Associative Lea
 https://github.com/mfixman/rw-model/releases
 
 > I DON'T CARE ABOUT THE CODE! WHY IS THERE CODE? MAKE AN .EXE FILE AND GIVE IT TO ME YOU SMELLY NERDS.
+
 — a wise man on the Github subreddit.
 
 Each version of PALMS has releases bundled with Python and its respective libraries to create executables for Linux, MacOS, and Windows. These bundles work on systems that don't have Python or its respective libraries installed.
@@ -141,7 +142,7 @@ The phases can be empty; in that case the group does not do anything for that pa
 
 Each phase column contains a **Phase Description**, which may include one or more **Attributes**.
 
-- **Format**: `(rand/)?(lambda=\d(\.\d+)?/)?/<part_1>/.../<part_n>1
+- **Format**: `(rand/)?(lambda=\d(\.\d+)?/)?/<part_1>/.../<part_n>`
   - `rand`: Indicates this phase needs to be randomised.
   - `lambda=<value>`: Specifies a per-phase λ. The λ gets reset to the global one on the following phase.
 

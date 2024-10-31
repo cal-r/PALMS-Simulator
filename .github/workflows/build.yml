@@ -73,15 +73,18 @@ jobs:
       if: ${{ matrix.os == 'ubuntu-latest' }}
       run: |
         mv dist/PALMS ./PALMS_linux
-        chmod +x ./PALMS_linux
+        chmod +x ./release/PALMS_linux
 
     - name: Archive Windows executable
       if: ${{ matrix.os == 'windows-latest' }}
-      run: mv dist/PALMS.exe ./PALMS_windows.exe
+      run: mv dist/PALMS.exe ./release/PALMS_windows.exe
 
     - name: Archive MacOS executable
       if: ${{ matrix.os == 'macos-latest' }}
-      run: mv dist/PALMS ./PALMS_macos
+      run: mv dist/PALMS ./release/PALMS_macos
+
+    - name: Copy Experiments directory to release
+      run: cp -r Experiments ./release/
 
     - name: Commit 'latest' rag.
       if: github.ref == 'refs/heads/main'
@@ -93,24 +96,16 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Upload executable
+    - name: Upload all release files as artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ matrix.os }}-executable
-        path: |
-          Experiments/
-          ./PALMS
-          ./PALMS_windows.exe
-          ./PALMS_macos
+        name: ${{ matrix.os }}-release
+        path: release/
 
     - name: Upload to GitHub Release
       uses: softprops/action-gh-release@v1
       with:
         tag_name: latest
-        files: |
-          Experiments/
-          ./PALMS
-          ./PALMS_windows.exe
-          ./PALMS_macos
+        files: release/*
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
