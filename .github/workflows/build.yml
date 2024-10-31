@@ -94,6 +94,6 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         tag_name: latest
-        files: release/**
+        files: release/PALMS* release/Experiments
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
