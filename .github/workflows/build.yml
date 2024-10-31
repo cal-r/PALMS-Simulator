@@ -30,31 +30,64 @@ jobs:
 
     - name: Build executable
       run: |
+        PYINSTALLER="
+          pyinstaller
+            --onefile --windowed --noconfirm --clean
+            PALMS.py
+          "
+
         if [[ "${{ matrix.os }}" == "macos-latest" ]]
         then
-          pyinstaller --onefile --windowed --noconfirm --clean PALMS.py --icon bell_icon.icns
-        else
-          pyinstaller --onefile --windowed --noconfirm --clean PALMS.py
+          $PYINSTALLER --icon bell_icon.icns
+        elif [[ "${{ matrix.os }}" == "ubuntu-latest" ]]
+        then
+          $PYINSTALLER
+        elif [[ "${{ matrix.os }}" == "windows-latest" ]]
+        then
+          $PYINSTALLER
         fi
       shell: bash
 
+    - name: Prepare release directory
+      run: mkdir -p release
+
     - name: Archive Linux executable
       if: ${{ matrix.os == 'ubuntu-latest' }}
-      run: mv dist/PALMS ./PALMS
+      run: |
+        mv dist/PALMS ./release/PALMS_linux
+        chmod +x ./release/PALMS_linux
 
     - name: Archive Windows executable
       if: ${{ matrix.os == 'windows-latest' }}
-      run: mv dist/PALMS.exe ./PALMS_windows.exe
+      run: mv dist/PALMS.exe ./release/PALMS_windows.exe
 
     - name: Archive MacOS executable
       if: ${{ matrix.os == 'macos-latest' }}
-      run: mv dist/PALMS ./PALMS_macos
+      run: mv dist/PALMS ./release/PALMS_macos
 
-    - name: Upload executable
+    - name: Copy Experiments directory to release
+      run: cp -r Experiments ./release/
+
+    - name: Commit 'latest' rag.
+      if: github.ref == 'refs/heads/main'
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git tag -f latest
+        git push origin latest --force
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload all release files as artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ matrix.os }}-executable
-        path: |
-          ./PALMS
-          ./PALMS_windows.exe
-          ./PALMS_macos
+        name: ${{ matrix.os }}-release
+        path: release/
+
+    - name: Upload to GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: latest
+        files: release/*
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
