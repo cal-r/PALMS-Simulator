@@ -335,6 +335,7 @@ class PavlovianApp(QDialog):
         self.toggleRandButton = QPushButton('Toggle Rand')
         self.toggleRandButton.clicked.connect(self.toggleRand)
         self.toggleRandButton.setCheckable(True)
+        self.toggleRandButton.setStyleSheet(checkedStyle)
 
         self.phaseLambdaButton = QPushButton('Phase λ')
 
@@ -583,6 +584,7 @@ class PavlovianApp(QDialog):
 
         any_rand = any(phase.rand for groups in phases.values() for phase in groups)
         self.num_trials.box.setDisabled(not any_rand)
+        self.toggleRandButton.setChecked(any_rand)
 
         self.refreshFigure()
 
