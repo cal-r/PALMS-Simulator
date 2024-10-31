@@ -106,7 +106,7 @@ class CoolTable(QWidget):
     def updateSizes(self):
         self.setHeaders()
 
-        width = 90 * (1 + self.columnCount())
+        width = 150 * (1 + self.columnCount())
         height = 30 * (1 + self.rowCount())
         self.table.setFixedSize(width, height)
         self.rightPlus.setFixedHeight(height)
