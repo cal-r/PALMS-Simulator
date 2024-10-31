@@ -30,8 +30,7 @@ jobs:
 
     - name: Build executable
       run: |
-        PYINSTALLER=pyinstaller \
-            --onefile --windowed --noconfirm --clean \
+        OPTIONS="--onefile --windowed --noconfirm --clean \
             --exclude-module PyQt6.QtWebEngineCore \
             --exclude-module PyQt6.Qt3DCore \
             --exclude-module PyQt6.QtNetwork \
@@ -46,20 +45,13 @@ jobs:
             --exclude-module matplotlib.tests --exclude-module mpl_toolkits.tests \
             --exclude-module scipy.spatial --exclude-module scipy.special --exclude-module scipy.stats \
             --exclude-module pandas.tests --exclude-module numpy.testing \
-            --exclude-module IPython --exclude-module jupyter \
-            --exclude-module pytz --exclude-module tzdata --exclude-module python-dateutil --exclude-module six \
-            --exclude-module contourpy --exclude-module cycler --exclude-module fonttools --exclude-module kiwisolver --exclude-module pillow --exclude-module pyparsing \
-            PALMS.py
+            --exclude-module IPython --exclude-module jupyter"
 
         if [[ "${{ matrix.os }}" == "macos-latest" ]]
         then
-          $PYINSTALLER --icon bell_icon.icns
-        elif [[ "${{ matrix.os }}" == "ubuntu-latest" ]]
-        then
-          $PYINSTALLER
-        elif [[ "${{ matrix.os }}" == "windows-latest" ]]
-        then
-          $PYINSTALLER
+          pyinstaller $COMMON_OPTIONS --icon bell_icon.icns PALMS.py
+        else
+          pyinstaller $COMMON_OPTIONS PALMS.py
         fi
       shell: bash
 
