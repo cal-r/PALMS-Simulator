@@ -82,6 +82,16 @@ jobs:
       if: ${{ matrix.os == 'macos-latest' }}
       run: mv dist/PALMS ./PALMS_macos
 
+    - name: Commit 'latest' rag.
+      if: github.ref == 'refs/heads/main'
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git tag -f latest
+        git push origin latest --force
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     - name: Upload executable
       uses: actions/upload-artifact@v3
       with:
@@ -91,19 +101,10 @@ jobs:
           ./PALMS_windows.exe
           ./PALMS_macos
 
-    - name: Create a tag
-      id: tag
-      run: |
-        TAG_NAME="v$(date +'%Y%m%d%H%M%S')"
-        echo "TAG_NAME=$TAG_NAME" >> $GITHUB_ENV
-        git config user.name "github-actions"
-        git config user.email "github-actions@github.com"
-        git tag $TAG_NAME
-        git push origin $TAG_NAME
-
     - name: Upload to GitHub Release
       uses: softprops/action-gh-release@v1
       with:
+        tag_name: latest
         files: |
           ./PALMS
           ./PALMS_windows.exe
