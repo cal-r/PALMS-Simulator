@@ -73,7 +73,7 @@ jobs:
       run: mv dist/PALMS ./release/PALMS_macos
 
     - name: Copy Experiments directory to release
-      run: cp -r Experiments ./release/
+      run: cp -r Experiments release/Experiments
 
     - name: Commit 'latest' rag.
       if: github.ref == 'refs/heads/main'
@@ -95,6 +95,6 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         tag_name: latest
-        files: release/PALMS* release/Experiments
+        files: release/**
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
