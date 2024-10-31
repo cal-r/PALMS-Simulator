@@ -62,14 +62,6 @@ class CoolTable(QWidget):
 
         return item.text()
 
-    def isSelectionMostlyRand(self) -> bool:
-        rands = 0
-        for item in self.table.selectedItems():
-            if item is not None and 'rand/' in item.text():
-                rands += 1
-
-        return 2 * rands >= len(self.table.selectedItems())
-
     def setRandInSelection(self, set_rand: bool):
         self.freeze = True
         for item in self.table.selectedItems():
@@ -77,6 +69,16 @@ class CoolTable(QWidget):
 
             if set_rand:
                 item.setText('rand/' + item.text())
+
+        self.freeze = False
+
+    def setLambdaInSelection(self, set_lambda: None | float):
+        self.freeze = True
+        for item in self.table.selectedItems():
+            item.setText(re.sub(r'lamb?da=[0-9]+(\.[0-9]+)?\/', '', item.text()))
+
+            if set_lambda is not None:
+                item.setText(f'lambda={set_lambda}/' + item.text())
 
         self.freeze = False
 
@@ -337,7 +339,10 @@ class PavlovianApp(QDialog):
         self.toggleRandButton.setCheckable(True)
         self.toggleRandButton.setStyleSheet(checkedStyle)
 
-        self.phaseLambdaButton = QPushButton('Phase λ')
+        self.phaseLambdaButton = QPushButton('Per-Phase λ')
+        self.phaseLambdaButton.clicked.connect(self.togglePhaseLambda)
+        self.phaseLambdaButton.setCheckable(True)
+        self.phaseLambdaButton.setStyleSheet(checkedStyle)
 
         self.setDefaultParamsButton = QPushButton("Restore Default Parameters")
         self.setDefaultParamsButton.clicked.connect(self.restoreDefaultParameters)
@@ -367,8 +372,13 @@ class PavlovianApp(QDialog):
         self.fileOptionsGroupBox.setLayout(fileOptionsLayout)
 
     def toggleRand(self):
-        set_rand = not self.tableWidget.isSelectionMostlyRand()
+        set_rand = any(x is not None and 'rand/' in x.text() for x in self.tableWidget.table.selectedItems())
         self.tableWidget.setRandInSelection(set_rand)
+        self.refreshExperiment()
+
+    def togglePhaseLambda(self):
+        set_lamda = any(x is not None and re.search(r'lamb?da=[0-9]+(\.[0-9]+)?\/', x) for x in self.tableWidget.table.selectedItems())
+        self.tableWidget.setLambdaInSelection(self.floatOrZero(self.lamda.box.text()) if set_lamda else None)
         self.refreshExperiment()
 
     def togglePlotAlpha(self):
