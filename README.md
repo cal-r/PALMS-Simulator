@@ -6,7 +6,7 @@ This simulator will be presented in the paper ``PALMS: Pavlovian Associative Lea
 
 ## Runnable executable bundled with the prerequisites.
 
-> I DON'T CARE ABOUT THE CODE! WHY IS THERE CODE? MAKE AN .EXE FILE AND GIVE IT TO ME.
+> I DON'T CARE ABOUT THE CODE! WHY IS THERE CODE? MAKE AN .EXE FILE AND GIVE IT TO ME YOU SMELLY NERDS.
 — a wise man on Reddit.
 
 Each version of PALMS get automatically compiled 
