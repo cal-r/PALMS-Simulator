@@ -6,81 +6,149 @@ This simulator will be presented in the paper ``PALMS: Pavlovian Associative Lea
 
 ## Runnable executable bundled with the prerequisites.
 
+https://github.com/mfixman/rw-model/releases
+
 > I DON'T CARE ABOUT THE CODE! WHY IS THERE CODE? MAKE AN .EXE FILE AND GIVE IT TO ME YOU SMELLY NERDS.
-— a wise man on Reddit.
+— a wise man on the Github subreddit.
 
-Each version of PALMS get automatically compiled 
+Each version of PALMS has releases bundled with Python and its respective libraries to create executables for Linux, MacOS, and Windows. These bundles work on systems that don't have Python or its respective libraries installed.
 
-## Prerequisites
+While convenient, these executables are considerably large. We recommend downloading and running the Python source code if you already have the dependencies set up and aren't stuck in Python version hell.
 
-Before running the simulator, ensure you have the following prerequisites installed:
+The latest releases can be found in [this link](https://github.com/mfixman/rw-model/releases).
 
-- Python 3.10 or higher
-- Matplotlib
+## Running the Python code
+
+### Requirements
+
+- Python ≥ 3.10
 - Seaborn
+- PyQt6
 
-## Installation
-
-1. Clone the repository to your local machine:
-
-```bash
-git clone https://github.com/mfixman/rw-model
+Once Python is installed, the requirements can be installed with the following command.
 ```
-
-2. Navigate to the cloned repository:
-
-```bash
-cd Rescorla-Wagner-Simulator
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
 ```
 
 ## Running the Simulator
 
-To run the simulator, use the RW_simulator.py script. This script accepts various command-line arguments to customize the simulation parameters.
+The GUI simulator has two arguments, which are convenient for debugging and posting screenshots.
 
-```bash
-python RW_simulator.py [path to your experiment file]
+```
+python PALMS.py --help
+usage: Display a GUI for simulating models. [-h] [--dpi DPI] [load_file]
+
+positional arguments:
+  load_file   File to load initially
+
+options:
+  -h, --help  show this help message and exit
+  --dpi DPI   DPI for shown and outputted figures.
 ```
 
-### Advanced Options
-- -h, --help: Shows help message and exit
-- --beta: Set the associativity of the US (Unconditioned Stimulus) positive reinforcement. Default is 1.
-- --beta-neg: Set the associativity of the absence of US positive reinforcement. Default is equal to --beta value.
-- --lamda: Set the asymptote of learning for positive reinforcement. Default is 1.
-- --lamda-neg: Set the asymptote for the absence of US positive reinforcement. Default is 0.
-- --use-configurals: Enable the use of compound stimuli with configural cues.
-- --adaptive-type: Set the type of adaptive attention mode (linear or exponential).
-- --window-size: Set the size of the sliding window for adaptive learning.
+Additionally, the simulator contains a CLI option with various arguments. Both versions are able to run the same models.
 
-### Example
-```bash
-python RW_simulator.py --beta 1 --lamda 1 --use-configurals --adaptive-type linear --window-size 5 --experiment_file Blocking.rw
 ```
-This example runs a blocking experiment with linear adaptive attention and a window size of 5 for adaptive learning.
+ $ python Simulator.py --help
+usage: Simulator.py [-h]
+                    [--adaptive-type {rescorla_wagner,rescorla_wagner_linear,pearce_hall,pearce_kaye_hall,le_pelley,le_pelley_hybrid,rescorla_wagner_exponential,mack,hall,macknhall,new_dual_v,dualmack,hybrid}]
+                    [--alpha ALPHA] [--alpha-mack ALPHA_MACK] [--alpha-hall ALPHA_HALL] [--beta BETA]
+                    [--beta-neg BETA_NEG] [--lamda LAMDA] [--gamma GAMMA] [--thetaE THETAE]
+                    [--thetaI THETAI] [--window-size WINDOW_SIZE] [--salience SALIENCE]
+                    [--xi-hall XI_HALL] [--num-trials NUM_TRIALS] [--plot-phase PLOT_PHASE]
+                    [--plot-experiments [PLOT_EXPERIMENTS ...]] [--plot-stimuli [PLOT_STIMULI ...]]
+                    [--plot-alphas | --no-plot-alphas] [--plot-alpha | --no-plot-alpha]
+                    [--plot-macknhall | --no-plot-macknhall] [--title-suffix TITLE_SUFFIX]
+                    [--savefig SAVEFIG]
+                    [experiment_file]
 
-## Experiment File Format
-The experiment file should contain lines representing different experimental groups or conditions. Each line should follow this format:
+Behold! My Rescorla-Wagnerinator!
 
-GroupName|Phase1|Phase2|...
+positional arguments:
+  experiment_file       Path to the experiment file.
 
-Where each phase is defined as:
+options:
+  -h, --help            show this help message and exit
+  --adaptive-type {rescorla_wagner,rescorla_wagner_linear,pearce_hall,pearce_kaye_hall,le_pelley,le_pelley_hybrid,rescorla_wagner_exponential,mack,hall,macknhall,new_dual_v,dualmack,hybrid}
+                        Type of adaptive attention mode to use
+  --alpha ALPHA         Alpha for all other stimuli
+  --alpha-mack ALPHA_MACK
+                        Alpha_mack for all other stimuli
+  --alpha-hall ALPHA_HALL
+                        Alpha_hall for all other stimuli
+  --beta BETA           Associativity of the US +.
+  --beta-neg BETA_NEG   Associativity of the absence of US +. Equal to beta by default.
+  --lamda LAMDA         Asymptote of learning.
+  --gamma GAMMA         Weighting how much you rely on past experinces on DualV adaptive type.
+  --thetaE THETAE       Theta for excitatory phenomena in LePelley blocking
+  --thetaI THETAI       Theta for inhibitory phenomena in LePelley blocking
+  --window-size WINDOW_SIZE
+                        Size of sliding window for adaptive learning
+  --salience SALIENCE   Salience for all parameters without an individually defined salience. This is
+                        used in the Pearce & Hall model.
+  --xi-hall XI_HALL     Xi parameter for Hall alpha calculation
+  --num-trials NUM_TRIALS
+                        Amount of trials done in randomised phases
+  --plot-phase PLOT_PHASE
+                        Plot a single phase
+  --plot-experiments [PLOT_EXPERIMENTS ...]
+                        List of experiments to plot. By default plot everything
+  --plot-stimuli [PLOT_STIMULI ...]
+                        List of stimuli, compound and simple, to plot. By default plot everything
+  --plot-alphas, --no-plot-alphas
+                        Whether to plot all the alphas, including total alpha, alpha Mack, and alpha
+                        Hall.
+  --plot-alpha, --no-plot-alpha
+                        Whether to plot the total alpha.
+  --plot-macknhall, --no-plot-macknhall
+                        Whether to plot the alpha Mack and alpha Hall.
+  --title-suffix TITLE_SUFFIX
+                        Title suffix
+  --savefig SAVEFIG     Instead of showing figures, they will be saved to "fig_n.png"
 
-numberOfTrialsStimulusSign
+  --alpha_[A-Z] ALPHA Associative strength of CS A..Z. By default 0
+```
 
-where:
+## Experiment Syntax Specification
+The experiments are saved in `.rw` files, which use a headerless pipe-separated data format specifying each step of the experiment.
 
-- numberOfTrials is the number of times the stimuli are presented.
-- Stimulus can be a single stimulus (A, B, etc.) or a compound (AB, AC, etc.).
-- Sign is + for positive reinforcement and - for negative reinforcement (or omitted for neutral).
+```
+<file>         ::= <group> { "\n" <group> }*
+<group>        ::= <name> "|" <phase> { "|" <phase> }*
+<phase>        ::= { "rand/" }? { "lambda=[0-9](.[0-9])?/" }? <phase_parts>
+<phase_parts>  ::= <part> { "/" <part> }*
+<part>         ::= <number>? <stimuli> <us>
+<stimuli>      ::= <cs> { <cs> }*
+<cs>           ::= [A-Z]
+<us>           ::= { "+" | "-" }?
+```
 
-Example line in an experiment file:
-Test|20A+|20AB+|1B+
+### File Structure
+Each line represents a **Row** in the table, typically indicating an experiment group.
+The first column of each group is its name. The remaining column are the phases, separated by `|`.
 
-This defines a group named "Test" with three phases: 20 trials of stimulus A with positive reinforcement, followed by 20 trials of compound stimulus AB with positive reinforcement, and finally a single trial of stimulus B with positive reinforcement.
+```
+<group_name_1> | <phase_1_1> | <phase_1_2> | ... | <phase_1_n>
+<group_name_2> | <phase_2_1> | <phase_2_2> | ... | <phase_2_n>
+<group_name_3> | <phase_3_1> | <phase_3_2> | ... | <phase_3_n>
+```
 
-## License
-This project is licensed under the MIT License - see the LICENSE.md file for details.
+The phases can be empty; in that case the group does not do anything for that particular phases.
 
+### Phases
 
+Each phase column contains a **Phase Description**, which may include one or more **Attributes**.
 
+- **Format**: `(rand/)?(lambda=\d(\.\d+)?/)?/<part_1>/.../<part_n>
+  - `rand`: Indicates this phase needs to be randomised.
+  - `lambda=<value>`: Specifies a per-phase λ. The λ gets reset to the global one on the following phase.
 
+Phases can be completely empty, in which case they are skipped for this particular group.
 
+### Parts
+Each parts contains a certain amount of an association between a non-empty set of conditioned stimuli and an unconditioned stimulus.
+- **Format**: [0-9]*[A-Z]*[+-]?
+  - Empty `<repetitions>` defaults to `1`.
+  - Empty `<us>` defaults to `+`.
