@@ -15,7 +15,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -30,32 +30,31 @@ jobs:
 
     - name: Build executable
       run: |
-        PYINSTALLER="
-          pyinstaller
-            --onefile --windowed --noconfirm --clean
-            --exclude-module PyQt6.QtWebEngineCore
-            --exclude-module PyQt6.Qt3DCore
-            --exclude-module PyQt6.QtNetwork
-            --exclude-module PyQt6.QtHelp
-            --exclude-module PyQt6.QtPrintSupport
-            --exclude-module PyQt6.QtSensors
-            --exclude-module PyQt6.QtTest
-            --exclude-module PyQt6.QtSvg
-            --exclude-module PyQt6.QtXml --exclude-module PyQt6.QtXmlPatterns
-            --exclude-module PyQt6.QtPositioning
-            --exclude-module tkinter
-            --exclude-module unittest
-            --exclude-module email --exclude-module html
-            --exclude-module http --exclude-module xmlrpc
-            --exclude-module matplotlib.tests --exclude-module mpl_toolkits.tests
-            --exclude-module scipy.spatial --exclude-module scipy.special --exclude-module scipy.stats
-            --exclude-module pandas.tests --exclude-module numpy.testing
-            --exclude-module IPython --exclude-module jupyter
-            --exclude-module pytz --exclude-module tzdata --exclude-module python-dateutil --exclude-module six
-            --exclude-module contourpy --exclude-module cycler --exclude-module fonttools --exclude-module kiwisolver --exclude-module pillow --exclude-module pyparsing
-            --exclude-module ipdb
+        PYINSTALLER=
+          pyinstaller \
+            --onefile --windowed --noconfirm --clean \
+            --exclude-module PyQt6.QtWebEngineCore \
+            --exclude-module PyQt6.Qt3DCore \
+            --exclude-module PyQt6.QtNetwork \
+            --exclude-module PyQt6.QtHelp \
+            --exclude-module PyQt6.QtPrintSupport \
+            --exclude-module PyQt6.QtSensors \
+            --exclude-module PyQt6.QtTest \
+            --exclude-module PyQt6.QtSvg \
+            --exclude-module PyQt6.QtXml --exclude-module PyQt6.QtXmlPatterns \
+            --exclude-module PyQt6.QtPositioning \
+            --exclude-module tkinter \
+            --exclude-module unittest \
+            --exclude-module email --exclude-module html \
+            --exclude-module http --exclude-module xmlrpc \
+            --exclude-module matplotlib.tests --exclude-module mpl_toolkits.tests \
+            --exclude-module scipy.spatial --exclude-module scipy.special --exclude-module scipy.stats \
+            --exclude-module pandas.tests --exclude-module numpy.testing \
+            --exclude-module IPython --exclude-module jupyter \
+            --exclude-module pytz --exclude-module tzdata --exclude-module python-dateutil --exclude-module six \
+            --exclude-module contourpy --exclude-module cycler --exclude-module fonttools --exclude-module kiwisolver --exclude-module pillow --exclude-module pyparsing \
+            --exclude-module ipdb \
             PALMS.py
-          "
 
         if [[ "${{ matrix.os }}" == "macos-latest" ]]
         then
@@ -89,15 +88,14 @@ jobs:
     - name: Copy Experiments directory to release
       run: cp -r Experiments ./release/
 
-    - name: Commit 'latest' rag.
+    - name: Tag latest commit
       if: github.ref == 'refs/heads/main'
-      run: |
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
-        git tag -f latest
-        git push origin latest --force
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: mathieudutour/github-tag-action@v6.0
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        tag_prefix: ''
+        tag_name: 'latest'
+        tag_message: 'Latest build'
 
     - name: Upload all release files as artifact
       uses: actions/upload-artifact@v3
@@ -109,6 +107,6 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         tag_name: latest
-        files: release/*
+        files: release/**
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
