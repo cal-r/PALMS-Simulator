@@ -33,9 +33,6 @@ jobs:
         PYINSTALLER="
           pyinstaller
             --onefile --windowed --noconfirm --clean --strip
-            --hidden-import=numpy._core._multiarray_umath
-            --hidden-import=scipy
-            --hidden-import=numpy._core._dtype_ctypes
             PALMS.py
           "
 
