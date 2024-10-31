@@ -58,11 +58,16 @@ jobs:
     - name: Prepare release directory
       run: mkdir -p release
 
+
+    - name: Copy Experiments directory to release
+      run: cp -r Experiments release/Experiments
+
     - name: Archive Linux executable
       if: ${{ matrix.os == 'ubuntu-latest' }}
       run: |
         mv dist/PALMS ./release/PALMS_linux
         chmod +x ./release/PALMS_linux
+        tar -zxf release_linux.tar.gz release/
 
     - name: Archive Windows executable
       if: ${{ matrix.os == 'windows-latest' }}
@@ -70,10 +75,10 @@ jobs:
 
     - name: Archive MacOS executable
       if: ${{ matrix.os == 'macos-latest' }}
-      run: mv dist/PALMS ./release/PALMS_macos
-
-    - name: Copy Experiments directory to release
-      run: cp -r Experiments release/Experiments
+      run: |
+        mv dist/PALMS ./release/PALMS_macos
+        chmod +x ./release/PALMS_macos
+        tar -zxf release_macos.tar.gz release/
 
     - name: Commit 'latest' rag.
       if: github.ref == 'refs/heads/main'
