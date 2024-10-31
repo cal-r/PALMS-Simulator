@@ -42,15 +42,15 @@ class CoolTable(QWidget):
         self.bottomPlus.setFixedHeight(20)
         self.cButton.setFixedSize(20, 20)
 
-        self.layout = QGridLayout(parent = self)
-        self.layout.addWidget(self.table, 0, 0, Qt.AlignmentFlag.AlignLeft)
-        self.layout.addWidget(self.rightPlus, 0, 1, Qt.AlignmentFlag.AlignLeft)
-        self.layout.addWidget(self.bottomPlus, 1, 0, Qt.AlignmentFlag.AlignTop)
-        self.layout.addWidget(self.cButton, 1, 1, Qt.AlignmentFlag.AlignLeft)
-        self.layout.setColumnStretch(1, 1)
-        self.layout.setRowStretch(1, 1)
-        self.layout.setSpacing(0)
-        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.mainLayout = QGridLayout(parent = self)
+        self.mainLayout.addWidget(self.table, 0, 0, Qt.AlignmentFlag.AlignLeft)
+        self.mainLayout.addWidget(self.rightPlus, 0, 1, Qt.AlignmentFlag.AlignLeft)
+        self.mainLayout.addWidget(self.bottomPlus, 1, 0, Qt.AlignmentFlag.AlignTop)
+        self.mainLayout.addWidget(self.cButton, 1, 1, Qt.AlignmentFlag.AlignLeft)
+        self.mainLayout.setColumnStretch(1, 1)
+        self.mainLayout.setRowStretch(1, 1)
+        self.mainLayout.setSpacing(0)
+        self.mainLayout.setContentsMargins(0, 0, 0, 0)
 
         self.updateSizes()
         self.freeze = False
@@ -499,31 +499,38 @@ class PavlovianApp(QDialog):
             widget = getattr(self, f'{key}').box
             widget.setText(value)
 
-    @staticmethod
-    def floatOr(text: str, default: None | float = None) -> None | float:
+    # Convenience function: convert a string to a float, or return a default.
+    @classmethod
+    def floatOr(cls, text: str, default: None | float = None) -> None | float:
         if text == '':
             return default
 
         return float(text)
 
+    # Same as floatOr(text, 0); added separately to help mypy with typing.
+    @classmethod
+    def floatOrZero(cls, text: str) -> float:
+        f = cls.floatOr(text)
+        return f or 0
+
     def generateResults(self) -> tuple[list[dict[str, StimulusHistory]], dict[str, list[Phase]], RWArgs]:
         args = RWArgs(
             adaptive_type = self.current_adaptive_type,
 
-            alphas = defaultdict(lambda: self.floatOr(self.alpha.box.text(), 0)),
-            alpha = self.floatOr(self.alpha.box.text(), 0),
+            alphas = defaultdict(lambda: self.floatOrZero(self.alpha.box.text())),
+            alpha = self.floatOrZero(self.alpha.box.text()),
             alpha_mack = self.floatOr(self.alpha_mack.box.text()),
             alpha_hall = self.floatOr(self.alpha_hall.box.text()),
 
-            beta = self.floatOr(self.beta.box.text(), 0),
-            beta_neg = self.floatOr(self.betan.box.text(), 0),
-            lamda = self.floatOr(self.lamda.box.text(), 0),
-            gamma = self.floatOr(self.gamma.box.text(), 0),
-            thetaE = self.floatOr(self.thetaE.box.text(), 0),
-            thetaI = self.floatOr(self.thetaI.box.text(), 0),
+            beta = self.floatOrZero(self.beta.box.text()),
+            beta_neg = self.floatOrZero(self.betan.box.text()),
+            lamda = self.floatOrZero(self.lamda.box.text()),
+            gamma = self.floatOrZero(self.gamma.box.text()),
+            thetaE = self.floatOrZero(self.thetaE.box.text()),
+            thetaI = self.floatOrZero(self.thetaI.box.text()),
 
-            salience = self.floatOr(self.salience.box.text(), 0),
-            saliences = defaultdict(lambda: self.floatOr(self.salience.box.text(), 0)),
+            salience = self.floatOrZero(self.salience.box.text()),
+            saliences = defaultdict(lambda: self.floatOrZero(self.salience.box.text())),
 
             window_size = int(self.window_size.box.text()),
             num_trials = int(self.num_trials.box.text()),
@@ -548,7 +555,7 @@ class PavlovianApp(QDialog):
             experiment = Experiment(name, phase_strs)
             local_strengths = experiment.run_all_phases(args)
 
-            strengths = [a | b for a, b in zip_longest(strengths, local_strengths, fillvalue = {})]
+            strengths = [a | b for a, b in zip_longest(strengths, local_strengths, fillvalue = StimulusHistory.emptydict())]
             phases[name] = experiment.phases
 
         return strengths, phases, args

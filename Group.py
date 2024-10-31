@@ -10,7 +10,7 @@ class Group:
     adaptive_type: AdaptiveType
     window_size: None | int
 
-    prev_lamda: None | float
+    prev_lamda: float
 
     def __init__(
         self,

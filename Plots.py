@@ -87,8 +87,8 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
             axes[1].legend(prop = {'size': 8 * 200 / dpi})
 
         legend_lines = chain.from_iterable([ax.get_legend().get_lines() for ax in axes])
-        for line in legend_lines:
-            line.set_picker(ticker_threshold)
+        for legend_line in legend_lines:
+            legend_line.set_picker(ticker_threshold)
 
         if phases is not None:
             fig.suptitle(titleify(filename, phases, phase_num, title_suffix), fontdict = {'family': 'monospace'}, fontsize = 12)
