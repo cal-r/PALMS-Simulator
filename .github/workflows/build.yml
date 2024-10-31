@@ -65,20 +65,18 @@ jobs:
     - name: Archive Linux executable
       if: ${{ matrix.os == 'ubuntu-latest' }}
       run: |
-        mv dist/PALMS ./release/PALMS_linux
-        chmod +x ./release/PALMS_linux
-        tar -czf release_linux.tar.gz release/
+        chmod +x dist/PALMS
+        tar -czf release_linux.tar.gz dist/PALMS Experiments
 
     - name: Archive Windows executable
       if: ${{ matrix.os == 'windows-latest' }}
-      run: mv dist/PALMS.exe ./release/PALMS_windows.exe
+      run: mv dist/PALMS.exe release_windows.exe
 
     - name: Archive MacOS executable
       if: ${{ matrix.os == 'macos-latest' }}
       run: |
-        mv dist/PALMS ./release/PALMS_macos
-        chmod +x ./release/PALMS_macos
-        tar -czf release_macos.tar.gz release/
+        chmod +x dist/PALMS
+        tar -czf release_macos.tar.gz dist/PALMS Experiments
 
     - name: Commit 'latest' rag.
       if: github.ref == 'refs/heads/main'
@@ -100,8 +98,6 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         tag_name: latest
-        files: |
-          release/*
-          release/Experiments
+        files: release_*
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
