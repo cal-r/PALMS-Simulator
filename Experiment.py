@@ -20,6 +20,8 @@ class Phase:
 
     # Return the set of single (one-character) CS.
     def cs(self):
+        if not self.elems:
+            return set()
         return set.union(*[set(x[0]) for x in self.elems])
 
     def __init__(self, phase_str: str):
@@ -80,7 +82,7 @@ class Experiment:
 
     def __init__(self, name: str, phase_strs: list[str]):
         self.name = name
-        self.phases = [Phase(phase_str) for phase_str in phase_strs if phase_str.strip()]
+        self.phases = [Phase(phase_str) for phase_str in phase_strs]
 
     def run_all_phases(self, args: RWArgs) -> list[dict[str, StimulusHistory]]:
         group = self.initial_group(args)

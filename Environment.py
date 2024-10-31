@@ -112,7 +112,7 @@ class Environment:
     # fromHistories "transposes" a several histories of single CSs into a single list of many CSs.
     @staticmethod
     def fromHistories(histories: dict[str, StimulusHistory]) -> list[Environment]:
-        longest = max(len(x.hist) for x in histories.values())
+        longest = max((len(x.hist) for x in histories.values()), default = 0)
         return [
             Environment(
                 s = {

@@ -203,7 +203,7 @@ class PavlovianApp(QDialog):
 
         self.originalPalette = QApplication.palette()
 
-        self.phase = 1
+        self.phaseNum = 1
         self.numPhases = 0
         self.figures = []
         self.dpi = dpi
@@ -372,13 +372,13 @@ class PavlovianApp(QDialog):
         self.fileOptionsGroupBox.setLayout(fileOptionsLayout)
 
     def toggleRand(self):
-        set_rand = any(x is not None and 'rand/' in x.text() for x in self.tableWidget.table.selectedItems())
+        set_rand = any(p[self.phaseNum - 1].rand for p in self.phases.values())
         self.tableWidget.setRandInSelection(not set_rand)
         self.refreshExperiment()
 
     def togglePhaseLambda(self):
-        set_lamda = any(x is not None and re.search(r'lamb?da=[0-9]+(\.[0-9]+)?\/', x.text()) for x in self.tableWidget.table.selectedItems())
-        self.tableWidget.setLambdaInSelection(self.floatOrZero(self.lamda.box.text()) if not set_lamda else None)
+        set_lambda = any(p[self.phaseNum - 1].lamda is not None for p in self.phases.values())
+        self.tableWidget.setLambdaInSelection(self.floatOrZero(self.lamda.box.text()) if not set_lambda else None)
         self.refreshExperiment()
 
     def togglePlotAlpha(self):
@@ -580,7 +580,7 @@ class PavlovianApp(QDialog):
             return
 
         self.numPhases = max(len(v) for v in phases.values())
-        self.phase = min(self.phase, self.numPhases)
+        self.phaseNum = min(self.phaseNum, self.numPhases)
         self.phases = phases
 
         self.figures = generate_figures(
@@ -596,7 +596,7 @@ class PavlovianApp(QDialog):
         self.refreshFigure()
 
     def refreshFigure(self):
-        current_figure = self.figures[self.phase - 1]
+        current_figure = self.figures[self.phaseNum - 1]
         self.plotCanvas.figure = current_figure
 
         self.plotCanvas.resize(self.plotCanvas.width() + 1, self.plotCanvas.height() + 1)
@@ -606,15 +606,15 @@ class PavlovianApp(QDialog):
 
         w, h = current_figure.get_size_inches()
         self.plotCanvas.draw()
-        self.tableWidget.selectColumn(self.phase - 1)
+        self.tableWidget.selectColumn(self.phaseNum - 1)
 
-        self.phaseInfo.setText(f'Phase {self.phase}/{self.numPhases}')
+        self.phaseInfo.setText(f'Phase {self.phaseNum}/{self.numPhases}')
 
-        any_rand = any(p[self.phase - 1].rand for p in self.phases.values())
+        any_rand = any(p[self.phaseNum - 1].rand for p in self.phases.values())
         self.num_trials.box.setDisabled(not any_rand)
         self.toggleRandButton.setChecked(any_rand)
 
-        any_lambda = any(p[self.phase - 1].lamda is not None for p in self.phases.values())
+        any_lambda = any(p[self.phaseNum - 1].lamda is not None for p in self.phases.values())
         self.phaseLambdaButton.setChecked(any_lambda)
 
     def pickLine(self, event):
@@ -655,17 +655,17 @@ class PavlovianApp(QDialog):
         self.repaint()
 
     def prevPhase(self):
-        if self.phase == 1:
+        if self.phaseNum == 1:
             return
 
-        self.phase -= 1
+        self.phaseNum -= 1
         self.refreshFigure()
     
     def nextPhase(self):
-        if self.phase >= self.numPhases:
+        if self.phaseNum >= self.numPhases:
             return
 
-        self.phase += 1 
+        self.phaseNum += 1
         self.refreshFigure()
 
 def parse_args():
