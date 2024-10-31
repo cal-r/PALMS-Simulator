@@ -581,6 +581,7 @@ class PavlovianApp(QDialog):
 
         self.numPhases = max(len(v) for v in phases.values())
         self.phase = min(self.phase, self.numPhases)
+        self.phases = phases
 
         self.figures = generate_figures(
             strengths,
@@ -591,10 +592,6 @@ class PavlovianApp(QDialog):
         )
         for f in self.figures:
             f.set_canvas(self.plotCanvas)
-
-        any_rand = any(phase.rand for groups in phases.values() for phase in groups)
-        self.num_trials.box.setDisabled(not any_rand)
-        self.toggleRandButton.setChecked(any_rand)
 
         self.refreshFigure()
 
@@ -612,6 +609,13 @@ class PavlovianApp(QDialog):
         self.tableWidget.selectColumn(self.phase - 1)
 
         self.phaseInfo.setText(f'Phase {self.phase}/{self.numPhases}')
+
+        any_rand = any(p[self.phase - 1].rand for p in self.phases.values())
+        self.num_trials.box.setDisabled(not any_rand)
+        self.toggleRandButton.setChecked(any_rand)
+
+        any_lambda = any(p[self.phase - 1].lamda is not None for p in self.phases.values())
+        self.phaseLambdaButton.setChecked(any_lambda)
 
     def pickLine(self, event):
         line = event.artist
