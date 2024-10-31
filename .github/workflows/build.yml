@@ -33,6 +33,27 @@ jobs:
         PYINSTALLER="
           pyinstaller
             --onefile --windowed --noconfirm --clean
+            --exclude-module PyQt6.QtWebEngineCore
+            --exclude-module PyQt6.Qt3DCore
+            --exclude-module PyQt6.QtNetwork
+            --exclude-module PyQt6.QtHelp
+            --exclude-module PyQt6.QtPrintSupport
+            --exclude-module PyQt6.QtSensors
+            --exclude-module PyQt6.QtTest
+            --exclude-module PyQt6.QtSvg
+            --exclude-module PyQt6.QtXml --exclude-module PyQt6.QtXmlPatterns
+            --exclude-module PyQt6.QtPositioning
+            --exclude-module tkinter
+            --exclude-module unittest
+            --exclude-module email --exclude-module html
+            --exclude-module http --exclude-module xmlrpc
+            --exclude-module matplotlib.tests --exclude-module mpl_toolkits.tests
+            --exclude-module scipy.spatial --exclude-module scipy.special --exclude-module scipy.stats
+            --exclude-module pandas.tests --exclude-module numpy.testing
+            --exclude-module IPython --exclude-module jupyter
+            --exclude-module pytz --exclude-module tzdata --exclude-module python-dateutil --exclude-module six
+            --exclude-module contourpy --exclude-module cycler --exclude-module fonttools --exclude-module kiwisolver --exclude-module pillow --exclude-module pyparsing
+            --exclude-module ipdb
             PALMS.py
           "
 
