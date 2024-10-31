@@ -1,8 +1,15 @@
-# This is the right version!
+# **P**avlovian **A**ssociative **L**earning **M**odels **S**imulator
 
-# RW-model
+Associative learning simulator, originally cased on the **extra task** of INM703 Computational Cognitive Systems.
 
-Rescorla-Wagner model rendition, based on the **extra task** of INM703 Computational Cognitive Systems.
+This simulator will be presented in the paper ``PALMS: Pavlovian Associative Learning Models Simulator`` by Alessandro Abati, Martin Fimxan, Julián Jiménez Nimmo, Sean Lim, and Esther Mondragón.
+
+## Runnable executable bundled with the prerequisites.
+
+> I DON'T CARE ABOUT THE CODE! WHY IS THERE CODE? MAKE AN .EXE FILE AND GIVE IT TO ME.
+— a wise man on Reddit.
+
+Each version of PALMS get automatically compiled 
 
 ## Prerequisites
 
