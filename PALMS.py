@@ -373,12 +373,12 @@ class PavlovianApp(QDialog):
 
     def toggleRand(self):
         set_rand = any(x is not None and 'rand/' in x.text() for x in self.tableWidget.table.selectedItems())
-        self.tableWidget.setRandInSelection(set_rand)
+        self.tableWidget.setRandInSelection(not set_rand)
         self.refreshExperiment()
 
     def togglePhaseLambda(self):
-        set_lamda = any(x is not None and re.search(r'lamb?da=[0-9]+(\.[0-9]+)?\/', x) for x in self.tableWidget.table.selectedItems())
-        self.tableWidget.setLambdaInSelection(self.floatOrZero(self.lamda.box.text()) if set_lamda else None)
+        set_lamda = any(x is not None and re.search(r'lamb?da=[0-9]+(\.[0-9]+)?\/', x.text()) for x in self.tableWidget.table.selectedItems())
+        self.tableWidget.setLambdaInSelection(self.floatOrZero(self.lamda.box.text()) if not set_lamda else None)
         self.refreshExperiment()
 
     def togglePlotAlpha(self):
