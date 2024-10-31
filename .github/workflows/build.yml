@@ -30,8 +30,7 @@ jobs:
 
     - name: Build executable
       run: |
-        PYINSTALLER=
-          pyinstaller \
+        PYINSTALLER=pyinstaller \
             --onefile --windowed --noconfirm --clean \
             --exclude-module PyQt6.QtWebEngineCore \
             --exclude-module PyQt6.Qt3DCore \
