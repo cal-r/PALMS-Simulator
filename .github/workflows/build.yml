@@ -58,10 +58,6 @@ jobs:
     - name: Prepare release directory
       run: mkdir -p release
 
-
-    - name: Copy Experiments directory to release
-      run: cp -r Experiments release/Experiments
-
     - name: Archive Linux executable
       if: ${{ matrix.os == 'ubuntu-latest' }}
       run: |
@@ -93,7 +89,7 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         name: ${{ matrix.os }}-release
-        path: release/
+        path: release_*
 
     - name: Upload to GitHub Release
       uses: softprops/action-gh-release@v1
