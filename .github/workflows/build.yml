@@ -66,17 +66,18 @@ jobs:
       if: ${{ matrix.os == 'ubuntu-latest' }}
       run: |
         chmod +x dist/PALMS
-        tar -czf release_linux.tar.gz dist/PALMS Experiments
+        tar -czf release_linux.tar.gz -C dist PALMS Experiments
 
     - name: Archive Windows executable
       if: ${{ matrix.os == 'windows-latest' }}
-      run: mv dist/PALMS.exe release_windows.exe
+      run: |
+        tar -czf release_windows.tar.gz -C dist PALMS.exe Experiments
 
     - name: Archive MacOS executable
       if: ${{ matrix.os == 'macos-latest' }}
       run: |
         chmod +x dist/PALMS
-        tar -czf release_macos.tar.gz dist/PALMS Experiments
+        tar -czf release_macos.tar.gz -C dist PALMS Experiments
 
     - name: Commit 'latest' rag.
       if: github.ref == 'refs/heads/main'
