@@ -75,7 +75,7 @@ jobs:
     - name: Archive Linux executable
       if: ${{ matrix.os == 'ubuntu-latest' }}
       run: |
-        mv dist/PALMS ./PALMS_linux
+        mv dist/PALMS ./release/PALMS_linux
         chmod +x ./release/PALMS_linux
 
     - name: Archive Windows executable
