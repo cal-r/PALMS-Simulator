@@ -141,7 +141,7 @@ The phases can be empty; in that case the group does not do anything for that pa
 
 Each phase column contains a **Phase Description**, which may include one or more **Attributes**.
 
-- **Format**: `(rand/)?(lambda=\d(\.\d+)?/)?/<part_1>/.../<part_n>
+- **Format**: `(rand/)?(lambda=\d(\.\d+)?/)?/<part_1>/.../<part_n>1
   - `rand`: Indicates this phase needs to be randomised.
   - `lambda=<value>`: Specifies a per-phase λ. The λ gets reset to the global one on the following phase.
 
@@ -149,6 +149,6 @@ Phases can be completely empty, in which case they are skipped for this particul
 
 ### Parts
 Each parts contains a certain amount of an association between a non-empty set of conditioned stimuli and an unconditioned stimulus.
-- **Format**: [0-9]*[A-Z]*[+-]?
+- **Format**: `[0-9]*[A-Z]*[+-]?`
   - Empty `<repetitions>` defaults to `1`.
   - Empty `<us>` defaults to `+`.

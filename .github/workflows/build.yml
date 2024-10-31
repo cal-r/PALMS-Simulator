@@ -53,6 +53,7 @@ jobs:
             --exclude-module IPython --exclude-module jupyter
             --exclude-module pytz --exclude-module tzdata --exclude-module python-dateutil --exclude-module six
             --exclude-module contourpy --exclude-module cycler --exclude-module fonttools --exclude-module kiwisolver --exclude-module pillow --exclude-module pyparsing
+            --exclude-module ipdb
             --strip PALMS.py
           "
 
@@ -71,8 +72,8 @@ jobs:
     - name: Archive Linux executable
       if: ${{ matrix.os == 'ubuntu-latest' }}
       run: |
-        mv dist/PALMS ./PALMS
-        chmod +x ./PALMS
+        mv dist/PALMS ./PALMS_linux
+        chmod +x ./PALMS_linux
 
     - name: Archive Windows executable
       if: ${{ matrix.os == 'windows-latest' }}
@@ -97,6 +98,7 @@ jobs:
       with:
         name: ${{ matrix.os }}-executable
         path: |
+          Experiments/
           ./PALMS
           ./PALMS_windows.exe
           ./PALMS_macos
@@ -106,6 +108,7 @@ jobs:
       with:
         tag_name: latest
         files: |
+          Experiments/
           ./PALMS
           ./PALMS_windows.exe
           ./PALMS_macos
