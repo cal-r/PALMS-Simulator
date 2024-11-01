@@ -3,7 +3,7 @@ name: Build Executables
 on:
   push:
     branches:
-      - main
+      - release
 
 jobs:
   build:
@@ -76,7 +76,7 @@ jobs:
         tar -czf release_macos.tar.gz Experiments -C dist PALMS
 
     - name: Commit 'latest' rag.
-      if: github.ref == 'refs/heads/main'
+      if: github.ref == 'refs/heads/release'
       run: |
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
