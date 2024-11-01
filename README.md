@@ -2,7 +2,7 @@
 
 Associative learning simulator, originally cased on the **extra task** of INM703 Computational Cognitive Systems.
 
-This simulator will be presented in the paper ``PALMS: Pavlovian Associative Learning Models Simulator`` by Alessandro Abati, Martin Fimxan, Julián Jiménez Nimmo, Sean Lim, and Esther Mondragón.
+This simulator will be presented in the paper ``PALMS: Pavlovian Associative Learning Models Simulator`` by Alessandro Abati, Martin Fixman, Julián Jiménez Nimmo, Sean Lim, and Esther Mondragón.
 
 ## Runnable executable bundled with the prerequisites.
 
