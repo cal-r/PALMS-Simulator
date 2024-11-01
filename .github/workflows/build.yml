@@ -72,8 +72,7 @@ jobs:
     - name: Archive MacOS executable
       if: ${{ matrix.os == 'macos-latest' }}
       run: |
-        chmod +x dist/PALMS
-        tar -czf release_macos.tar.gz Experiments -C dist PALMS
+        tar -czf release_macos.tar.gz Experiments -C dist PALMS.app
 
     - name: Commit 'latest' rag.
       if: github.ref == 'refs/heads/release'
