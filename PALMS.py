@@ -430,7 +430,7 @@ class PavlovianApp(QDialog):
         self.current_adaptive_type = button.adaptive_type
 
         widgets_to_enable = {
-            'rescorla_wagner': ['alpha', 'beta', 'lamda'],
+            'rescorla_wagner': ['alpha', 'beta', 'betan', 'lamda'],
             'rescorla_wagner_linear': ['alpha', 'beta', 'lamda'],
             'pearce_hall': ['alpha', 'lamda', 'salience'],
             'pearce_kaye_hall': ['alpha', 'betan', 'beta', 'gamma', 'lamda', 'lamda'],
