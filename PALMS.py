@@ -294,7 +294,7 @@ class PavlovianApp(QDialog):
             layout.addWidget(button)
 
             button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-            if adaptive_type == 'le_pelley':
+            if adaptive_type == 'rescorla_wagner':
                 button.setChecked(True)
                 self.initialAdaptiveTypeButton = button
 
