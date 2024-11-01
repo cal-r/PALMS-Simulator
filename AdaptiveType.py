@@ -63,7 +63,7 @@ class AdaptiveType:
         return new_error
 
     def run_step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float, prev_lamda: float):
-        self.delta_v_factor = beta * (prev_lamda - sigma)
+        self.delta_v_factor = beta * (lamda - sigma)
         self.step(s, beta, lamda, sign, sigma, sigmaE, sigmaI, prev_lamda)
 
     def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float, prev_lamda: float):
