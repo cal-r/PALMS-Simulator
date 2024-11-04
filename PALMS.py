@@ -201,11 +201,10 @@ class PavlovianApp(QDialog):
         self.current_adaptive_type = None
         self.inset_text_column_index = None
 
-        self.originalPalette = QApplication.palette()
-
         self.phaseNum = 1
         self.numPhases = 0
         self.figures = []
+        self.phases = {}
         self.dpi = dpi
         self.initUI()
 
