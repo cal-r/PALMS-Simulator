@@ -62,7 +62,7 @@ jobs:
       if: ${{ matrix.os == 'ubuntu-latest' }}
       run: |
         chmod +x dist/PALMS
-        tar -czf release_linux.tar.gz Experiments -C dist ./
+        tar -czf release_linux.tar.gz Experiments -C dist PALMS
 
     - name: Archive Windows executable
       if: ${{ matrix.os == 'windows-latest' }}
@@ -72,7 +72,7 @@ jobs:
     - name: Archive MacOS executable
       if: ${{ matrix.os == 'macos-latest' }}
       run: |
-        tar -czf release_macos.tar.gz Experiments -C dist PALMS.app
+        tar -czf release_macos.tar.gz Experiments -C dist ./
 
     - name: Commit 'latest' rag.
       if: github.ref == 'refs/heads/release'
