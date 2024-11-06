@@ -1,6 +1,7 @@
 import random
 import re
 from dataclasses import dataclass
+from itertools import combinations
 
 from Group import Group
 from Environment import Environment, StimulusHistory
@@ -19,10 +20,16 @@ class Phase:
     phase_str: str
 
     # Return the set of single (one-character) CS.
-    def cs(self):
+    def cs(self) -> set[str]:
         if not self.elems:
             return set()
         return set.union(*[set(x[0]) for x in self.elems])
+
+    # Return the list of applicable compound CS.
+    # self.compound_cs() ⊇ self.cs()
+    def compound_cs(self) -> set[str]:
+        compound = {''.join(sorted(cs)) for cs, _ in self.elems}
+        return self.cs() | compound
 
     def __init__(self, phase_str: str):
         self.phase_str = phase_str
@@ -151,7 +158,8 @@ class Experiment:
         for phase_num, strength_hist in enumerate(results):
             for strengths in strength_hist:
                 for cs in strengths.ordered_cs():
-                    if args.plot_stimuli is None or cs in args.plot_stimuli:
+                    current_phase = self.phases[phase_num]
+                    if args.plot_stimuli is None and cs in current_phase.compound_cs() or args.plot_stimuli is not None and cs in args.plot_stimuli:
                         group_strengths[phase_num][f'{self.name} - {cs}'].add(strengths[cs])
 
         return group_strengths
