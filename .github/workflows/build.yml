@@ -49,9 +49,11 @@ jobs:
 
         if [[ "${{ matrix.os }}" == "macos-latest" ]]
         then
-          pyinstaller ${COMMON_OPTIONS} --onedir --icon bell_icon.icns PALMS.py
-        else
-          pyinstaller ${COMMON_OPTIONS} --onefile PALMS.py
+          pyinstaller ${COMMON_OPTIONS} --onedir --icon resources/palms.icns PALMS.py
+        elif [[ "${{ matrix.os }}" == "windows-latest" ]]
+          pyinstaller ${COMMON_OPTIONS} --onefile --icon resources/palms.ico PALMS.py
+       else
+          pyinstaller ${COMMON_OPTIONS} --onefile --icon resources/palms.png PALMS.py
         fi
       shell: bash
 
