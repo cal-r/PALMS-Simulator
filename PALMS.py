@@ -587,7 +587,7 @@ class PavlovianApp(QDialog):
             plot_alpha = args.plot_alpha,
             plot_macknhall = args.plot_macknhall,
             dpi = self.dpi,
-            ticker_threshold = 5,
+            ticker_threshold = True,
         )
         for f in self.figures:
             f.set_canvas(self.plotCanvas)

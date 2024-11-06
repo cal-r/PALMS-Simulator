@@ -59,20 +59,24 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
 
             if len(axes) > 1:
                 if plot_alpha and not plot_macknhall:
-                    axes[1].plot(hist.alpha, label='α: '+str(key), color = colors[key], marker='D', markersize=8, alpha=.5, picker = ticker_threshold)
+                    axes[1].plot(hist.alpha, label='α: '+str(key), color = colors[key], marker='D', markersize=4, alpha=.5, picker = ticker_threshold)
                 #else:
                     #axes[1].plot([], label=key, color = colors[key], marker='D', markersize=8, alpha=.5, picker = ticker_threshold)
 
                 if plot_macknhall:
-                    axes[1].plot(hist.alpha_mack, label='Mack: '+str(key), color = colors[key], marker='$M$', markersize=8, alpha=.5, picker = ticker_threshold)
-                    axes[1].plot(hist.alpha_hall, label='Hall: '+str(key), color = colors[key], marker='$H$', markersize=8, alpha=.5, picker = ticker_threshold)
+                    axes[1].plot(hist.alpha_mack, label='Mack: '+str(key), color = colors[key], marker='$M$', markersize=4, alpha=.5, picker = ticker_threshold)
+                    axes[1].plot(hist.alpha_hall, label='Hall: '+str(key), color = colors[key], marker='$H$', markersize=4, alpha=.5, picker = ticker_threshold)
 
         axes[0].set_xlabel('Trial Number', fontsize = 'small', labelpad = 3)
         axes[0].set_ylabel('Associative Strength', fontsize = 'small', labelpad = 3)
         axes[0].xaxis.set_major_locator(MaxNLocator(integer = True))
         axes[0].tick_params(axis = 'both', labelsize = 'x-small', pad = 1)
         axes[0].ticklabel_format(useOffset = False, style = 'plain', axis = 'y')
-        axes[0].legend(prop = {'size': 8 * 200 / dpi})
+        print(len(experiments))
+        if len(experiments) >= 6:
+            axes[0].legend(fontsize = 5, ncol = 2).set_draggable(True)
+        else:
+            axes[0].legend(fontsize = 'x-small').set_draggable(True)
 
         if plot_alpha or plot_macknhall:
             axes[0].set_title(f'Associative Strengths')
@@ -84,7 +88,10 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
             axes[1].tick_params(axis = 'both', labelsize = 'x-small', pad = 1)
             axes[1].tick_params(axis = 'y', which = 'both', right = True, length = 0)
             axes[1].yaxis.set_label_position('right')
-            axes[1].legend(prop = {'size': 8 * 200 / dpi})
+            if len(experiments) >= 6:
+                axes[1].legend(fontsize = 5, ncol = 2).set_draggable(True)
+            else:
+                axes[1].legend(fontsize = 'x-small').set_draggable(True)
 
         legend_lines = chain.from_iterable([ax.get_legend().get_lines() for ax in axes])
         for legend_line in legend_lines:
@@ -110,6 +117,7 @@ def show_plots(data: list[dict[str, StimulusHistory]], *, phases: None | dict[st
         plot_alpha = plot_alpha,
         plot_macknhall = plot_macknhall,
         dpi = dpi,
+        ticker_threshold = True,
     )
     return figures
 
