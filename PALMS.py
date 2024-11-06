@@ -205,6 +205,7 @@ class PavlovianApp(QDialog):
         self.numPhases = 0
         self.figures = []
         self.phases = {}
+        self.hidden = False
         self.dpi = dpi
         self.initUI()
 
@@ -352,6 +353,9 @@ class PavlovianApp(QDialog):
         self.printButton = QPushButton("Plot")
         self.printButton.clicked.connect(self.plotExperiment)
 
+        self.hideButton = QPushButton("Toggle Visibility")
+        self.hideButton.clicked.connect(self.hideExperiment)
+
         phaseOptionsLayout = QVBoxLayout()
         phaseOptionsLayout.addWidget(self.toggleRandButton)
         phaseOptionsLayout.addWidget(self.phaseLambdaButton)
@@ -361,6 +365,7 @@ class PavlovianApp(QDialog):
         plotOptionsLayout.addWidget(self.plotAlphaButton)
         plotOptionsLayout.addWidget(self.refreshButton)
         plotOptionsLayout.addWidget(self.printButton)
+        plotOptionsLayout.addWidget(self.hideButton)
         self.plotOptionsGroupBox.setLayout(plotOptionsLayout)
 
         fileOptionsLayout = QVBoxLayout()
@@ -374,6 +379,15 @@ class PavlovianApp(QDialog):
         set_rand = any(p[self.phaseNum - 1].rand for p in self.phases.values())
         self.tableWidget.setRandInSelection(not set_rand)
         self.refreshExperiment()
+
+    def hideExperiment(self):
+        if self.hidden:
+            self.hidden = False
+        else:
+            self.hidden = True
+        self.hideLines()
+        #for f in self.figures:
+        #    f.set_canvas(self.plotCanvas)
 
     def togglePhaseLambda(self):
         set_lambda = any(p[self.phaseNum - 1].lamda is not None for p in self.phases.values())
@@ -630,6 +644,29 @@ class PavlovianApp(QDialog):
                     line.set_alpha(.75 - line.get_alpha())
 
         line.figure.canvas.draw_idle()
+
+    def hideLines(self):
+        for fig in self.figures:
+            for ax in fig.get_axes():
+                # Hide/show all lines in the plot
+                for line in ax.get_lines():
+                    if self.hidden:
+                        line.set_alpha(0)
+                    else:
+                        line.set_alpha(.5)
+                
+                # Hide/show all lines in the legend
+                legend = ax.get_legend()
+                if legend is not None:
+                    for legend_handle in legend.legend_handles:
+                        if self.hidden:
+                            legend_handle.set_alpha(.25)
+                        else:
+                            legend_handle.set_alpha(.5)
+            
+            # Redraw the figure
+            fig.canvas.draw_idle()
+
 
     def plotExperiment(self):
         strengths, phases, args = self.generateResults()
