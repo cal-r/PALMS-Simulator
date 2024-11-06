@@ -102,7 +102,6 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
     return figures
 
 def show_plots(data: list[dict[str, StimulusHistory]], *, phases: None | dict[str, list[Phase]] = None, plot_phase = None, plot_alpha = False, plot_macknhall = False, dpi = None):
-    pyplot.ion()
 
     figures = generate_figures(
         data = data,
@@ -112,11 +111,9 @@ def show_plots(data: list[dict[str, StimulusHistory]], *, phases: None | dict[st
         plot_macknhall = plot_macknhall,
         dpi = dpi,
     )
+    return figures
 
-    for fig in figures:
-        fig.show()
-
-    pyplot.ioff()
+    
 
 def save_plots(data: list[dict[str, StimulusHistory]], *, phases: None | dict[str, list[Phase]] = None, filename: None | str = None, plot_phase = None, plot_alpha = False, plot_macknhall = False, title_suffix = None, dpi = None):
     if filename is not None:

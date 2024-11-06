@@ -636,7 +636,7 @@ class PavlovianApp(QDialog):
         if len(phases) == 0:
             return
 
-        show_plots(
+        figures = show_plots(
             strengths,
             phases = phases,
             plot_alpha = args.plot_alpha,
@@ -644,6 +644,9 @@ class PavlovianApp(QDialog):
             dpi = self.dpi,
         )
 
+        for fig in figures:
+            fig.canvas.mpl_connect('pick_event', self.pickLine)
+            fig.show()
         return strengths
 
     def updateWidgets(self):
