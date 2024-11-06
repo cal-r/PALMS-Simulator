@@ -52,7 +52,7 @@ jobs:
           pyinstaller ${COMMON_OPTIONS} --onedir --icon resources/palms.icns PALMS.py
         elif [[ "${{ matrix.os }}" == "windows-latest" ]]
           pyinstaller ${COMMON_OPTIONS} --onefile --icon resources/palms.ico PALMS.py
-       else
+        else
           pyinstaller ${COMMON_OPTIONS} --onefile --icon resources/palms.png PALMS.py
         fi
       shell: bash
