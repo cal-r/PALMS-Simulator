@@ -131,7 +131,6 @@ class Experiment:
                 results.append(strength_hist)
             else:
                 initial_strengths = g.s.copy()
-                initial_lamda = g.prev_lamda
                 final_strengths = []
                 hist = []
 
@@ -139,7 +138,6 @@ class Experiment:
                     random.shuffle(phase.elems)
 
                     g.s = initial_strengths.copy()
-                    g.prev_lamda = initial_lamda
                     strength_hist = g.runPhase(phase.elems, phase.lamda)
                     hist.append(strength_hist)
                     final_strengths.append(g.s.copy())

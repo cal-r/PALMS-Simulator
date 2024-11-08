@@ -10,8 +10,6 @@ class Group:
     adaptive_type: AdaptiveType
     window_size: None | int
 
-    prev_lamda: float
-
     def __init__(
         self,
         name: str,
@@ -53,7 +51,6 @@ class Group:
         # `use_configurals` was removed from the current version of the program,
         # but we keep this line as we might re-add it later.
         self.cs = [x for x in alphas.keys() if len(x) == 1]
-        self.prev_lamda = lamda
 
     # runPhase runs a single trial of a phase, in order, and returns a list of the Strength values
     # of its CS at every step.
@@ -77,7 +74,7 @@ class Group:
                 if cs not in hist:
                     hist[cs].add(self.s[cs])
 
-                self.adaptive_type.run_step(self.s[cs], beta, lamda, sign, sigma, sigmaE, sigmaI, self.prev_lamda)
+                self.adaptive_type.run_step(self.s[cs], beta, lamda, sign, sigma, sigmaE, sigmaI)
 
                 if self.window_size is not None:
                     if len(self.s[cs].window) >= self.window_size:
@@ -90,6 +87,5 @@ class Group:
                     self.s[cs].delta_ma_hall = window_avg - hist[cs].assoc[-1]
 
                 hist[cs].add(self.s[cs])
-            self.prev_lamda = lamda
 
         return Environment.fromHistories(hist)
