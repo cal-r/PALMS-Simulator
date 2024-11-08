@@ -197,7 +197,7 @@ class PavlovianApp(QDialog):
     def __init__(self, dpi = 200, parent=None):
         super(PavlovianApp, self).__init__(parent)
 
-        self.adaptive_types = ['rescorla_wagner', 'rescorla_wagner_linear', 'pearce_hall', 'pearce_kaye_hall', 'le_pelley', 'le_pelley_hybrid']
+        self.adaptive_types = ['rescorla_wagner', 'rescorla_wagner_linear', 'pearce_kaye_hall', 'le_pelley', 'le_pelley_hybrid']
         self.current_adaptive_type = None
         self.inset_text_column_index = None
 

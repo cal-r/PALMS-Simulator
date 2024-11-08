@@ -72,7 +72,6 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
         axes[0].xaxis.set_major_locator(MaxNLocator(integer = True))
         axes[0].tick_params(axis = 'both', labelsize = 'x-small', pad = 1)
         axes[0].ticklabel_format(useOffset = False, style = 'plain', axis = 'y')
-        print(len(experiments))
         if len(experiments) >= 6:
             axes[0].legend(fontsize = 5, ncol = 2).set_draggable(True)
         else:
