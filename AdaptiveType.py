@@ -26,19 +26,19 @@ class AdaptiveType:
     @classmethod
     def types(cls) -> dict[str, Type[AdaptiveType]]:
         return {
-            'rescorla_wagner': RescorlaWagner,
-            'rescorla_wagner_linear': RescorlaWagnerLinear,
-            'pearce_hall': PearceHall,
-            'pearce_kaye_hall': PearceKayeHall,
-            'le_pelley': LePelley,
-            'le_pelley_hybrid': LePelleyHybrid, 
-            'rescorla_wagner_exponential': RescorlaWagnerExponential,
-            'mack': Mack,
-            'hall': Hall,
-            'macknhall': Macknhall,
-            'new_dual_v': NewDualV,
-            'dualmack': Dualmack,
-            'hybrid': Hybrid,
+            'Rescorla Wagner': RescorlaWagner,
+            'Rescorla Wagner Linear': RescorlaWagnerLinear,
+            # 'Pearce Hall': PearceHall,
+            'Pearce Kaye Hall': PearceKayeHall,
+            'LePelley': LePelley,
+            'LePelley Hybrid': LePelleyHybrid,
+            # 'Rescorla Wagner Exponential': RescorlaWagnerExponential,
+            # 'Mack': Mack,
+            # 'Hall': Hall,
+            # 'Macknhall': Macknhall,
+            # 'New Dual V': NewDualV,
+            # 'Dualmack': Dualmack,
+            # 'Hybrid': Hybrid,
         }
 
     @classmethod

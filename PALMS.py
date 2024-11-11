@@ -282,7 +282,7 @@ class PavlovianApp(QDialog):
         buttonGroup.setExclusive(True)
 
         for i, adaptive_type in enumerate(self.adaptive_types):
-            button = QPushButton(' '.join(x.capitalize() for x in re.findall(r'[a-z]+', adaptive_type)))
+            button = QPushButton(adaptive_type)
             button.adaptive_type = adaptive_type
             button.setCheckable(True)
 
@@ -398,7 +398,7 @@ class PavlovianApp(QDialog):
             self.plot_macknhall = False
             self.resize(self.width() - self.plotCanvas.width() // 2, self.height())
         else:
-            if self.current_adaptive_type != 'le_pelley_hybrid':
+            if self.current_adaptive_type != 'LePelley Hybrid':
                 self.plot_alpha = True
             else:
                 self.plot_macknhall = True
@@ -441,12 +441,12 @@ class PavlovianApp(QDialog):
         self.current_adaptive_type = button.adaptive_type
 
         widgets_to_enable = {
-            'rescorla_wagner': ['alpha', 'beta', 'betan', 'lamda'],
-            'rescorla_wagner_linear': ['alpha', 'beta', 'lamda'],
-            'pearce_hall': ['alpha', 'lamda', 'salience'],
-            'pearce_kaye_hall': ['alpha', 'betan', 'beta', 'gamma', 'lamda', 'lamda'],
-            'le_pelley': ['alpha', 'betan', 'beta', 'lamda', 'thetaE', 'thetaI'],
-            'le_pelley_hybrid': ['alpha', 'alpha_mack', 'alpha_hall', 'betan', 'beta', 'lamda', 'thetaE', 'thetaI'],
+            'Rescorla Wagner': ['alpha', 'beta', 'betan', 'lamda'],
+            'Rescorla Wagner Linear': ['alpha', 'beta', 'lamda'],
+            'Pearce Hall': ['alpha', 'lamda', 'salience'],
+            'Pearce Kaye Hall': ['alpha', 'betan', 'beta', 'gamma', 'lamda', 'lamda'],
+            'LePelley': ['alpha', 'betan', 'beta', 'lamda', 'thetaE', 'thetaI'],
+            'LePelley Hybrid': ['alpha', 'alpha_mack', 'alpha_hall', 'betan', 'beta', 'lamda', 'thetaE', 'thetaI'],
         }
 
         for key in ['alpha', 'alpha_mack', 'alpha_hall', 'lamda', 'beta', 'betan', 'gamma', 'thetaE', 'thetaI', 'window_size', 'salience']:
@@ -457,14 +457,14 @@ class PavlovianApp(QDialog):
             widget = getattr(self, f'{key}').box
             widget.setDisabled(False)
 
-        if self.plot_alpha and self.current_adaptive_type == 'le_pelley_hybrid':
+        if self.plot_alpha and self.current_adaptive_type == 'LePelley Hybrid':
             self.plot_alpha = False
             self.plot_macknhall = True
-        elif self.plot_macknhall and self.current_adaptive_type != 'le_pelley_hybrid':
+        elif self.plot_macknhall and self.current_adaptive_type != 'LePelley Hybrid':
             self.plot_alpha = True
             self.plot_macknhall = False
 
-        if self.current_adaptive_type == 'le_pelley_hybrid':
+        if self.current_adaptive_type == 'LePelley Hybrid':
             self.alpha.box.setText('0.9')
 
         self.refreshExperiment()
