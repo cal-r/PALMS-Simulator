@@ -37,6 +37,25 @@ class AdaptiveType:
     def get(cls, adaptive_type_name, *args, **kwargs) -> AdaptiveType:
         return cls.types()[adaptive_type_name](*args, **kwargs)
 
+    @classmethod
+    def parameters(cls) -> list[str]:
+        return [
+            'alpha',
+            'alpha_mack',
+            'alpha_hall',
+            'beta',
+            'betan',
+            'lamda',
+            'gamma',
+            'thetaE',
+            'thetaI',
+            'salience',
+        ]
+
+    @classmethod
+    def defaults(cls) -> dict[str, float]:
+        return {}
+
     def get_alpha_mack(self, s: Stimulus, sigma: float) -> float:
         return 1/2 * (1 + 2*s.assoc - sigma)
 
@@ -57,21 +76,6 @@ class AdaptiveType:
     def run_step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
         self.delta_v_factor = beta * (lamda - sigma)
         self.step(s, beta, lamda, sign, sigma, sigmaE, sigmaI)
-
-    @classmethod
-    def parameters(cls) -> list[str]:
-        return [
-            'alpha',
-            'alpha_mack',
-            'alpha_hall',
-            'beta',
-            'betan',
-            'lamda',
-            'gamma',
-            'thetaE',
-            'thetaI',
-            'salience',
-        ]
 
     def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
         raise NotImplementedError('Calling step in abstract function is undefined.')
@@ -150,7 +154,14 @@ class LePelley(AdaptiveType):
 class LePelleyHybrid(AdaptiveType):
     @classmethod
     def parameters(cls) -> list[str]:
-        return ['alpha', 'alpha_mack', 'alpha_hall', 'beta', 'betan', 'lamda', 'gamma', 'thetaE', 'thetaI']
+        return ['alpha_mack', 'alpha_hall', 'beta', 'betan', 'lamda', 'gamma', 'thetaE', 'thetaI']
+
+    @classmethod
+    def defaults(cls) -> dict[str, float]:
+        return dict(
+            alpha_mack = .9,
+            alpha_hall = .9,
+        )
 
     def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
         rho = lamda - (sigmaE - sigmaI)

@@ -455,8 +455,8 @@ class PavlovianApp(QDialog):
             self.plot_alpha = True
             self.plot_macknhall = False
 
-        if self.current_adaptive_type == 'LePelley Hybrid':
-            self.alpha.box.setText('0.9')
+        for key, default in AdaptiveType.types()[self.current_adaptive_type].defaults().items():
+            getattr(self, key).box.setText(str(default))
 
         self.refreshExperiment()
 
@@ -497,6 +497,8 @@ class PavlovianApp(QDialog):
     def restoreDefaultParameters(self):
         defaults = {
             'alpha': '0.1',
+            'alpha_mack': '0.1',
+            'alpha_hall': '0.1',
             'lamda': '1',
             'beta': '0.3',
             'betan': '0.2',
