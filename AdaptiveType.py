@@ -53,6 +53,10 @@ class AdaptiveType:
         ]
 
     @classmethod
+    def should_plot_macknhall(cls) -> bool:
+        return 'alpha_mack' in cls.parameters() and 'alpha_hall' in cls.parameters()
+
+    @classmethod
     def defaults(cls) -> dict[str, float]:
         return {}
 

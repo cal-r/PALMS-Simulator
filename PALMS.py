@@ -330,7 +330,6 @@ class PavlovianApp(QDialog):
         self.plotAlphaButton.clicked.connect(self.togglePlotAlpha)
         self.plotAlphaButton.setCheckable(True)
         self.plot_alpha = False
-        self.plot_macknhall = False
 
         self.toggleRandButton = QPushButton('Toggle Rand')
         self.toggleRandButton.clicked.connect(self.toggleRand)
@@ -393,23 +392,18 @@ class PavlovianApp(QDialog):
         self.refreshExperiment()
 
     def togglePlotAlpha(self):
-        if self.plot_alpha or self.plot_macknhall:
+        if self.plot_alpha:
             self.plot_alpha = False
-            self.plot_macknhall = False
             self.resize(self.width() - self.plotCanvas.width() // 2, self.height())
         else:
-            if self.current_adaptive_type != 'LePelley Hybrid':
-                self.plot_alpha = True
-            else:
-                self.plot_macknhall = True
-
+            self.plot_alpha = True
             self.resize(self.width() + self.plotCanvas.width(), self.height())
 
         self.refreshExperiment()
 
     def saveExperiment(self):
         default_directory = os.path.join(os.getcwd(), 'Experiments')
-        os.makedirs(default_directory, exist_ok=True)
+        os.makedirs(default_directory, exist_ok = True)
         default_file_name = os.path.join(default_directory, "experiment.rw")
 
         fileName, _ = QFileDialog.getSaveFileName(self, "Save Experiment", default_file_name, "RW Files (*.rw);;All Files (*)")
@@ -447,13 +441,6 @@ class PavlovianApp(QDialog):
         for key in AdaptiveType.types()[self.current_adaptive_type].parameters():
             widget = getattr(self, f'{key}').box
             widget.setDisabled(False)
-
-        if self.plot_alpha and self.current_adaptive_type == 'LePelley Hybrid':
-            self.plot_alpha = False
-            self.plot_macknhall = True
-        elif self.plot_macknhall and self.current_adaptive_type != 'LePelley Hybrid':
-            self.plot_alpha = True
-            self.plot_macknhall = False
 
         for key, default in AdaptiveType.types()[self.current_adaptive_type].defaults().items():
             getattr(self, key).box.setText(str(default))
@@ -550,8 +537,8 @@ class PavlovianApp(QDialog):
             window_size = int(self.window_size.box.text()),
             num_trials = int(self.num_trials.box.text()),
 
-            plot_alpha = self.plot_alpha,
-            plot_macknhall = self.plot_macknhall,
+            plot_alpha = self.plot_alpha and not AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
+            plot_macknhall = self.plot_alpha and AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
 
             xi_hall = 0.5,
         )
@@ -589,8 +576,8 @@ class PavlovianApp(QDialog):
 
         self.figures = generate_figures(
             strengths,
-            plot_alpha = args.plot_alpha,
-            plot_macknhall = args.plot_macknhall,
+            plot_alpha = args.plot_alpha and not AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
+            plot_macknhall = args.plot_macknhall and AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
             dpi = self.dpi,
             ticker_threshold = True,
         )
@@ -667,8 +654,8 @@ class PavlovianApp(QDialog):
         figures = show_plots(
             strengths,
             phases = phases,
-            plot_alpha = args.plot_alpha,
-            plot_macknhall = args.plot_macknhall,
+            plot_alpha = args.plot_alpha and not AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
+            plot_macknhall = args.plot_macknhall and AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
             dpi = self.dpi,
         )
 

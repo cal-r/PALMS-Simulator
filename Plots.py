@@ -64,8 +64,8 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
                     #axes[1].plot([], label=key, color = colors[key], marker='D', markersize=8, alpha=.5, picker = ticker_threshold)
 
                 if plot_macknhall:
-                    axes[1].plot(hist.alpha_mack, label='Mack: '+str(key), color = colors[key], marker='$M$', markersize=4, alpha=.5, picker = ticker_threshold)
-                    axes[1].plot(hist.alpha_hall, label='Hall: '+str(key), color = colors[key], marker='$H$', markersize=4, alpha=.5, picker = ticker_threshold)
+                    axes[1].plot(hist.alpha_mack, label='Mack: ' + str(key), color = colors[key], marker='$M$', markersize=4, alpha=.5, picker = ticker_threshold)
+                    axes[1].plot(hist.alpha_hall, label='Hall: ' + str(key), color = colors[key], marker='$H$', markersize=4, alpha=.5, picker = ticker_threshold)
 
         axes[0].set_xlabel('Trial Number', fontsize = 'small', labelpad = 3)
         axes[0].set_ylabel('Associative Strength', fontsize = 'small', labelpad = 3)
@@ -108,7 +108,6 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
     return figures
 
 def show_plots(data: list[dict[str, StimulusHistory]], *, phases: None | dict[str, list[Phase]] = None, plot_phase = None, plot_alpha = False, plot_macknhall = False, dpi = None):
-
     figures = generate_figures(
         data = data,
         phases = phases,
