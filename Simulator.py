@@ -124,13 +124,15 @@ def main() -> None:
     assert(groups_strengths is not None)
 
     if args.savefig is None:
-        show_plots(
+        figures = show_plots(
             groups_strengths,
             phases = phases,
             plot_phase = args.plot_phase,
             plot_alpha = args.plot_alpha,
             plot_macknhall = args.plot_macknhall,
         )
+        for fig in figures:
+            fig.show()
         input('Press any key to continue...')
     else:
         save_plots(
