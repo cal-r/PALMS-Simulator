@@ -28,7 +28,13 @@ def match_args(name: str, args: list[str]) -> tuple[dict[str, float], list[str]]
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Behold! My Rescorla-Wagnerinator!",
-        epilog = '--alpha_[A-Z] ALPHA\tAssociative strength of CS A..Z. By default 0',
+        formatter_class = argparse.RawTextHelpFormatter,
+        epilog = '''\
+  --alpha-[A-Z] ALPHA\tAssociative strength of CS A..Z.
+  --alpha_mack-[A-Z] ALPHA\n\t\t\tAssociative strength (Mackintosh) of CS A..Z.
+  --alpha_hall-[A-Z] ALPHA\n\t\t\tAssociative strength (Hall) of CS A..Z.
+  --saliences-[A-Z] SALIENCE\n\t\t\tSalience of CS A..Z.
+''',
     )
 
     parser.add_argument("--adaptive-type", choices = AdaptiveType.types().keys(), default = 'rescorla_wagner', help = 'Type of adaptive attention mode to use')
@@ -74,10 +80,12 @@ def parse_args() -> argparse.Namespace:
         help="Path to the experiment file."
     )
 
-    # Accept parameters for alphas and saliences
+    # Accept parameters for alphas and saliences.
     args, rest = parser.parse_known_args()
     args.alphas, rest = match_args('alpha', rest)
     args.saliences, rest = match_args('salience', rest)
+    args.alpha_macks, rest = match_args('alpha_mack', rest)
+    args.alpha_halls, rest = match_args('alpha_hall', rest)
     if rest:
         raise KeyError(f"Arguments not recognised: {' '.join(rest)}.")
 

@@ -54,6 +54,8 @@ class Phase:
 @dataclass(kw_only = True)
 class RWArgs:
     alphas: dict[str, float]
+    alpha_macks: dict[str, float]
+    alpha_halls: dict[str, float]
     beta: float
     beta_neg: float
     lamda: float
@@ -106,7 +108,9 @@ class Experiment:
             name = self.name,
             alphas = args.alphas,
             default_alpha = args.alpha,
+            alpha_macks = args.alpha_macks,
             default_alpha_mack = args.alpha_mack,
+            alpha_halls = args.alpha_halls,
             default_alpha_hall = args.alpha_hall,
             saliences = args.saliences,
             default_salience = args.salience,

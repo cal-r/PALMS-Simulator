@@ -10,6 +10,8 @@ from itertools import chain
 
 from Experiment import Phase
 
+import ipdb
+
 def titleify(filename: str, phases: dict[str, list[Phase]], phase_num: int, suffix: str) -> str:
     titles = []
 
@@ -118,8 +120,6 @@ def show_plots(data: list[dict[str, StimulusHistory]], *, phases: None | dict[st
         ticker_threshold = True,
     )
     return figures
-
-    
 
 def save_plots(data: list[dict[str, StimulusHistory]], *, phases: None | dict[str, list[Phase]] = None, filename: None | str = None, plot_phase = None, plot_alpha = False, plot_macknhall = False, title_suffix = None, dpi = None):
     if filename is not None:

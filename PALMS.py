@@ -536,6 +536,9 @@ class PavlovianApp(QDialog):
             salience = self.floatOrZero(self.salience.box.text()),
             saliences = defaultdict(lambda: self.floatOrZero(self.salience.box.text())),
 
+            alpha_macks = defaultdict(lambda: self.floatOr(self.alpha_mack.box.text())),
+            alpha_halls = defaultdict(lambda: self.floatOr(self.alpha_mack.box.text())),
+
             habituation = self.floatOrZero(self.habituation.box.text()),
 
             window_size = int(self.window_size.box.text()),
