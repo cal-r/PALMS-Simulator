@@ -319,4 +319,4 @@ class Hybrid(AdaptiveType):
         s.habituation = s.habituation_0 - s.salience * (1 - s.habituation)
 
         DV = s.alpha_hall * (lamda - sigma)
-        s.assoc += DV * s.alpha_mack
+        s.assoc = s.assoc*s.alpha_mack + DV 
