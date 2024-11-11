@@ -440,20 +440,11 @@ class PavlovianApp(QDialog):
     def changeAdaptiveType(self, button):
         self.current_adaptive_type = button.adaptive_type
 
-        widgets_to_enable = {
-            'Rescorla Wagner': ['alpha', 'beta', 'betan', 'lamda'],
-            'Rescorla Wagner Linear': ['alpha', 'beta', 'lamda'],
-            'Pearce Hall': ['alpha', 'lamda', 'salience'],
-            'Pearce Kaye Hall': ['alpha', 'betan', 'beta', 'gamma', 'lamda', 'lamda'],
-            'LePelley': ['alpha', 'betan', 'beta', 'lamda', 'thetaE', 'thetaI'],
-            'LePelley Hybrid': ['alpha', 'alpha_mack', 'alpha_hall', 'betan', 'beta', 'lamda', 'thetaE', 'thetaI'],
-        }
-
-        for key in ['alpha', 'alpha_mack', 'alpha_hall', 'lamda', 'beta', 'betan', 'gamma', 'thetaE', 'thetaI', 'window_size', 'salience']:
+        for key in AdaptiveType.parameters():
             widget = getattr(self, f'{key}').box
             widget.setDisabled(True)
 
-        for key in widgets_to_enable[self.current_adaptive_type]:
+        for key in AdaptiveType.types()[self.current_adaptive_type].parameters():
             widget = getattr(self, f'{key}').box
             widget.setDisabled(False)
 

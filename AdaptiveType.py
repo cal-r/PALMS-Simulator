@@ -28,17 +28,9 @@ class AdaptiveType:
         return {
             'Rescorla Wagner': RescorlaWagner,
             'Rescorla Wagner Linear': RescorlaWagnerLinear,
-            # 'Pearce Hall': PearceHall,
             'Pearce Kaye Hall': PearceKayeHall,
             'LePelley': LePelley,
             'LePelley Hybrid': LePelleyHybrid,
-            # 'Rescorla Wagner Exponential': RescorlaWagnerExponential,
-            # 'Mack': Mack,
-            # 'Hall': Hall,
-            # 'Macknhall': Macknhall,
-            # 'New Dual V': NewDualV,
-            # 'Dualmack': Dualmack,
-            # 'Hybrid': Hybrid,
         }
 
     @classmethod
@@ -66,25 +58,56 @@ class AdaptiveType:
         self.delta_v_factor = beta * (lamda - sigma)
         self.step(s, beta, lamda, sign, sigma, sigmaE, sigmaI)
 
+    @classmethod
+    def parameters(cls) -> list[str]:
+        return [
+            'alpha',
+            'alpha_mack',
+            'alpha_hall',
+            'beta',
+            'betan',
+            'lamda',
+            'gamma',
+            'thetaE',
+            'thetaI',
+            'salience',
+        ]
+
     def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
         raise NotImplementedError('Calling step in abstract function is undefined.')
 
 class RescorlaWagner(AdaptiveType):
+    @classmethod
+    def parameters(cls) -> list[str]:
+        return ['alpha', 'beta', 'betan', 'lamda']
+
     def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
         s.assoc += s.alpha * self.delta_v_factor
 
 class RescorlaWagnerLinear(AdaptiveType):
+    @classmethod
+    def parameters(cls) -> list[str]:
+        return ['alpha', 'beta', 'betan', 'lamda']
+
     def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
         s.alpha *= 1 + sign * 0.05
         s.alpha = min(max(s.alpha, 0.05), 1)
         s.assoc += s.alpha * self.delta_v_factor
 
 class PearceHall(AdaptiveType):
+    @classmethod
+    def parameters(cls) -> list[str]:
+        return ['alpha', 'lamda', 'sigma', 'salience']
+
     def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
         s.alpha = abs(lamda - sigma)
         s.assoc += s.salience * s.alpha * abs(lamda)
 
 class PearceKayeHall(AdaptiveType):
+    @classmethod
+    def parameters(cls) -> list[str]:
+        return ['alpha', 'beta', 'betan', 'lamda', 'gamma']
+
     def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
         rho = lamda - (sigmaE - sigmaI)
 
@@ -97,6 +120,10 @@ class PearceKayeHall(AdaptiveType):
         s.assoc = s.Ve - s.Vi
 
 class LePelley(AdaptiveType):
+    @classmethod
+    def parameters(cls) -> list[str]:
+        return ['alpha', 'beta', 'betan', 'lamda', 'thetaE', 'thetaI']
+
     def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
         rho = lamda - (sigmaE - sigmaI)
 
@@ -121,6 +148,10 @@ class LePelley(AdaptiveType):
         s.assoc = s.Ve - s.Vi
 
 class LePelleyHybrid(AdaptiveType):
+    @classmethod
+    def parameters(cls) -> list[str]:
+        return ['alpha', 'alpha_mack', 'alpha_hall', 'beta', 'betan', 'lamda', 'gamma', 'thetaE', 'thetaI']
+
     def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
         rho = lamda - (sigmaE - sigmaI)
 
@@ -147,18 +178,30 @@ class LePelleyHybrid(AdaptiveType):
         s.assoc = s.Ve - s.Vi
 
 class RescorlaWagnerExponential(AdaptiveType):
+    @classmethod
+    def parameters(cls) -> list[str]:
+        return ['alpha', 'beta', 'betan', 'lamda']
+
     def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
         if sign == 1:
             s.alpha *= (s.alpha ** 0.05) ** sign
         s.assoc += s.alpha * self.delta_v_factor
 
 class Mack(AdaptiveType):
+    @classmethod
+    def parameters(cls) -> list[str]:
+        return ['alpha', 'beta', 'betan', 'lamda']
+
     def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
         s.alpha_mack = self.get_alpha_mack(s, sigma)
         s.alpha = s.alpha_mack
         s.assoc = s.assoc * self.delta_v_factor + self.delta_v_factor/2*beta
 
 class Hall(AdaptiveType):
+    @classmethod
+    def parameters(cls) -> list[str]:
+        return ['alpha', 'beta', 'betan', 'lamda']
+
     def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
         s.alpha_hall = self.get_alpha_hall(s, sigma)
         s.alpha = s.alpha_hall
@@ -166,6 +209,10 @@ class Hall(AdaptiveType):
         s.assoc += s.alpha * beta * (lamda - sigma)
 
 class Macknhall(AdaptiveType):
+    @classmethod
+    def parameters(cls) -> list[str]:
+        return ['alpha', 'beta', 'betan', 'lamda']
+
     def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
         s.alpha_mack = self.get_alpha_mack(s, sigma)
         s.alpha_hall = self.get_alpha_hall(s, sigma, lamda)
@@ -173,6 +220,10 @@ class Macknhall(AdaptiveType):
         s.assoc += s.alpha * self.delta_v_factor
 
 class NewDualV(AdaptiveType):
+    @classmethod
+    def parameters(cls) -> list[str]:
+        return ['alpha', 'beta', 'betan', 'lamda']
+
     def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
         rho = lamda - (sigmaE - sigmaI)
 
@@ -188,6 +239,10 @@ class NewDualV(AdaptiveType):
         s.assoc = s.Ve - s.Vi
 
 class Dualmack(AdaptiveType):
+    @classmethod
+    def parameters(cls) -> list[str]:
+        return ['alpha', 'beta', 'betan', 'lamda']
+
     def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
         rho = lamda - (sigmaE - sigmaI)
 
@@ -203,6 +258,10 @@ class Dualmack(AdaptiveType):
         s.assoc = s.Ve - s.Vi
 
 class Hybrid(AdaptiveType):
+    @classmethod
+    def parameters(cls) -> list[str]:
+        return ['alpha', 'beta', 'betan', 'lamda', 'alpha_mack', 'alpha_hall', 'thetaE', 'thetaI', 'gamma']
+
     def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
         rho = lamda - (sigmaE - sigmaI)
 
