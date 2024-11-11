@@ -267,7 +267,7 @@ class PavlovianApp(QDialog):
         self.setWindowTitle("PALMS Simulator")
         self.restoreDefaultParameters()
 
-        self.initialAdaptiveTypeButton.click()
+        self.adaptiveTypeButtons.children()[1].click()
 
         self.resize(1250, 600)
 
@@ -294,9 +294,6 @@ class PavlovianApp(QDialog):
             layout.addWidget(button)
 
             button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-            if adaptive_type == 'rescorla_wagner':
-                button.setChecked(True)
-                self.initialAdaptiveTypeButton = button
 
         buttonGroup.buttonClicked.connect(self.changeAdaptiveType)
         buttons.setLayout(layout)
