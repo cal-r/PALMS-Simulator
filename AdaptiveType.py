@@ -50,6 +50,7 @@ class AdaptiveType:
             'thetaE',
             'thetaI',
             'salience',
+            'habituation',
         ]
 
     @classmethod
@@ -218,7 +219,7 @@ class Hall(AdaptiveType):
         return ['alpha', 'beta', 'betan', 'lamda']
 
     def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
-        s.alpha_hall = self.get_alpha_hall(s, sigma)
+        s.alpha_hall = self.get_alpha_hall(s, sigma, lamda)
         s.alpha = s.alpha_hall
         self.delta_v_factor = 0.5 * abs(lamda)
         s.assoc += s.alpha * beta * (lamda - sigma)

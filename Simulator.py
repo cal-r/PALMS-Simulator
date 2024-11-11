@@ -48,6 +48,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--window-size", type = int, default = None, help = 'Size of sliding window for adaptive learning')
 
     parser.add_argument('--salience', type = float, default = .5, help = 'Salience for all parameters without an individually defined salience. This is used in the Pearce & Hall model.')
+    parser.add_argument('--habituation', type = float, default = .99, help = 'Habituation delay for all parameters in the hybrid model.')
+
     parser.add_argument("--xi-hall", type = float, default = 0.2, help = 'Xi parameter for Hall alpha calculation')
 
     parser.add_argument("--num-trials", type = int, default = 1000, help = 'Amount of trials done in randomised phases')

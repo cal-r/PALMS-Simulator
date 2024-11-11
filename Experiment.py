@@ -74,6 +74,8 @@ class RWArgs:
     saliences: dict[str, float]
     salience: float
 
+    habituation: float
+
     plot_phase: None | int = None
     plot_experiments: None | list[str] = None
     plot_stimuli: None | list[str] = None
@@ -108,6 +110,7 @@ class Experiment:
             default_alpha_hall = args.alpha_hall,
             saliences = args.saliences,
             default_salience = args.salience,
+            habituation = args.habituation,
             betan = args.beta_neg,
             betap = args.beta,
             lamda = args.lamda,

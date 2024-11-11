@@ -473,6 +473,7 @@ class PavlovianApp(QDialog):
         self.thetaE = DualLabel("θᴱ", params, self, 'Monospace')
         self.thetaI = DualLabel("θᴵ", params, self, 'Monospace')
         self.salience = DualLabel("S ", params, self, 'Monospace')
+        self.habituation = DualLabel('h ', params, self, 'Monospace')
         self.window_size = DualLabel("WS", params, self)
         self.num_trials = DualLabel("№", params, self)
         self.num_trials.box.setDisabled(True)
@@ -493,6 +494,7 @@ class PavlovianApp(QDialog):
             'thetaE': '0.3',
             'thetaI': '0.1',
             'salience': '0.5',
+            'habituation': '0.99',
             'window_size': '10',
             'num_trials': '100'
         }
@@ -533,6 +535,8 @@ class PavlovianApp(QDialog):
 
             salience = self.floatOrZero(self.salience.box.text()),
             saliences = defaultdict(lambda: self.floatOrZero(self.salience.box.text())),
+
+            habituation = self.floatOrZero(self.habituation.box.text()),
 
             window_size = int(self.window_size.box.text()),
             num_trials = int(self.num_trials.box.text()),

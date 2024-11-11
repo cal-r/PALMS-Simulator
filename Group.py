@@ -19,6 +19,7 @@ class Group:
         default_alpha_hall: None | float,
         saliences: dict[str, float],
         default_salience: float,
+        habituation: float,
         betan: float,
         betap: float,
         lamda: float,
@@ -39,7 +40,7 @@ class Group:
 
         self.s = Environment(
             s = {
-                k: Stimulus(assoc = 0, alpha = alphas[k], salience = saliences[k], alpha_mack = default_alpha_mack, alpha_hall = default_alpha_hall)
+                k: Stimulus(assoc = 0, alpha = alphas[k], salience = saliences[k], habituation = habituation, alpha_mack = default_alpha_mack, alpha_hall = default_alpha_hall)
                 for k in cs
             }
         )
