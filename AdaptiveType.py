@@ -314,9 +314,9 @@ class Hybrid(AdaptiveType):
         return ['alpha_mack', 'alpha_hall', 'salience', 'habituation', 'lamda']
 
     def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
+        s.habituation = s.habituation_0 - s.salience_0 * (1 - s.habituation)
         s.alpha_hall = (1 - s.habituation) * (lamda - sigma) ** 2 + s.habituation * s.alpha_hall
-        s.alpha_mack = ((1 - s.alpha_mack) * (2 * s.assoc - sigma)) ** 2 + (1 - (s.alpha_mack_0 + (1 - s.salience_0) * (1 - s.alpha_mack_0))) ** 2
-        s.habituation = s.habituation_0 - s.salience * (1 - s.habituation)
+        s.alpha_mack = ((1 - s.alpha_mack) * (2 * s.assoc - sigma)) ** 2 + (1 - (s.alpha_hall_0 + (1 - s.salience_0) * (1 - s.alpha_hall_0))) ** 2
 
         DV = s.alpha_hall * (lamda - sigma)
         s.assoc = s.assoc*s.alpha_mack + DV 
