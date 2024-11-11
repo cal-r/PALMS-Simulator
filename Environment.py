@@ -19,7 +19,12 @@ class Stimulus:
     window: deque[float]
     delta_ma_hall: float
 
-    def __init__(self, *, assoc = 0., Ve = 0., Vi = 0., alpha = .5, alpha_mack = None, alpha_hall = None, delta_ma_hall = .2, window = None, salience = None, habituation = None):
+    alpha_mack_0: float
+    alpha_hall_0: float
+    salience_0: float
+    habituation_0: float
+
+    def __init__(self, *, assoc = 0., Ve = 0., Vi = 0., alpha = .5, alpha_mack = None, alpha_hall = None, delta_ma_hall = .2, window = None, salience = None, habituation = None, alpha_mack_0 = None, alpha_hall_0 = None, salience_0 = None, habituation_0 = None):
         self.assoc = assoc
 
         self.Ve = Ve
@@ -31,6 +36,11 @@ class Stimulus:
 
         self.salience = salience
         self.habituation = habituation
+
+        self.alpha_mack_0 = alpha_mack_0 or self.alpha_mack
+        self.alpha_hall_0 = alpha_hall_0 or self.alpha_hall
+        self.salience_0 = salience_0 or self.salience
+        self.habituation_0 = habituation_0 or self.habituation
 
         if window is None:
             window = deque([])
