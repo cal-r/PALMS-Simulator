@@ -13,6 +13,7 @@ from PyQt6.QtWidgets import *
 from Experiment import RWArgs, Experiment, Phase
 from Plots import show_plots, generate_figures
 from Environment import StimulusHistory
+from AdaptiveType import AdaptiveType
 
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib import pyplot
@@ -197,7 +198,7 @@ class PavlovianApp(QDialog):
     def __init__(self, dpi = 200, parent=None):
         super(PavlovianApp, self).__init__(parent)
 
-        self.adaptive_types = ['rescorla_wagner', 'rescorla_wagner_linear', 'pearce_kaye_hall', 'le_pelley', 'le_pelley_hybrid']
+        self.adaptive_types = AdaptiveType.types().keys()
         self.current_adaptive_type = None
         self.inset_text_column_index = None
 
