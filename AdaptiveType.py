@@ -313,10 +313,20 @@ class Hybrid(AdaptiveType):
     def parameters(cls) -> list[str]:
         return ['alpha_mack', 'alpha_hall', 'salience', 'habituation', 'lamda']
 
+    @classmethod
+    def defaults(cls) -> dict[str, float]:
+        return dict(
+            salience = .5,
+            habituation = 0.99,
+            alpha_mack = 0.1,
+            alpha_hall = 0.3,
+            lamda = 1,
+        )
+
     def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
         s.habituation = s.habituation_0 - s.salience_0 * (1 - s.habituation)
         s.alpha_hall = (1 - s.habituation) * (lamda - sigma) ** 2 + s.habituation * s.alpha_hall
         s.alpha_mack = ((1 - s.alpha_mack) * (2 * s.assoc - sigma)) ** 2 + (1 - (s.alpha_hall_0 + (1 - s.salience_0) * (1 - s.alpha_hall_0))) ** 2
 
         DV = s.alpha_hall * (lamda - sigma)
-        s.assoc = s.assoc*s.alpha_mack + DV 
+        s.assoc = s.assoc + DV * s.alpha_mack
