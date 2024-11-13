@@ -26,7 +26,9 @@ class CoolTable(QWidget):
 
         self.table = QTableWidget(rows, cols)
         self.table.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        self.table.verticalHeader().sectionDoubleClicked.connect(self.editExperimentName)
+        self.table.verticalHeader().sectionDoubleClicked.connect(self.editExperimentNames)
+        self.table.horizontalHeader().setMinimumSectionSize(150)
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
 
         self.rightPlus = QPushButton('+')
         self.rightPlus.clicked.connect(self.addColumn)
@@ -57,7 +59,7 @@ class CoolTable(QWidget):
         self.updateSizes()
         self.freeze = False
 
-    def editExperimentName(self, index):
+    def editExperimentNames(self, index):
         item = self.table.verticalHeaderItem(index)
 
         editor = QLineEdit(self.table)
@@ -66,7 +68,7 @@ class CoolTable(QWidget):
 
         def setHeader():
             item.name = editor.text()
-            self.setHeaders()
+            self.setHeaderNames()
             editor.deleteLater()
             self.parent().refreshExperiment()
 
@@ -100,7 +102,7 @@ class CoolTable(QWidget):
 
         self.freeze = False
 
-    def setHeaders(self):
+    def setHeaderNames(self):
         for row in range(self.rowCount()):
             name = None
             if self.table.verticalHeaderItem(row) is not None:
@@ -131,33 +133,13 @@ class CoolTable(QWidget):
         self.table.cellChanged.connect(cellChanged)
 
     def updateSizes(self):
-        print("Changes")
-        self.setHeaders()
-        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
-        self.table.adjustSize()
-        content_width = self.table.horizontalHeader().length() + self.table.verticalHeader().width()
-        default_width = 150 * (1 + self.columnCount())
-        width = max(default_width, content_width)
-        height = 30 * (1 + self.rowCount())
+        self.setHeaderNames()
+        width = 2 + max(self.table.horizontalHeader().length(), 150) + self.table.verticalHeader().width()
+        height = 2 + self.table.verticalHeader().length() + self.table.horizontalHeader().height()
         
         self.table.setFixedSize(width, height)
         self.rightPlus.setFixedHeight(height)
         self.bottomPlus.setFixedWidth(width)
-        if content_width <= default_width:
-            print("Less than content")
-            self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        self.table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-
-    """ def updateSizes(self):
-        self.setHeaders()
-        width = 150 * (1 + self.columnCount())
-        height = 30 * (1 + self.rowCount())
-        self.table.setFixedSize(width, height)
-        self.rightPlus.setFixedHeight(height)
-        self.bottomPlus.setFixedWidth(width)
-
-        self.table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch) """
 
     def addColumn(self):
         cols = self.columnCount()
@@ -426,8 +408,6 @@ class PavlovianApp(QDialog):
         else:
             self.hidden = True
         self.hideLines()
-        #for f in self.figures:
-        #    f.set_canvas(self.plotCanvas)
 
     def togglePhaseLambda(self):
         set_lambda = any(p[self.phaseNum - 1].lamda is not None for p in self.phases.values())
@@ -613,6 +593,8 @@ class PavlovianApp(QDialog):
         return strengths, phases, args
 
     def refreshExperiment(self):
+        self.tableWidget.updateSizes()
+
         for fig in self.figures:
             pyplot.close(fig)
 
