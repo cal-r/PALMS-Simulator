@@ -131,16 +131,33 @@ class CoolTable(QWidget):
         self.table.cellChanged.connect(cellChanged)
 
     def updateSizes(self):
+        print("Changes")
         self.setHeaders()
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        self.table.adjustSize()
+        content_width = self.table.horizontalHeader().length() + self.table.verticalHeader().width()
+        default_width = 150 * (1 + self.columnCount())
+        width = max(default_width, content_width)
+        height = 30 * (1 + self.rowCount())
+        
+        self.table.setFixedSize(width, height)
+        self.rightPlus.setFixedHeight(height)
+        self.bottomPlus.setFixedWidth(width)
+        if content_width <= default_width:
+            print("Less than content")
+            self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
 
+    """ def updateSizes(self):
+        self.setHeaders()
         width = 150 * (1 + self.columnCount())
         height = 30 * (1 + self.rowCount())
         self.table.setFixedSize(width, height)
         self.rightPlus.setFixedHeight(height)
         self.bottomPlus.setFixedWidth(width)
 
-        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch) """
 
     def addColumn(self):
         cols = self.columnCount()
