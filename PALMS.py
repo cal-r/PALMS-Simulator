@@ -26,6 +26,7 @@ class CoolTable(QWidget):
 
         self.table = QTableWidget(rows, cols)
         self.table.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        self.table.verticalHeader().sectionDoubleClicked.connect(self.editExperimentName)
 
         self.rightPlus = QPushButton('+')
         self.rightPlus.clicked.connect(self.addColumn)
@@ -56,6 +57,22 @@ class CoolTable(QWidget):
         self.updateSizes()
         self.freeze = False
 
+    def editExperimentName(self, index):
+        item = self.table.verticalHeaderItem(index)
+
+        editor = QLineEdit(self.table)
+        editor.setPlaceholderText('Experiment Name')
+        editor.setFocus()
+
+        def setHeader():
+            item.name = editor.text()
+            self.setHeaders()
+            editor.deleteLater()
+            self.parent().refreshExperiment()
+
+        editor.editingFinished.connect(setHeader)
+        editor.show()
+
     def getText(self, row: int, col: int) -> str:
         item = self.table.item(row, col)
         if item is None:
@@ -84,12 +101,19 @@ class CoolTable(QWidget):
         self.freeze = False
 
     def setHeaders(self):
-        self.table.setVerticalHeaderItem(0, QTableWidgetItem('Control'))
-        self.table.setVerticalHeaderItem(1, QTableWidgetItem('Test'))
+        for row in range(self.rowCount()):
+            name = None
+            if self.table.verticalHeaderItem(row) is not None:
+                name = self.table.verticalHeaderItem(row).name
 
-        if self.rowCount() > 2:
-            for e in range(1, self.rowCount()):
-                self.table.setVerticalHeaderItem(e, QTableWidgetItem(f'Test {e}'))
+            default = \
+                'Control' if row == 0 else \
+                'Test' if self.rowCount() == 2 else \
+                f'Test {row}'
+
+            item = QTableWidgetItem(name or default)
+            item.name = name
+            self.table.setVerticalHeaderItem(row, item)
 
         for col in range(self.columnCount()):
             self.table.setHorizontalHeaderItem(col, QTableWidgetItem(f'Phase {col + 1}'))
@@ -187,7 +211,9 @@ class CoolTable(QWidget):
                 self.table.setColumnCount(maxCols)
                 self.table.setHorizontalHeaderLabels([f'Phase {x}' for x in range(1, maxCols + 1)])
 
-            self.table.setVerticalHeaderItem(row, QTableWidgetItem(name))
+            item = QTableWidgetItem(name)
+            item.name = name
+            self.table.setVerticalHeaderItem(row, item)
             for col, phase in enumerate(phase_strs):
                 self.table.setItem(row, col, QTableWidgetItem(phase))
 
