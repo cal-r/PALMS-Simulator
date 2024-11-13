@@ -38,7 +38,7 @@ class Group:
             alphas = {k: alphas.get(k, default_alpha) for k in cs}
             saliences = {k: saliences.get(k, default_salience) for k in cs}
             alpha_macks = {k: alpha_macks.get(k, default_alpha_mack) for k in cs}
-            alpha_halls = {k: alpha_halls.get(k, default_alpha_mack) for k in cs}
+            alpha_halls = {k: alpha_halls.get(k, default_alpha_hall) for k in cs}
 
         self.name = name
 

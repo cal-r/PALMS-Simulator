@@ -10,8 +10,6 @@ from itertools import chain
 
 from Experiment import Phase
 
-import ipdb
-
 def titleify(filename: str, phases: dict[str, list[Phase]], phase_num: int, suffix: str) -> str:
     titles = []
 
