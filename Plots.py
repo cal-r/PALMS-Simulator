@@ -45,6 +45,9 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
     if plot_phase is not None:
         data = [data[plot_phase - 1]]
 
+    experiment_css = set(chain.from_iterable([x.keys() for x in data]))
+    colors = dict(zip(experiment_css, seaborn.color_palette('husl', len(experiment_css))))
+
     figures = []
     for phase_num, experiments in enumerate(data, start = 1):
         if not plot_alpha and not plot_macknhall:
@@ -53,7 +56,6 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
         else:
             fig, axes = pyplot.subplots(1, 2, figsize = (16, 6), dpi = dpi)
 
-        colors = dict(zip(experiments.keys(), seaborn.color_palette('husl', len(experiments))))
         for key, hist in experiments.items():
             line = axes[0].plot(hist.assoc, label=key, marker='D', color = colors[key], markersize=4, alpha=.5, picker = ticker_threshold)
 
