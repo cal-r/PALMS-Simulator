@@ -45,7 +45,7 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
     if plot_phase is not None:
         data = [data[plot_phase - 1]]
 
-    experiment_css = set(chain.from_iterable([x.keys() for x in data]))
+    experiment_css = sorted(set(chain.from_iterable([x.keys() for x in data])))
     colors = dict(zip(experiment_css, seaborn.color_palette('husl', len(experiment_css))))
 
     figures = []

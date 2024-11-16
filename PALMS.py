@@ -14,210 +14,12 @@ from Experiment import RWArgs, Experiment, Phase
 from Plots import show_plots, generate_figures
 from Environment import StimulusHistory
 from AdaptiveType import AdaptiveType
+from CoolTable import CoolTable
 
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib import pyplot
 
-class CoolTable(QWidget):
-    def __init__(self, rows: int, cols: int, parent: None | QWidget = None):
-        super().__init__(parent = parent)
-
-        self.freeze = True
-
-        self.table = QTableWidget(rows, cols)
-        self.table.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        self.table.verticalHeader().sectionDoubleClicked.connect(self.editExperimentNames)
-        self.table.horizontalHeader().setMinimumSectionSize(150)
-        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
-
-        self.rightPlus = QPushButton('+')
-        self.rightPlus.clicked.connect(self.addColumn)
-        self.rightPlus.setToolTip('Add a new phase.')
-
-        self.bottomPlus = QPushButton('+')
-        self.bottomPlus.clicked.connect(self.addRow)
-        self.bottomPlus.setToolTip('Add a new experiment.')
-
-        self.cButton = QPushButton('C')
-        self.cButton.clicked.connect(self.clearEmptyCells)
-        self.cButton.setToolTip('Clear empty phases and experiments.')
-
-        self.rightPlus.setFixedWidth(20)
-        self.bottomPlus.setFixedHeight(20)
-        self.cButton.setFixedSize(20, 20)
-
-        self.mainLayout = QGridLayout(parent = self)
-        self.mainLayout.addWidget(self.table, 0, 0, Qt.AlignmentFlag.AlignLeft)
-        self.mainLayout.addWidget(self.rightPlus, 0, 1, Qt.AlignmentFlag.AlignLeft)
-        self.mainLayout.addWidget(self.bottomPlus, 1, 0, Qt.AlignmentFlag.AlignTop)
-        self.mainLayout.addWidget(self.cButton, 1, 1, Qt.AlignmentFlag.AlignLeft)
-        self.mainLayout.setColumnStretch(1, 1)
-        self.mainLayout.setRowStretch(1, 1)
-        self.mainLayout.setSpacing(0)
-        self.mainLayout.setContentsMargins(0, 0, 0, 0)
-
-        self.updateSizes()
-        self.freeze = False
-
-    def editExperimentNames(self, index):
-        item = self.table.verticalHeaderItem(index)
-
-        editor = QLineEdit(self.table)
-        editor.setPlaceholderText('Experiment Name')
-        editor.setFocus()
-
-        def setHeader():
-            item.name = editor.text()
-            self.setHeaderNames()
-            editor.deleteLater()
-            self.parent().refreshExperiment()
-
-        editor.editingFinished.connect(setHeader)
-        editor.show()
-
-    def getText(self, row: int, col: int) -> str:
-        item = self.table.item(row, col)
-        if item is None:
-            return ""
-
-        return item.text()
-
-    def setRandInSelection(self, set_rand: bool):
-        self.freeze = True
-        for item in self.table.selectedItems():
-            item.setText(item.text().replace('rand/', ''))
-
-            if set_rand:
-                item.setText('rand/' + item.text())
-
-        self.freeze = False
-
-    def setLambdaInSelection(self, set_lambda: None | float):
-        self.freeze = True
-        for item in self.table.selectedItems():
-            item.setText(re.sub(r'lamb?da=[0-9]+(\.[0-9]+)?\/', '', item.text()))
-
-            if set_lambda is not None:
-                item.setText(f'lambda={set_lambda}/' + item.text())
-
-        self.freeze = False
-
-    def setHeaderNames(self):
-        for row in range(self.rowCount()):
-            name = None
-            if self.table.verticalHeaderItem(row) is not None:
-                name = self.table.verticalHeaderItem(row).name
-
-            default = \
-                'Control' if row == 0 else \
-                'Test' if self.rowCount() == 2 else \
-                f'Test {row}'
-
-            item = QTableWidgetItem(name or default)
-            item.name = name
-            self.table.setVerticalHeaderItem(row, item)
-
-        for col in range(self.columnCount()):
-            self.table.setHorizontalHeaderItem(col, QTableWidgetItem(f'Phase {col + 1}'))
-
-    def keyPressEvent(self, event):
-        if event.key() in (Qt.Key.Key_Backspace, Qt.Key.Key_Delete):
-            for item in self.table.selectedItems():
-                item.setText('')
-
-    def onCellChange(self, func):
-        def cellChanged(*args, **kwargs):
-            if not self.freeze:
-                func()
-
-        self.table.cellChanged.connect(cellChanged)
-
-    def updateSizes(self):
-        self.setHeaderNames()
-        width = 2 + max(self.table.horizontalHeader().length(), 150) + self.table.verticalHeader().width()
-        height = 2 + self.table.verticalHeader().length() + self.table.horizontalHeader().height()
-        
-        self.table.setFixedSize(width, height)
-        self.rightPlus.setFixedHeight(height)
-        self.bottomPlus.setFixedWidth(width)
-
-    def addColumn(self):
-        cols = self.columnCount()
-        self.table.insertColumn(cols)
-        self.updateSizes()
-
-    def addRow(self):
-        rows = self.rowCount()
-        self.table.insertRow(rows)
-        self.updateSizes()
-
-    def clearEmptyRows(self):
-        toRemove = []
-        for row in range(self.rowCount()):
-            if not any(self.getText(row, x) for x in range(self.columnCount())):
-                toRemove.append(row)
-
-        if len(toRemove) == self.rowCount():
-            toRemove = toRemove[1:]
-
-        for row in toRemove[::-1]:
-            self.table.removeRow(row)
-
-    def clearEmptyColumns(self):
-        toRemove = []
-        for col in range(self.columnCount()):
-            if not any(self.getText(x, col) for x in range(self.rowCount())):
-                toRemove.append(col)
-
-        if len(toRemove) == self.columnCount():
-            toRemove = toRemove[1:]
-
-        for col in toRemove[::-1]:
-            self.table.removeColumn(col)
-
-    def clearEmptyCells(self):
-        self.clearEmptyRows()
-        self.clearEmptyColumns()
-        self.updateSizes()
-
-    def rowCount(self):
-        return self.table.rowCount()
-
-    def columnCount(self):
-        return self.table.columnCount()
-
-    def selectColumn(self, col):
-        self.table.setRangeSelected(
-            QTableWidgetSelectionRange(0, 0, self.rowCount() - 1, self.columnCount() - 1),
-            False,
-        )
-
-        self.table.setRangeSelected(
-            QTableWidgetSelectionRange(0, col, self.rowCount() - 1, col),
-            True,
-        )
-
-    def loadFile(self, lines):
-        self.freeze = True
-        self.table.setRowCount(len(lines))
-
-        maxCols = 0
-        for row, group in enumerate(lines):
-            name, *phase_strs = [x.strip() for x in group.split('|')]
-
-            if len(phase_strs) > maxCols:
-                maxCols = len(phase_strs)
-                self.table.setColumnCount(maxCols)
-                self.table.setHorizontalHeaderLabels([f'Phase {x}' for x in range(1, maxCols + 1)])
-
-            item = QTableWidgetItem(name)
-            item.name = name
-            self.table.setVerticalHeaderItem(row, item)
-            for col, phase in enumerate(phase_strs):
-                self.table.setItem(row, col, QTableWidgetItem(phase))
-
-        self.updateSizes()
-        self.freeze = False
+import ipdb
 
 class PavlovianApp(QDialog):
     def __init__(self, dpi = 200, parent=None):
@@ -233,6 +35,9 @@ class PavlovianApp(QDialog):
         self.phases = {}
         self.hidden = False
         self.dpi = dpi
+        self.per_cs_param = {}
+        self.enabled_params = set()
+
         self.initUI()
 
         QTimer.singleShot(100, self.updateWidgets)
@@ -244,50 +49,59 @@ class PavlovianApp(QDialog):
 
         self.addActionsButtons()
         self.createParametersGroupBox()
+        self.alphasBox = QGroupBox('CS Parameters')
+        self.alphasBox.setLayout(QGridLayout())
+        self.alphasBox.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding)
 
+        self.alphasBox.setVisible(False)
+        self.refreshAlphasGroupBox({})
         self.plotBox = QGroupBox('Plot')
 
         self.plotCanvas = FigureCanvasQTAgg()
         self.phaseBox = QGroupBox()
 
-        self.phaseBoxLayout = QGridLayout()
         self.leftPhaseButton = QPushButton('<')
         self.leftPhaseButton.clicked.connect(self.prevPhase)
 
         self.phaseInfo = QLabel('')
+        self.phaseInfo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+
         self.rightPhaseButton = QPushButton('>')
         self.rightPhaseButton.clicked.connect(self.nextPhase)
 
-        self.phaseBoxLayout.addWidget(self.leftPhaseButton, 0, 0, 1, 1)
-        self.phaseBoxLayout.addWidget(self.phaseInfo, 0, 1, 1, 4, Qt.AlignmentFlag.AlignCenter)
-        self.phaseBoxLayout.addWidget(self.rightPhaseButton, 0, 6, 1, 1)
-        self.phaseBox.setLayout(self.phaseBoxLayout)
+        phaseBoxLayout = QHBoxLayout()
+        phaseBoxLayout.addWidget(self.leftPhaseButton)
+        phaseBoxLayout.addWidget(self.phaseInfo, stretch = 1, alignment = Qt.AlignmentFlag.AlignCenter)
+        phaseBoxLayout.addWidget(self.rightPhaseButton)
+        self.phaseBox.setLayout(phaseBoxLayout)
 
-        self.plotBoxLayout = QVBoxLayout()
-        self.plotBoxLayout.addWidget(self.plotCanvas)
-        self.plotBoxLayout.addWidget(self.phaseBox)
-        self.plotBoxLayout.setStretch(0, 1)
-        self.plotBoxLayout.setStretch(1, 0)
-        self.plotBox.setLayout(self.plotBoxLayout)
+        plotBoxLayout = QVBoxLayout()
+        plotBoxLayout.addWidget(self.plotCanvas)
+        plotBoxLayout.addWidget(self.phaseBox)
+        plotBoxLayout.setStretch(0, 1)
+        plotBoxLayout.setStretch(1, 0)
+        self.plotBox.setLayout(plotBoxLayout)
 
         self.adaptiveTypeButtons = self.addAdaptiveTypeButtons()
 
         mainLayout = QGridLayout()
-        mainLayout.addWidget(self.tableWidget, 0, 0, 1, 4)
+        mainLayout.addWidget(self.tableWidget, 0, 0, 1, 5)
         mainLayout.addWidget(self.adaptiveTypeButtons, 1, 0, 3, 1)
         mainLayout.addWidget(self.parametersGroupBox, 1, 1, 3, 1)
-        mainLayout.addWidget(self.plotBox, 1, 2, 3, 1)
-        mainLayout.addWidget(self.phaseOptionsGroupBox, 1, 3, 1, 1)
-        mainLayout.addWidget(self.plotOptionsGroupBox, 2, 3, 1, 1)
-        mainLayout.addWidget(self.fileOptionsGroupBox, 3, 3, 1, 1)
+        mainLayout.addWidget(self.alphasBox, 1, 2, 3, 1)
+        mainLayout.addWidget(self.plotBox, 1, 3, 3, 1)
+        mainLayout.addWidget(self.phaseOptionsGroupBox, 1, 4, 1, 1)
+        mainLayout.addWidget(self.plotOptionsGroupBox, 2, 4, 1, 1)
+        mainLayout.addWidget(self.fileOptionsGroupBox, 3, 4, 1, 1)
         mainLayout.setRowStretch(0, 1)
         mainLayout.setRowStretch(1, 0)
         mainLayout.setRowStretch(2, 1)
         mainLayout.setRowStretch(3, 1)
         mainLayout.setColumnStretch(0, 0)
         mainLayout.setColumnStretch(1, 0)
-        mainLayout.setColumnStretch(2, 1)
-        mainLayout.setColumnStretch(3, 0)
+        mainLayout.setColumnStretch(2, 0)
+        mainLayout.setColumnStretch(3, 1)
+        mainLayout.setColumnStretch(4, 0)
         self.setLayout(mainLayout)
 
         self.setWindowTitle("PALMS Simulator")
@@ -369,6 +183,11 @@ class PavlovianApp(QDialog):
         self.setDefaultParamsButton = QPushButton("Restore Default Parameters")
         self.setDefaultParamsButton.clicked.connect(self.restoreDefaultParameters)
 
+        self.toggleAlphasButton = QPushButton('Toggle Alphas Box')
+        self.toggleAlphasButton.clicked.connect(self.toggleAlphasBox)
+        self.toggleAlphasButton.setCheckable(True)
+        self.toggleAlphasButton.setStyleSheet(checkedStyle)
+
         self.refreshButton = QPushButton("Refresh")
         self.refreshButton.clicked.connect(self.refreshExperiment)
 
@@ -388,6 +207,8 @@ class PavlovianApp(QDialog):
         plotOptionsLayout.addWidget(self.refreshButton)
         plotOptionsLayout.addWidget(self.printButton)
         plotOptionsLayout.addWidget(self.hideButton)
+        plotOptionsLayout.addWidget(self.toggleAlphasButton)
+
         self.plotOptionsGroupBox.setLayout(plotOptionsLayout)
 
         fileOptionsLayout = QVBoxLayout()
@@ -424,6 +245,21 @@ class PavlovianApp(QDialog):
 
         self.refreshExperiment()
 
+    def toggleAlphasBox(self):
+        visible = self.alphasBox.isVisible()
+        if not visible:
+            self.resize(self.width() + self.alphasBox.width(), self.height())
+
+            for perc, boxes in self.per_cs_param.items():
+                mainBox = getattr(self, perc).box
+                mainBox.setDisabled(True)
+                for cs, pair in boxes.items():
+                    pair.box.setText(mainBox.text())
+        else:
+            self.resize(self.width() - self.alphasBox.width(), self.height())
+
+        self.alphasBox.setVisible(not visible)
+
     def saveExperiment(self):
         default_directory = os.path.join(os.getcwd(), 'Experiments')
         os.makedirs(default_directory, exist_ok = True)
@@ -456,67 +292,121 @@ class PavlovianApp(QDialog):
 
     def changeAdaptiveType(self, button):
         self.current_adaptive_type = button.adaptive_type
+        self.enabled_params = set(AdaptiveType.types()[self.current_adaptive_type].parameters())
 
         for key in AdaptiveType.parameters():
             widget = getattr(self, f'{key}').box
             widget.setDisabled(True)
 
-        for key in AdaptiveType.types()[self.current_adaptive_type].parameters():
-            widget = getattr(self, f'{key}').box
-            widget.setDisabled(False)
+        for key in self.enabled_params:
+            if not self.alphasBox.isVisible() or key not in self.per_cs_param:
+                widget = getattr(self, f'{key}').box
+                widget.setDisabled(False)
 
         for key, default in AdaptiveType.types()[self.current_adaptive_type].defaults().items():
             getattr(self, key).box.setText(str(default))
+            if key in self.per_cs_param:
+                for pair in self.per_cs_param[key].values():
+                    pair.box.setText(str(default))
 
         self.refreshExperiment()
 
+    class DualLabel:
+        def __init__(self, text, parent, font = 'Monospace'):
+            self.label = QLabel(text)
+            self.label.setAlignment(Qt.AlignmentFlag.AlignRight)
+            self.box = QLineEdit()
+            self.box.setMaximumWidth(40)
+            self.box.returnPressed.connect(parent.refreshExperiment)
+
+            if font is not None:
+                self.label.setFont(QFont(font))
+
+        def addRow(self, layout):
+            layout.addRow(self.label, self.box)
+            return self
+
+        def addItemToGrid(self, layout, y, x):
+            formLayout = QFormLayout()
+            formLayout.addRow(self.label, self.box)
+            formLayout.setContentsMargins(0, 7, 0, 0)
+
+            wrapper = QWidget()
+            wrapper.setLayout(formLayout)
+
+            layout.addWidget(wrapper, y, x, alignment = Qt.AlignmentFlag.AlignTop)
+            return self
+
     def createParametersGroupBox(self):
         self.parametersGroupBox = QGroupBox("Parameters")
-        self.parametersGroupBox.setMaximumWidth(100)
-
-        class DualLabel:
-            def __init__(self, text, layout, parent, font = None):
-                self.label = QLabel(text)
-                self.box = QLineEdit()
-                self.box.returnPressed.connect(parent.refreshExperiment)
-
-                if font is not None:
-                    self.label.setFont(QFont(font))
-
-                layout.addRow(self.label, self.box)
+        self.parametersGroupBox.setMaximumWidth(90)
 
         params = QFormLayout()
-        self.alpha = DualLabel("α ", params, self, 'Monospace')
-        self.alpha_mack = DualLabel("αᴹ", params, self, 'Monospace')
-        self.alpha_hall = DualLabel("αᴴ", params, self, 'Monospace')
-        self.lamda = DualLabel("λ ", params, self, 'Monospace')
-        self.beta = DualLabel("β⁺", params, self, 'Monospace')
-        self.betan = DualLabel("β⁻", params, self, 'Monospace')
-        self.gamma = DualLabel("γ ", params, self, 'Monospace')
-        self.thetaE = DualLabel("θᴱ", params, self, 'Monospace')
-        self.thetaI = DualLabel("θᴵ", params, self, 'Monospace')
-        self.salience = DualLabel("S ", params, self, 'Monospace')
-        self.habituation = DualLabel('h ', params, self, 'Monospace')
-        self.window_size = DualLabel("WS", params, self)
-        self.num_trials = DualLabel("№", params, self)
+        self.alpha = self.DualLabel("α ", self).addRow(params)
+        self.alpha_mack = self.DualLabel("αᴹ", self).addRow(params)
+        self.alpha_hall = self.DualLabel("αᴴ", self).addRow(params)
+        self.salience = self.DualLabel("S ", self).addRow(params)
+        self.lamda = self.DualLabel("λ ", self).addRow(params)
+        self.beta = self.DualLabel("β⁺", self).addRow(params)
+        self.betan = self.DualLabel("β⁻", self).addRow(params)
+        self.gamma = self.DualLabel("γ ", self).addRow(params)
+        self.thetaE = self.DualLabel("θᴱ", self).addRow(params)
+        self.thetaI = self.DualLabel("θᴵ", self).addRow(params)
+        self.habituation = self.DualLabel('h ', self).addRow(params)
+        self.window_size = self.DualLabel("WS", self).addRow(params)
+        self.num_trials = self.DualLabel("№ ", self).addRow(params)
         self.num_trials.box.setDisabled(True)
 
         params.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
-
         self.parametersGroupBox.setLayout(params)
+
+    def refreshAlphasGroupBox(self, css: list[str]):
+        layout = self.alphasBox.layout()
+        layout.setSpacing(0)
+        layout.setContentsMargins(10, 0, 10, 0)
+
+        prev_labels = {perc: {cs: pair.box.text() for cs, pair in items.items()} for perc, items in self.per_cs_param.items()}
+        self.per_cs_param = {}
+        while layout.count():
+            widget = layout.takeAt(0).widget()
+            if widget is not None:
+                widget.deleteLater()
+
+        shortnames = {'alpha': 'α', 'alpha_mack': 'αᴹ', 'alpha_hall': 'αᴴ', 'salience': 'S'}
+        percs_enabled = self.enabled_params & set(shortnames.keys())
+        for x, perc in enumerate(sorted(percs_enabled)):
+            self.per_cs_param[perc] = {}
+            for y, cs in enumerate(css):
+                if perc in prev_labels and cs in prev_labels[perc]:
+                    text = prev_labels[perc][cs]
+                else:
+                    text = getattr(self, perc).box.text()
+
+                pair = self.DualLabel(f'{shortnames[perc]}<sub>{cs}</sub>', self).addItemToGrid(layout, y, x)
+                pair.box.setText(text)
+                self.per_cs_param[perc][cs] = pair
+
+        for y in range(len(css)):
+            layout.setRowStretch(y, 0)
+        layout.setRowStretch(len(css), 1)
+
+        perc_len = 90
+        self.alphasBox.setFixedWidth(perc_len * len(percs_enabled))
+        if self.alphasBox.isVisible():
+            self.resize(self.width() + perc_len * (len(self.per_cs_param) - len(prev_labels)), self.height())
 
     def restoreDefaultParameters(self):
         defaults = {
             'alpha': '0.1',
             'alpha_mack': '0.1',
             'alpha_hall': '0.1',
+            'salience': '0.5',
             'lamda': '1',
             'beta': '0.3',
             'betan': '0.2',
             'gamma': '0.5',
             'thetaE': '0.3',
             'thetaI': '0.1',
-            'salience': '0.5',
             'habituation': '0.99',
             'window_size': '10',
             'num_trials': '100'
@@ -540,11 +430,17 @@ class PavlovianApp(QDialog):
         f = cls.floatOr(text)
         return f or 0
 
+    def csPercDict(self, perc) -> dict[str, float]:
+        value = self.floatOrZero(getattr(self, perc).box.text())
+        if not self.alphasBox.isVisible() or perc not in self.per_cs_param:
+            return defaultdict(lambda: value)
+
+        return {cs: self.floatOr(pair.box.text(), value) for cs, pair in self.per_cs_param[perc].items()}
+
     def generateResults(self) -> tuple[list[dict[str, StimulusHistory]], dict[str, list[Phase]], RWArgs]:
         args = RWArgs(
             adaptive_type = self.current_adaptive_type,
 
-            alphas = defaultdict(lambda: self.floatOrZero(self.alpha.box.text())),
             alpha = self.floatOrZero(self.alpha.box.text()),
             alpha_mack = self.floatOr(self.alpha_mack.box.text()),
             alpha_hall = self.floatOr(self.alpha_hall.box.text()),
@@ -557,10 +453,11 @@ class PavlovianApp(QDialog):
             thetaI = self.floatOrZero(self.thetaI.box.text()),
 
             salience = self.floatOrZero(self.salience.box.text()),
-            saliences = defaultdict(lambda: self.floatOrZero(self.salience.box.text())),
 
-            alpha_macks = defaultdict(lambda: self.floatOr(self.alpha_mack.box.text())),
-            alpha_halls = defaultdict(lambda: self.floatOr(self.alpha_hall.box.text())),
+            alphas = self.csPercDict('alpha'),
+            alpha_macks = self.csPercDict('alpha_mack'),
+            alpha_halls = self.csPercDict('alpha_hall'),
+            saliences = self.csPercDict('salience'),
 
             habituation = self.floatOrZero(self.habituation.box.text()),
 
@@ -600,7 +497,11 @@ class PavlovianApp(QDialog):
 
         strengths, phases, args = self.generateResults()
         if len(phases) == 0:
+            self.refreshAlphasGroupBox({})
             return
+
+        css = sorted(set.union(*[phase.cs() for group in phases.values() for phase in group]))
+        self.refreshAlphasGroupBox(css)
 
         self.numPhases = max(len(v) for v in phases.values())
         self.phaseNum = min(self.phaseNum, self.numPhases)
@@ -627,11 +528,10 @@ class PavlovianApp(QDialog):
 
         self.plotCanvas.mpl_connect('pick_event', self.pickLine)
 
-        w, h = current_figure.get_size_inches()
         self.plotCanvas.draw()
         self.tableWidget.selectColumn(self.phaseNum - 1)
 
-        self.phaseInfo.setText(f'Phase {self.phaseNum}/{self.numPhases}')
+        self.phaseInfo.setText(f'{self.phaseNum}/{self.numPhases}')
 
         any_rand = any(p[self.phaseNum - 1].rand for p in self.phases.values())
         self.num_trials.box.setDisabled(not any_rand)

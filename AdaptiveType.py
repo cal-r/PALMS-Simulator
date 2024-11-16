@@ -82,7 +82,11 @@ class AdaptiveType:
 
     def run_step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
         self.delta_v_factor = beta * (lamda - sigma)
-        self.step(s, beta, lamda, sign, sigma, sigmaE, sigmaI)
+        try:
+            self.step(s, beta, lamda, sign, sigma, sigmaE, sigmaI)
+        except OverflowError:
+            print(f'{lamda=}\t{sigma=}')
+            raise
 
     def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
         raise NotImplementedError('Calling step in abstract function is undefined.')
