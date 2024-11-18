@@ -375,17 +375,18 @@ class PavlovianApp(QDialog):
             val = getattr(self, perc).box.text()
             layout = self.per_cs_box[perc].layout()
 
-            for cs in css:
-                if cs not in form:
-                    form[cs] = self.DualLabel(f'{shortnames[perc]}<sub>{cs}</sub>', self, val).addRow(layout)
-
             to_remove = []
             for e, (cs, pair) in enumerate(form.items()):
                 if cs not in css:
-                    to_remove.append(e)
+                    to_remove.append((e, cs))
 
-            for item in to_remove[::-1]:
-                layout.removeRow(item)
+            for (rowNum, cs) in to_remove[::-1]:
+                layout.removeRow(rowNum)
+                del form[cs]
+
+            for cs in sorted(css):
+                if cs not in form:
+                    form[cs] = self.DualLabel(f'{shortnames[perc]}<sub>{cs}</sub>', self, val).addRow(layout)
 
     def restoreDefaultParameters(self):
         defaults = AdaptiveType.first_defaults()
