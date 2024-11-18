@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import os
-import re
 import sys
 
 from argparse import ArgumentParser
@@ -20,28 +21,40 @@ from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib import pyplot
 
 class PavlovianApp(QDialog):
+    adaptive_types: list[str]
+    current_adaptive_type: str
+
+    figures: list[pyplot.Figure]
+    phases: dict[str, list[Phase]]
+    phaseNum: int
+    numPhases: int
+
+    per_cs_box: dict[str, QWidget]
+    per_cs_param: dict[str, dict[str, PavlovianApp.DualLabel]]
+    enabled_params: set[str]
+
+    hidden: bool
+    dpi: int
     def __init__(self, dpi = 200, parent=None):
         super(PavlovianApp, self).__init__(parent)
 
         self.adaptive_types = AdaptiveType.types().keys()
         self.current_adaptive_type = None
-        self.inset_text_column_index = None
 
-        self.phaseNum = 1
-        self.numPhases = 0
         self.figures = []
         self.phases = {}
+        self.phaseNum = 1
+        self.numPhases = 0
+
+        percs = ['alpha', 'alpha_mack', 'alpha_hall', 'salience']
+        self.per_cs_box = {}
+        self.per_cs_param = {x: {} for x in percs}
+        self.enabled_params = set()
+
         self.hidden = False
         self.dpi = dpi
 
-        percs = {'alpha', 'alpha_mack', 'alpha_hall', 'salience'}
-        self.per_cs_box = {}
-        self.per_cs_param = {x: {} for x in percs}
-
-        self.enabled_params = set()
-
         self.initUI()
-
         QTimer.singleShot(100, self.updateWidgets)
 
     def initUI(self):
