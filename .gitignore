@@ -163,3 +163,16 @@ Plots.zip
 *.aux
 *.fdb_latexmk
 *.fls
+
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.sed
+*.spl
+
+.jupyter/*
+Formulations/*
