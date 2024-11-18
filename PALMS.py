@@ -19,8 +19,6 @@ from CoolTable import CoolTable
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib import pyplot
 
-import ipdb
-
 class PavlovianApp(QDialog):
     def __init__(self, dpi = 200, parent=None):
         super(PavlovianApp, self).__init__(parent)
@@ -35,7 +33,11 @@ class PavlovianApp(QDialog):
         self.phases = {}
         self.hidden = False
         self.dpi = dpi
-        self.per_cs_param = {}
+
+        percs = {'alpha', 'alpha_mack', 'alpha_hall', 'salience'}
+        self.per_cs_box = {}
+        self.per_cs_param = {x: {} for x in percs}
+
         self.enabled_params = set()
 
         self.initUI()
@@ -49,12 +51,10 @@ class PavlovianApp(QDialog):
 
         self.addActionsButtons()
         self.createParametersGroupBox()
-        self.alphasBox = QGroupBox('CS Parameters')
-        self.alphasBox.setLayout(QGridLayout())
-        self.alphasBox.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding)
+        self.createAlphasBox()
 
         self.alphasBox.setVisible(False)
-        self.refreshAlphasGroupBox({})
+        self.refreshAlphasGroupBox(set())
         self.plotBox = QGroupBox('Plot')
 
         self.plotCanvas = FigureCanvasQTAgg()
@@ -105,7 +105,6 @@ class PavlovianApp(QDialog):
         self.setLayout(mainLayout)
 
         self.setWindowTitle("PALMS Simulator")
-        self.restoreDefaultParameters()
 
         self.adaptiveTypeButtons.children()[1].click()
 
@@ -180,13 +179,13 @@ class PavlovianApp(QDialog):
         self.phaseLambdaButton.setCheckable(True)
         self.phaseLambdaButton.setStyleSheet(checkedStyle)
 
-        self.setDefaultParamsButton = QPushButton("Restore Default Parameters")
-        self.setDefaultParamsButton.clicked.connect(self.restoreDefaultParameters)
-
-        self.toggleAlphasButton = QPushButton('Toggle Alphas Box')
+        self.toggleAlphasButton = QPushButton('Per-CS Parameters')
         self.toggleAlphasButton.clicked.connect(self.toggleAlphasBox)
         self.toggleAlphasButton.setCheckable(True)
         self.toggleAlphasButton.setStyleSheet(checkedStyle)
+
+        self.setDefaultParamsButton = QPushButton("Restore Default Parameters")
+        self.setDefaultParamsButton.clicked.connect(self.restoreDefaultParameters)
 
         self.refreshButton = QPushButton("Refresh")
         self.refreshButton.clicked.connect(self.refreshExperiment)
@@ -200,6 +199,7 @@ class PavlovianApp(QDialog):
         phaseOptionsLayout = QVBoxLayout()
         phaseOptionsLayout.addWidget(self.toggleRandButton)
         phaseOptionsLayout.addWidget(self.phaseLambdaButton)
+        phaseOptionsLayout.addWidget(self.toggleAlphasButton)
         self.phaseOptionsGroupBox.setLayout(phaseOptionsLayout)
 
         plotOptionsLayout = QVBoxLayout()
@@ -207,7 +207,6 @@ class PavlovianApp(QDialog):
         plotOptionsLayout.addWidget(self.refreshButton)
         plotOptionsLayout.addWidget(self.printButton)
         plotOptionsLayout.addWidget(self.hideButton)
-        plotOptionsLayout.addWidget(self.toggleAlphasButton)
 
         self.plotOptionsGroupBox.setLayout(plotOptionsLayout)
 
@@ -245,21 +244,6 @@ class PavlovianApp(QDialog):
 
         self.refreshExperiment()
 
-    def toggleAlphasBox(self):
-        visible = self.alphasBox.isVisible()
-        if not visible:
-            self.resize(self.width() + self.alphasBox.width(), self.height())
-
-            for perc, boxes in self.per_cs_param.items():
-                mainBox = getattr(self, perc).box
-                mainBox.setDisabled(True)
-                for cs, pair in boxes.items():
-                    pair.box.setText(mainBox.text())
-        else:
-            self.resize(self.width() - self.alphasBox.width(), self.height())
-
-        self.alphasBox.setVisible(not visible)
-
     def saveExperiment(self):
         default_directory = os.path.join(os.getcwd(), 'Experiments')
         os.makedirs(default_directory, exist_ok = True)
@@ -293,15 +277,7 @@ class PavlovianApp(QDialog):
     def changeAdaptiveType(self, button):
         self.current_adaptive_type = button.adaptive_type
         self.enabled_params = set(AdaptiveType.types()[self.current_adaptive_type].parameters())
-
-        for key in AdaptiveType.parameters():
-            widget = getattr(self, f'{key}').box
-            widget.setDisabled(True)
-
-        for key in self.enabled_params:
-            if not self.alphasBox.isVisible() or key not in self.per_cs_param:
-                widget = getattr(self, f'{key}').box
-                widget.setDisabled(False)
+        self.enableParams()
 
         for key, default in AdaptiveType.types()[self.current_adaptive_type].defaults().items():
             getattr(self, key).box.setText(str(default))
@@ -312,109 +288,110 @@ class PavlovianApp(QDialog):
         self.refreshExperiment()
 
     class DualLabel:
-        def __init__(self, text, parent, font = 'Monospace'):
+        def __init__(self, text, parent, default, font = 'Monospace'):
             self.label = QLabel(text)
             self.label.setAlignment(Qt.AlignmentFlag.AlignRight)
-            self.box = QLineEdit()
+            self.box = QLineEdit(default)
             self.box.setMaximumWidth(40)
             self.box.returnPressed.connect(parent.refreshExperiment)
-
-            if font is not None:
-                self.label.setFont(QFont(font))
+            self.label.setFont(QFont(font))
 
         def addRow(self, layout):
             layout.addRow(self.label, self.box)
-            return self
-
-        def addItemToGrid(self, layout, y, x):
-            formLayout = QFormLayout()
-            formLayout.addRow(self.label, self.box)
-            formLayout.setContentsMargins(0, 7, 0, 0)
-
-            wrapper = QWidget()
-            wrapper.setLayout(formLayout)
-
-            layout.addWidget(wrapper, y, x, alignment = Qt.AlignmentFlag.AlignTop)
             return self
 
     def createParametersGroupBox(self):
         self.parametersGroupBox = QGroupBox("Parameters")
         self.parametersGroupBox.setMaximumWidth(90)
 
+        short_names = dict(
+            alpha = "α ",
+            alpha_mack = "αᴹ",
+            alpha_hall = "αᴴ",
+            salience = "S ",
+            lamda = "λ ",
+            beta = "β⁺",
+            betan = "β⁻",
+            gamma = "γ ",
+            thetaE = "θᴱ",
+            thetaI = "θᴵ",
+            habituation = "h ",
+            window_size = "WS",
+            num_trials = "№ ",
+        )
         params = QFormLayout()
-        self.alpha = self.DualLabel("α ", self).addRow(params)
-        self.alpha_mack = self.DualLabel("αᴹ", self).addRow(params)
-        self.alpha_hall = self.DualLabel("αᴴ", self).addRow(params)
-        self.salience = self.DualLabel("S ", self).addRow(params)
-        self.lamda = self.DualLabel("λ ", self).addRow(params)
-        self.beta = self.DualLabel("β⁺", self).addRow(params)
-        self.betan = self.DualLabel("β⁻", self).addRow(params)
-        self.gamma = self.DualLabel("γ ", self).addRow(params)
-        self.thetaE = self.DualLabel("θᴱ", self).addRow(params)
-        self.thetaI = self.DualLabel("θᴵ", self).addRow(params)
-        self.habituation = self.DualLabel('h ', self).addRow(params)
-        self.window_size = self.DualLabel("WS", self).addRow(params)
-        self.num_trials = self.DualLabel("№ ", self).addRow(params)
+        for key, val in AdaptiveType.first_defaults().items():
+            label = self.DualLabel(short_names[key], self, str(val)).addRow(params)
+            setattr(self, key, label)
         self.num_trials.box.setDisabled(True)
 
         params.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
         self.parametersGroupBox.setLayout(params)
 
-    def refreshAlphasGroupBox(self, css: list[str]):
-        layout = self.alphasBox.layout()
-        layout.setSpacing(0)
-        layout.setContentsMargins(10, 0, 10, 0)
+    def createAlphasBox(self):
+        layout = QHBoxLayout()
+        for perc in self.per_cs_param.keys():
+            boxLayout = QFormLayout()
+            boxLayout.setContentsMargins(0, 0, 0, 0)
+            boxLayout.setSpacing(5)
 
-        prev_labels = {perc: {cs: pair.box.text() for cs, pair in items.items()} for perc, items in self.per_cs_param.items()}
-        self.per_cs_param = {}
-        while layout.count():
-            widget = layout.takeAt(0).widget()
-            if widget is not None:
-                widget.deleteLater()
+            self.per_cs_box[perc] = QWidget()
+            self.per_cs_box[perc].setLayout(boxLayout)
+            layout.addWidget(self.per_cs_box[perc])
 
+        self.alphasBox = QGroupBox('Per-CS')
+        self.alphasBox.setLayout(layout)
+
+    def toggleAlphasBox(self):
+        if not self.alphasBox.isVisible():
+            self.alphasBox.setVisible(True)
+
+            for perc, form in self.per_cs_param.items():
+                for cs, pair in form.items():
+                    pair.box.setText(getattr(self, perc).box.text())
+        else:
+            self.alphasBox.setVisible(False)
+
+        self.enableParams()
+
+    def enableParams(self):
+        for key in AdaptiveType.parameters():
+            widget = getattr(self, f'{key}').box
+            widget.setDisabled(True)
+
+            if key in self.per_cs_box:
+                self.per_cs_box[key].setVisible(False)
+
+        for key in self.enabled_params:
+            if not self.alphasBox.isVisible() or key not in self.per_cs_param:
+                widget = getattr(self, f'{key}').box
+                widget.setDisabled(False)
+            else:
+                self.per_cs_box[key].setVisible(True)
+
+    def refreshAlphasGroupBox(self, css: set[str]):
         shortnames = {'alpha': 'α', 'alpha_mack': 'αᴹ', 'alpha_hall': 'αᴴ', 'salience': 'S'}
-        percs_enabled = self.enabled_params & set(shortnames.keys())
-        for x, perc in enumerate(sorted(percs_enabled)):
-            self.per_cs_param[perc] = {}
-            for y, cs in enumerate(css):
-                if perc in prev_labels and cs in prev_labels[perc]:
-                    text = prev_labels[perc][cs]
-                else:
-                    text = getattr(self, perc).box.text()
+        for perc, form in self.per_cs_param.items():
+            val = getattr(self, perc).box.text()
+            layout = self.per_cs_box[perc].layout()
 
-                pair = self.DualLabel(f'{shortnames[perc]}<sub>{cs}</sub>', self).addItemToGrid(layout, y, x)
-                pair.box.setText(text)
-                self.per_cs_param[perc][cs] = pair
+            for cs in css:
+                if cs not in form:
+                    form[cs] = self.DualLabel(f'{shortnames[perc]}<sub>{cs}</sub>', self, val).addRow(layout)
 
-        for y in range(len(css)):
-            layout.setRowStretch(y, 0)
-        layout.setRowStretch(len(css), 1)
+            to_remove = []
+            for e, (cs, pair) in enumerate(form.items()):
+                if cs not in css:
+                    to_remove.append(e)
 
-        perc_len = 90
-        self.alphasBox.setFixedWidth(perc_len * len(percs_enabled))
-        if self.alphasBox.isVisible():
-            self.resize(self.width() + perc_len * (len(self.per_cs_param) - len(prev_labels)), self.height())
+            for item in to_remove[::-1]:
+                layout.removeRow(item)
 
     def restoreDefaultParameters(self):
-        defaults = {
-            'alpha': '0.1',
-            'alpha_mack': '0.1',
-            'alpha_hall': '0.1',
-            'salience': '0.5',
-            'lamda': '1',
-            'beta': '0.3',
-            'betan': '0.2',
-            'gamma': '0.5',
-            'thetaE': '0.3',
-            'thetaI': '0.1',
-            'habituation': '0.99',
-            'window_size': '10',
-            'num_trials': '100'
-        }
-
+        defaults = AdaptiveType.first_defaults()
         for key, value in defaults.items():
             widget = getattr(self, f'{key}').box
-            widget.setText(value)
+            widget.setText(str(value))
 
     # Convenience function: convert a string to a float, or return a default.
     @classmethod
@@ -497,10 +474,10 @@ class PavlovianApp(QDialog):
 
         strengths, phases, args = self.generateResults()
         if len(phases) == 0:
-            self.refreshAlphasGroupBox({})
+            self.refreshAlphasGroupBox(set())
             return
 
-        css = sorted(set.union(*[phase.cs() for group in phases.values() for phase in group]))
+        css = set.union(*[phase.cs() for group in phases.values() for phase in group])
         self.refreshAlphasGroupBox(css)
 
         self.numPhases = max(len(v) for v in phases.values())

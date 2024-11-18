@@ -60,6 +60,24 @@ class AdaptiveType:
         return 'alpha_mack' in cls.parameters() and 'alpha_hall' in cls.parameters()
 
     @classmethod
+    def first_defaults(cls) -> dict[str, float]:
+        return dict(
+            alpha = 0.1,
+            alpha_mack = 0.1,
+            alpha_hall = 0.1,
+            salience = 0.5,
+            lamda = 1,
+            beta = 0.3,
+            betan = 0.2,
+            gamma = 0.5,
+            thetaE = 0.3,
+            thetaI = 0.1,
+            habituation = 0.99,
+            window_size = 10,
+            num_trials = 100,
+        )
+
+    @classmethod
     def defaults(cls) -> dict[str, float]:
         return {}
 
