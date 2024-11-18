@@ -364,6 +364,7 @@ class PavlovianApp(QDialog):
                     pair.box.setText(getattr(self, perc).box.text())
         else:
             self.alphasBox.setVisible(False)
+            self.refreshExperiment()
 
         self.enableParams()
 
