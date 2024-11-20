@@ -100,3 +100,38 @@ jobs:
         files: release_*
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  upload:
+    name: Upload to Google Drive
+    runs-or: ubuntu-latest
+    needs: build
+
+    steps:
+    - name: Checkout code
+      users: actions/checkout@v4
+
+    - name: Download Linux Artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: ubuntu-latest-release
+        path: release/
+
+    - name: Download Windows Artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: windows-latest-release
+        path: release/
+
+    - name: Download MacOS Artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: macos-latest-release
+        path: release/
+
+    - name: Upload to Google Drive
+      uses: adityak74/google-drive-upload-git-action@main
+      with:
+        credentials: ${{ secrets.GDRIVE_CREDENTIALS }}
+        filename: "release/*"
+        folderId: "1QjG6dqdkbLWsDiG5VYiDQLlOj_v-N6ia"
+        overwrite: "true"
