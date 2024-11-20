@@ -128,15 +128,15 @@ jobs:
         name: macos-latest-release
         path: release/
 
-    - name: Compress code files
+    - name: Compress and upload the code to release
       run: |
         tar -czf release/PALMS.tar.gz *.py LICENSE README.md NOTICE requirements.txt
 
     - name: Add licence and readme to release
       run: |
-        cp LICENSE README.txt NOTICE release/
+        cp LICENSE README.md NOTICE release/
 
-    - name: Upload to Google Drive
+    - name: Upload release to Google Drive
       uses: adityak74/google-drive-upload-git-action@main
       with:
         credentials: ${{ secrets.GDRIVE_CREDENTIALS }}
