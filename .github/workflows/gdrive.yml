@@ -19,21 +19,21 @@ jobs:
     - name: Download Linux Artifacts
       uses: actions/download-artifact@v3
       with:
-        name: release_linux.tar.gz
+        name: release_linux
         path: release/
       continue-on-error: false
 
-    - name: Download Artifacts
+    - name: Download Windows Artifacts
       uses: actions/download-artifact@v3
       with:
-        name: release_windows.tar.gz
+        name: release_windows
         path: release/
       continue-on-error: false
 
     - name: Download MacOS Artifacts
       uses: actions/download-artifact@v3
       with:
-        name: release_macos.tar.gz
+        name: release_macos
         path: release/
       continue-on-error: false
 
