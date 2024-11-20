@@ -130,11 +130,11 @@ jobs:
 
     - name: Compress code files
       run: |
-        tar -czf release/PALMS.tar.gz *.py LICENSE README.md requirements.txt
+        tar -czf release/PALMS.tar.gz *.py LICENSE README.md NOTICE requirements.txt
 
     - name: Add licence and readme to release
       run: |
-        cp LICENSE README.txt release/
+        cp LICENSE README.txt NOTICE release/
 
     - name: Upload to Google Drive
       uses: adityak74/google-drive-upload-git-action@main
