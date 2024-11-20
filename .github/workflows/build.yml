@@ -131,7 +131,7 @@ jobs:
     - name: Compress and upload the code to release
       run: |
         mkdir release/PALMS
-        cp -r *.py LICENSE README.md NOTICE requirement.txt release/PALMS
+        cp -r *.py LICENSE README.md NOTICE requirements.txt release/PALMS
         tar -czf release/PALMS.tar.gz *.py LICENSE README.md NOTICE requirements.txt
 
     - name: Add licence and readme to release
