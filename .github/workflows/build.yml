@@ -130,18 +130,29 @@ jobs:
 
     - name: Compress and upload the code to release
       run: |
-        mkdir release/PALMS
-        cp -r *.py LICENSE README.md NOTICE requirements.txt release/PALMS
         tar -czf release/PALMS.tar.gz *.py LICENSE README.md NOTICE requirements.txt
+
+    - name: Move the source to their own release
+      run: |
+        mkdir src/
+        cp -r *.py LICENSE README.md NOTICE requirements.txt src/
 
     - name: Add licence and readme to release
       run: |
         cp LICENSE README.md NOTICE release/
 
-    - name: Upload release to Google Drive
+    - name: Upload compressed release to Google Drive
       uses: adityak74/google-drive-upload-git-action@main
       with:
         credentials: ${{ secrets.GDRIVE_CREDENTIALS }}
         filename: "release/*"
         folderId: "1QjG6dqdkbLWsDiG5VYiDQLlOj_v-N6ia"
+        overwrite: "true"
+
+    - name: Upload uncompressed release to Google Drive
+      uses: adityak74/google-drive-upload-git-action@main
+      with:
+        credentials: ${{ secrets.GDRIVE_CREDENTIALS }}
+        filename: "src/*"
+        folderId: "1iKHk-qoPL-LnKDJsgHDRbxpnRMdQ4UT_"
         overwrite: "true"
