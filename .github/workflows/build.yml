@@ -108,7 +108,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      users: actions/checkout@v4
+      uses: actions/checkout@v4
 
     - name: Download Linux Artifacts
       uses: actions/download-artifact@v3
