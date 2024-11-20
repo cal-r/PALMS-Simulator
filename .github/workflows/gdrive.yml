@@ -1,0 +1,46 @@
+name: Upload Artifacts to Google Drive
+
+on:
+  workflow_run:
+    workflows:
+      - Build Executables
+    types:
+      - completed
+
+jobs:
+  upload:
+    name: Upload to Google Drive
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download Linux Artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: release_linux.tar.gz
+        path: release/
+      continue-on-error: false
+
+    - name: Download Artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: release_windows.tar.gz
+        path: release/
+      continue-on-error: false
+
+    - name: Download MacOS Artifacts
+      uses: actions/download-artifact@v3
+      with:
+        name: release_macos.tar.gz
+        path: release/
+      continue-on-error: false
+
+    - name: Upload to Google Drive
+      uses: adityak74/google-drive-upload-git-action@main
+      with:
+        credentials: ${{ secrets.GDRIVE_CREDENTIALS }}
+        filename: "release/*"
+        folderId: "1QjG6dqdkbLWsDiG5VYiDQLlOj_v-N6ia"
+        overwrite: "true"
