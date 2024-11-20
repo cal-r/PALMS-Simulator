@@ -100,3 +100,11 @@ jobs:
         files: release_*
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload to Google Drive
+      uses: adityak74/google-drive-upload-git-action@main
+      with:
+        credentials: ${{ secrets.GDRIVE_CREDENTIALS }}
+        filename: "release_*"
+        folderId: "1QjG6dqdkbLWsDiG5VYiDQLlOj_v-N6ia"
+        overwrite: "true"
