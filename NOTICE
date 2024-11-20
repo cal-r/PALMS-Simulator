@@ -18,6 +18,8 @@ Any publication using this project must contain the following citation in the te
 ```
 
 Redistribution Requirement:
-Any release of this project or its modifications must include the LICENSE file containing tthe contents of the GNU Lesser General Public License (LGPL) along with this NOTICE file.
+Any release of this project or its modifications must include the LICENSE file containing the contents of the GNU Lesser General Public License (LGPL) along with this NOTICE file.
+
+Authors must be notified of any modifications and releases of this system.
 
 Any modifications or uses of the simulator, the adaptive type formulas, or any other code in this repository must be released and licensed under the LGPL. It can however be bundled with non LGPL'd code.
