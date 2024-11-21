@@ -131,6 +131,7 @@ jobs:
     - name: Compress and upload the code to release
       run: |
         tar -czf release/PALMS.tar.gz *.py LICENSE README.md NOTICE requirements.txt
+        cp LICENSE README.md NOTICE release/
 
     - name: Move the source to their own release
       run: |
