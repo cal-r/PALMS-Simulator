@@ -78,6 +78,9 @@ class RWArgs:
 
     habituation: float
 
+    rho: float
+    nu: float
+
     plot_phase: None | int = None
     plot_experiments: None | list[str] = None
     plot_stimuli: None | list[str] = None
@@ -115,6 +118,8 @@ class Experiment:
             saliences = args.saliences,
             default_salience = args.salience,
             habituation = args.habituation,
+            rho = args.rho,
+            nu = args.nu,
             betan = args.beta_neg,
             betap = args.beta,
             lamda = args.lamda,

@@ -332,6 +332,8 @@ class PavlovianApp(QDialog):
             thetaE = "θᴱ",
             thetaI = "θᴵ",
             habituation = "h ",
+            rho = "r",
+            nu = "ν",
             window_size = "WS",
             num_trials = "№ ",
         )
@@ -472,6 +474,10 @@ class PavlovianApp(QDialog):
             saliences = self.csPercDict('salience'),
 
             habituation = self.floatOrZero(self.habituation.box.text()),
+            rho = self.floatOrZero(self.rho.box.text()),
+            nu = self.floatOrZero(self.nu.box.text()),
+
+
 
             window_size = int(self.window_size.box.text()),
             num_trials = int(self.num_trials.box.text()),

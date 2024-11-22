@@ -16,6 +16,9 @@ class Stimulus:
     salience: float
     habituation: float
 
+    rho: float
+    nu: float
+
     window: deque[float]
     delta_ma_hall: float
 
@@ -24,7 +27,7 @@ class Stimulus:
     salience_0: float
     habituation_0: float
 
-    def __init__(self, *, assoc = 0., Ve = 0., Vi = 0., alpha = .5, alpha_mack = None, alpha_hall = None, delta_ma_hall = .2, window = None, salience = None, habituation = None, alpha_mack_0 = None, alpha_hall_0 = None, salience_0 = None, habituation_0 = None):
+    def __init__(self, *, assoc = 0., Ve = 0., Vi = 0., alpha = .5, alpha_mack = None, alpha_hall = None, delta_ma_hall = .2, window = None, salience = None, habituation = None, rho = None, nu = None, alpha_mack_0 = None, alpha_hall_0 = None, salience_0 = None, habituation_0 = None):
         self.assoc = assoc
 
         self.Ve = Ve
@@ -36,6 +39,9 @@ class Stimulus:
 
         self.salience = salience
         self.habituation = habituation
+
+        self.rho = rho
+        self.nu = nu
 
         self.alpha_mack_0 = alpha_mack_0 or self.alpha_mack
         self.alpha_hall_0 = alpha_hall_0 or self.alpha_hall

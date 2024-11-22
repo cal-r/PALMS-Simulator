@@ -22,6 +22,8 @@ class Group:
         saliences: dict[str, float],
         default_salience: float,
         habituation: float,
+        rho: float,
+        nu: float,
         betan: float,
         betap: float,
         lamda: float,
@@ -44,7 +46,7 @@ class Group:
 
         self.s = Environment(
             s = {
-                k: Stimulus(assoc = 0, alpha = alphas[k], salience = saliences[k], alpha_mack = alpha_macks[k], alpha_hall = alpha_halls[k], habituation = habituation)
+                k: Stimulus(assoc = 0, alpha = alphas[k], salience = saliences[k], alpha_mack = alpha_macks[k], alpha_hall = alpha_halls[k], habituation = habituation, rho = rho, nu = nu)
                 for k in cs
             }
         )
@@ -71,6 +73,7 @@ class Group:
 
             compounds = set(part)
 
+            count = len(compounds)
             sigma = sum(self.s[x].assoc for x in compounds)
             sigmaE = sum(self.s[x].Ve for x in compounds)
             sigmaI = sum(self.s[x].Vi for x in compounds)
@@ -79,7 +82,7 @@ class Group:
                 if cs not in hist:
                     hist[cs].add(self.s[cs])
 
-                self.adaptive_type.run_step(self.s[cs], beta, lamda, sign, sigma, sigmaE, sigmaI)
+                self.adaptive_type.run_step(self.s[cs], beta, lamda, sign, sigma, sigmaE, sigmaI, count)
 
                 if self.window_size is not None:
                     if len(self.s[cs].window) >= self.window_size:
