@@ -1,5 +1,5 @@
 from Environment import Environment, StimulusHistory, Stimulus
-from AdaptiveType import AdaptiveType
+from AdaptiveType import AdaptiveType, RunParameters
 
 class Group:
     name: str
@@ -82,7 +82,8 @@ class Group:
                 if cs not in hist:
                     hist[cs].add(self.s[cs])
 
-                self.adaptive_type.run_step(self.s[cs], beta, lamda, sign, sigma, sigmaE, sigmaI, count)
+                rp = RunParameters(beta = beta, lamda = lamda, sign = sign, sigma = sigma, sigmaE = sigmaE, sigmaI = sigmaI, count = count)
+                self.adaptive_type.run_step(self.s[cs], rp)
 
                 if self.window_size is not None:
                     if len(self.s[cs].window) >= self.window_size:

@@ -1,9 +1,20 @@
 from __future__ import annotations
+from dataclasses import dataclass
 
 import math
 from typing import Type
 
 from Environment import Stimulus
+
+@dataclass(kw_only = True, frozen = True)
+class RunParameters:
+    beta: float
+    lamda: float
+    sign: int
+    sigma: float
+    sigmaE: float
+    sigmaI: float
+    count: float
 
 class AdaptiveType:
     betan: float
@@ -104,15 +115,15 @@ class AdaptiveType:
 
         return new_error
 
-    def run_step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float, count: float):
-        self.delta_v_factor = beta * (lamda - sigma)
+    def run_step(self, s: Stimulus, rp: RunParameters):
+        self.delta_v_factor = rp.beta * (rp.lamda - rp.sigma)
         try:
-            self.step(s = s, beta = beta, lamda = lamda, sign = sign, sigma = sigma, sigmaE = sigmaE, sigmaI = sigmaI, count =  count)
+            self.step(s, rp)
         except OverflowError:
-            print(f'{lamda=}\t{sigma=}')
+            print(f'{rp.lamda=}\t{rp.sigma=}')
             raise
 
-    def step(self, *, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
+    def step(self, s: Stimulus, rp: RunParameters):
         raise NotImplementedError('Calling step in abstract function is undefined.')
 
 class RescorlaWagner(AdaptiveType):
@@ -120,7 +131,7 @@ class RescorlaWagner(AdaptiveType):
     def parameters(cls) -> list[str]:
         return ['alpha', 'beta', 'betan', 'lamda']
 
-    def step(self, *, s: Stimulus, **kwargs):
+    def step(self, s: Stimulus, rp: RunParameters):
         s.assoc += s.alpha * self.delta_v_factor
 
 class RescorlaWagnerLinear(AdaptiveType):
@@ -128,8 +139,8 @@ class RescorlaWagnerLinear(AdaptiveType):
     def parameters(cls) -> list[str]:
         return ['alpha', 'beta', 'betan', 'lamda']
 
-    def step(self, *, s: Stimulus,sign: int, **kwargs):
-        s.alpha *= 1 + sign * 0.05
+    def step(self, s: Stimulus, rp: RunParameters):
+        s.alpha *= 1 + rp.sign * 0.05
         s.alpha = min(max(s.alpha, 0.05), 1)
         s.assoc += s.alpha * self.delta_v_factor
 
@@ -138,20 +149,20 @@ class PearceHall(AdaptiveType):
     def parameters(cls) -> list[str]:
         return ['alpha', 'lamda', 'sigma', 'salience']
 
-    def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
-        s.alpha = abs(lamda - sigma)
-        s.assoc += s.salience * s.alpha * abs(lamda)
+    def step(self, s: Stimulus, rp: RunParameters):
+        s.alpha = abs(rp.lamda - rp.sigma)
+        s.assoc += s.salience * s.alpha * abs(rp.lamda)
 
 class PearceKayeHall(AdaptiveType):
     @classmethod
     def parameters(cls) -> list[str]:
         return ['alpha', 'beta', 'betan', 'lamda', 'gamma']
 
-    def step(self, *, s: Stimulus, lamda: float, sigmaE: float, sigmaI: float, **kwargs):
-        rho = lamda - (sigmaE - sigmaI)
+    def step(self, s: Stimulus, rp: RunParameters):
+        rho = rp.lamda - (rp.sigmaE - rp.sigmaI)
 
         if rho >= 0:
-            s.Ve += self.betap * s.alpha * lamda
+            s.Ve += self.betap * s.alpha * rp.lamda
         else:
             s.Vi += self.betan * s.alpha * abs(rho)
 
@@ -163,11 +174,11 @@ class LePelley(AdaptiveType):
     def parameters(cls) -> list[str]:
         return ['alpha', 'beta', 'betan', 'lamda', 'thetaE', 'thetaI']
 
-    def step(self, *, s: Stimulus, lamda: float, sigmaE: float, sigmaI: float, **kwargs):
-        rho = lamda - (sigmaE - sigmaI)
+    def step(self, s: Stimulus, rp: RunParameters):
+        rho = rp.lamda - (rp.sigmaE - rp.sigmaI)
 
-        VXe = sigmaE - s.Ve
-        VXi = sigmaI - s.Vi
+        VXe = rp.sigmaE - s.Ve
+        VXi = rp.sigmaI - s.Vi
 
         DVe = 0.
         DVi = 0.
@@ -175,7 +186,7 @@ class LePelley(AdaptiveType):
             DVe = s.alpha * self.betap * (1 - s.Ve + s.Vi) * abs(rho)
 
             if rho > 0:
-                s.alpha += -self.thetaE * (abs(lamda - s.Ve + s.Vi) - abs(lamda - VXe + VXi))
+                s.alpha += -self.thetaE * (abs(rp.lamda - s.Ve + s.Vi) - abs(rp.lamda - VXe + VXi))
         else:
             DVi = s.alpha * self.betan * (1 - s.Vi + s.Ve) * abs(rho)
             s.alpha += -self.thetaI * (abs(abs(rho) - s.Vi + s.Ve) - abs(abs(rho) - VXi + VXe))
@@ -198,11 +209,11 @@ class LePelleyHybrid(AdaptiveType):
             alpha_hall = .9,
         )
 
-    def step(self, *, s: Stimulus, lamda: float, sigmaE: float, sigmaI: float, **kwargs):
-        rho = lamda - (sigmaE - sigmaI)
+    def step(self, s: Stimulus, rp: RunParameters):
+        rho = rp.lamda - (rp.sigmaE - rp.sigmaI)
 
-        VXe = sigmaE - s.Ve
-        VXi = sigmaI - s.Vi
+        VXe = rp.sigmaE - s.Ve
+        VXi = rp.sigmaI - s.Vi
 
         DVe = 0.
         DVi = 0.
@@ -210,7 +221,7 @@ class LePelleyHybrid(AdaptiveType):
             DVe = s.alpha_mack * self.betap * s.alpha_hall * (1 - s.Ve + s.Vi) * abs(rho)
 
             if rho > 0:
-                s.alpha_mack += -self.thetaE * s.alpha_hall * (abs(lamda - s.Ve + s.Vi) - abs(lamda - VXe + VXi))
+                s.alpha_mack += -self.thetaE * s.alpha_hall * (abs(rp.lamda - s.Ve + s.Vi) - abs(rp.lamda - VXe + VXi))
         else:
             DVi = s.alpha_mack * self.betan * s.alpha_hall * (1 - s.Vi + s.Ve) * abs(rho)
             s.alpha_mack += -self.thetaI * (abs(abs(rho) - s.Vi + s.Ve) - abs(abs(rho) - VXi + VXe))
@@ -228,9 +239,9 @@ class RescorlaWagnerExponential(AdaptiveType):
     def parameters(cls) -> list[str]:
         return ['alpha', 'beta', 'betan', 'lamda']
 
-    def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
-        if sign == 1:
-            s.alpha *= (s.alpha ** 0.05) ** sign
+    def step(self, s: Stimulus, rp: RunParameters):
+        if rp.sign == 1:
+            s.alpha *= (s.alpha ** 0.05) ** rp.sign
         s.assoc += s.alpha * self.delta_v_factor
 
 class Mack(AdaptiveType):
@@ -238,31 +249,31 @@ class Mack(AdaptiveType):
     def parameters(cls) -> list[str]:
         return ['alpha', 'beta', 'betan', 'lamda']
 
-    def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
-        s.alpha_mack = self.get_alpha_mack(s, sigma)
+    def step(self, s: Stimulus, rp: RunParameters):
+        s.alpha_mack = self.get_alpha_mack(s, rp.sigma)
         s.alpha = s.alpha_mack
-        s.assoc = s.assoc * self.delta_v_factor + self.delta_v_factor/2*beta
+        s.assoc = s.assoc * self.delta_v_factor + self.delta_v_factor/2*rp.beta
 
 class Hall(AdaptiveType):
     @classmethod
     def parameters(cls) -> list[str]:
         return ['alpha', 'beta', 'betan', 'lamda']
 
-    def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
-        s.alpha_hall = self.get_alpha_hall(s, sigma, lamda)
+    def step(self, s: Stimulus, rp: RunParameters):
+        s.alpha_hall = self.get_alpha_hall(s, rp.sigma, rp.lamda)
         s.alpha = s.alpha_hall
-        self.delta_v_factor = 0.5 * abs(lamda)
-        s.assoc += s.alpha * beta * (lamda - sigma)
+        self.delta_v_factor = 0.5 * abs(rp.lamda)
+        s.assoc += s.alpha * rp.beta * (rp.lamda - rp.sigma)
 
 class Macknhall(AdaptiveType):
     @classmethod
     def parameters(cls) -> list[str]:
         return ['alpha', 'beta', 'betan', 'lamda']
 
-    def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
-        s.alpha_mack = self.get_alpha_mack(s, sigma)
-        s.alpha_hall = self.get_alpha_hall(s, sigma, lamda)
-        s.alpha = (1 - abs(lamda - sigma)) * s.alpha_mack + s.alpha_hall
+    def step(self, s: Stimulus, rp: RunParameters):
+        s.alpha_mack = self.get_alpha_mack(s, rp.sigma)
+        s.alpha_hall = self.get_alpha_hall(s, rp.sigma, rp.lamda)
+        s.alpha = (1 - abs(rp.lamda - rp.sigma)) * s.alpha_mack + s.alpha_hall
         s.assoc += s.alpha * self.delta_v_factor
 
 class NewDualV(AdaptiveType):
@@ -270,14 +281,14 @@ class NewDualV(AdaptiveType):
     def parameters(cls) -> list[str]:
         return ['alpha', 'beta', 'betan', 'lamda']
 
-    def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
-        rho = lamda - (sigmaE - sigmaI)
+    def step(self, s: Stimulus, rp: RunParameters):
+        rho = rp.lamda - (rp.sigmaE - rp.sigmaI)
 
         delta_ma_hall = s.delta_ma_hall or 0
         self.gamma = 1 - math.exp(-delta_ma_hall**2)
 
         if rho >= 0:
-            s.Ve += self.betap * s.alpha * lamda
+            s.Ve += self.betap * s.alpha * rp.lamda
         else:
             s.Vi += self.betan * s.alpha * abs(rho)
 
@@ -289,11 +300,11 @@ class Dualmack(AdaptiveType):
     def parameters(cls) -> list[str]:
         return ['alpha', 'beta', 'betan', 'lamda']
 
-    def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
-        rho = lamda - (sigmaE - sigmaI)
+    def step(self, s: Stimulus, rp: RunParameters):
+        rho = rp.lamda - (rp.sigmaE - rp.sigmaI)
 
-        VXe = sigmaE - s.Ve
-        VXi = sigmaI - s.Vi
+        VXe = rp.sigmaE - s.Ve
+        VXi = rp.sigmaI - s.Vi
 
         if rho >= 0:
             s.Ve += s.alpha * self.betap * (1 - s.Ve + s.Vi) * abs(rho)
@@ -308,8 +319,8 @@ class OldHybrid(AdaptiveType):
     def parameters(cls) -> list[str]:
         return ['alpha', 'beta', 'betan', 'lamda', 'alpha_mack', 'alpha_hall', 'thetaE', 'thetaI', 'gamma']
 
-    def step(self, s: Stimulus, beta: float, lamda: float, sign: int, sigma: float, sigmaE: float, sigmaI: float):
-        rho = lamda - (sigmaE - sigmaI)
+    def step(self, s: Stimulus, rp: RunParameters):
+        rho = rp.lamda - (rp.sigmaE - rp.sigmaI)
 
         NVe = 0.
         NVi = 0.
@@ -322,10 +333,10 @@ class OldHybrid(AdaptiveType):
             DvI = s.alpha_hall * self.betan * (1 - s.Vi + s.Ve) * abs(rho)
             NVi = s.Vi + DvI
 
-        VXe = sigmaE - s.Ve
-        VXi = sigmaI - s.Vi
+        VXe = rp.sigmaE - s.Ve
+        VXi = rp.sigmaI - s.Vi
         if rho > 0:
-            s.alpha_mack += -self.thetaE * (abs(lamda - s.Ve + s.Vi) - abs(lamda - VXe + VXi))
+            s.alpha_mack += -self.thetaE * (abs(rp.lamda - s.Ve + s.Vi) - abs(rp.lamda - VXe + VXi))
         elif rho < 0:
             s.alpha_mack += -self.thetaI * (abs(abs(rho) - s.Vi + s.Ve) - abs(abs(rho) - VXi + VXe))
 
@@ -352,12 +363,12 @@ class Hybrid(AdaptiveType):
             lamda = 1,
         )
 
-    def step(self, *, s: Stimulus, lamda: float, sigma: float, **kwargs):
+    def step(self, s: Stimulus, rp: RunParameters):
         s.habituation = s.habituation_0 - s.salience_0 * (1 - s.habituation)
-        s.alpha_hall = (1 - s.habituation) * (lamda - sigma) ** 2 + s.habituation * s.alpha_hall
-        s.alpha_mack = ((1 - s.alpha_mack) * (2 * s.assoc - sigma)) ** 2 + (1 - (s.alpha_hall_0 + (1 - s.salience_0) * (1 - s.alpha_hall_0))) ** 2
+        s.alpha_hall = (1 - s.habituation) * (rp.lamda - rp.sigma) ** 2 + s.habituation * s.alpha_hall
+        s.alpha_mack = ((1 - s.alpha_mack) * (2 * s.assoc - rp.sigma)) ** 2 + (1 - (s.alpha_hall_0 + (1 - s.salience_0) * (1 - s.alpha_hall_0))) ** 2
 
-        DV = s.alpha_hall * (lamda - sigma)
+        DV = s.alpha_hall * (rp.lamda - rp.sigma)
         s.assoc = s.assoc + DV * s.alpha_mack
 
 class HybridFix(AdaptiveType):
@@ -375,12 +386,12 @@ class HybridFix(AdaptiveType):
             lamda = 1,
         )
 
-    def step(self, *, s: Stimulus, lamda: float, sigma: float, **kwargs):
+    def step(self, s: Stimulus, rp: RunParameters):
         s.habituation = s.habituation_0 - s.salience_0 * (1 - s.habituation)
-        s.alpha_hall = (1 - s.habituation) * (lamda - sigma) ** 2 + s.habituation * s.alpha_hall
-        s.alpha_mack = ((1 - s.alpha_mack) * (2 * s.assoc - sigma)) ** 2 + (1 - (s.alpha_hall_0 + (1 - s.salience_0) * (1 - s.alpha_hall_0))) ** 2
+        s.alpha_hall = (1 - s.habituation) * (rp.lamda - rp.sigma) ** 2 + s.habituation * s.alpha_hall
+        s.alpha_mack = ((1 - s.alpha_mack) * (2 * s.assoc - rp.sigma)) ** 2 + (1 - (s.alpha_hall_0 + (1 - s.salience_0) * (1 - s.alpha_hall_0))) ** 2
 
-        DV = s.alpha_hall * (lamda - sigma)
+        DV = s.alpha_hall * (rp.lamda - rp.sigma)
         s.assoc = s.assoc * s.alpha_mack + DV 
 
 class MlabHybrid(AdaptiveType):
@@ -400,9 +411,9 @@ class MlabHybrid(AdaptiveType):
             nu = 0.25,
         )
 
-    def step(self, *, s: Stimulus, lamda: float, sigma: float, count: float, **kwargs):
+    def step(self, s: Stimulus, rp: RunParameters):
         s.habituation = s.habituation_0 - s.salience_0 * (1 - s.habituation)
-        self.alpha = (s.habituation/count) * (s.nu*(lambda-sigma)**2 + s.rho*(s.assoc-max()))
+        self.alpha = (s.habituation/rp.count) * (s.nu*(rp.lamda-rp.sigma)**2 + s.rho*(s.assoc-max()))
 
-        DV = s.alpha_hall * (lamda - sigma)
+        DV = s.alpha_hall * (rp.lamda - rp.sigma)
         s.assoc = s.assoc * s.alpha_mack + DV 
