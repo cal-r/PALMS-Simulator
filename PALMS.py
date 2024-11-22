@@ -8,7 +8,7 @@ from collections import defaultdict
 from contextlib import nullcontext
 from itertools import chain, zip_longest
 from PyQt6.QtCore import QTimer, Qt, QSize
-from PyQt6.QtGui import QFont
+from PyQt6.QtGui import QFont, QPixmap
 from PyQt6.QtWidgets import *
 
 from Experiment import RWArgs, Experiment, Phase
@@ -81,6 +81,8 @@ class PavlovianApp(QDialog):
 
         self.rightPhaseButton = QPushButton('>')
         self.rightPhaseButton.clicked.connect(self.nextPhase)
+        
+        self.iconBox = QGroupBox()
 
         phaseBoxLayout = QHBoxLayout()
         phaseBoxLayout.addWidget(self.leftPhaseButton)
@@ -96,9 +98,20 @@ class PavlovianApp(QDialog):
         self.plotBox.setLayout(plotBoxLayout)
 
         self.adaptiveTypeButtons = self.addAdaptiveTypeButtons()
+        
+        self.IconLabel = QLabel()
+        self.IconLabel.setPixmap(QPixmap("resources/palms.png").scaled(150,150))
+        self.IconLabel.show()
+        iconBoxLayout = QVBoxLayout()
+        iconBoxLayout.addWidget(self.IconLabel)
+        iconBoxLayout.setStretch(0, 1)
+        iconBoxLayout.setStretch(1, 0)
+        self.iconBox.setLayout(iconBoxLayout)
+        
 
         mainLayout = QGridLayout()
-        mainLayout.addWidget(self.tableWidget, 0, 0, 1, 5)
+        mainLayout.addWidget(self.tableWidget, 0, 0, 1, 4)
+        mainLayout.addWidget(self.iconBox, 0, 4, 1, 1)
         mainLayout.addWidget(self.adaptiveTypeButtons, 1, 0, 3, 1)
         mainLayout.addWidget(self.parametersGroupBox, 1, 1, 3, 1)
         mainLayout.addWidget(self.alphasBox, 1, 2, 3, 1)
