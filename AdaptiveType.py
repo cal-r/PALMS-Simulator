@@ -415,9 +415,11 @@ class MlabHybrid(AdaptiveType):
         )
 
     def step(self, s: Stimulus, rp: RunParameters):
-        print(rp.maxAssocRest)
-        s.habituation = s.habituation_0 - s.salience_0 * (1 - s.habituation)
-        s.alpha = (s.habituation/rp.count) * (s.nu*(rp.lamda-rp.sigma)**2 + s.rho*(s.assoc-rp.maxAssocRest/rp.count)+ s.alpha)
+        print(f'{s.alpha=}\t{s.assoc=}\t{rp.maxAssocRest=}\t{rp.count=}')
+        s.alpha = (s.habituation/rp.count) * (s.nu*(rp.lamda-rp.sigma)**2 + s.rho*(s.assoc-(rp.maxAssocRest/rp.count))+ s.alpha)
+        #s.alpha = (s.habituation/rp.count) * (min((s.nu*(rp.lamda-rp.sigma)**2),1) + min(s.rho*(s.assoc-(rp.maxAssocRest/rp.count)),1)+ min(s.alpha,1))
 
         DV = s.alpha * (rp.lamda - rp.sigma)
+        s.habituation = s.habituation_0 - s.salience_0 * (1 - s.habituation)
+
         s.assoc = s.assoc + DV 
