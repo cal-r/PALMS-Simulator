@@ -301,13 +301,16 @@ class PavlovianApp(QDialog):
         self.refreshExperiment()
 
     class DualLabel:
-        def __init__(self, text, parent, default, font = 'Monospace'):
+        def __init__(self, text, parent, default, font = 'Monospace', hoverText=None):
             self.label = QLabel(text)
             self.label.setAlignment(Qt.AlignmentFlag.AlignRight)
             self.box = QLineEdit(default)
             self.box.setMaximumWidth(40)
             self.box.returnPressed.connect(parent.refreshExperiment)
             self.label.setFont(QFont(font))
+            
+            if hoverText:
+                self.label.setToolTip(hoverText)
 
         def addRow(self, layout):
             layout.addRow(self.label, self.box)
@@ -332,10 +335,27 @@ class PavlovianApp(QDialog):
             window_size = "WS",
             num_trials = "№ ",
         )
+        
+        descriptions = dict(
+            alpha = "Learning rate of the model",
+            alpha_mack = "Learning rate based on Mackintosh's model (if applicable)",
+            alpha_hall = "Learning rate based on Pearce-Hall model (if applicable)",
+            salience = "Salience of the stimuli",
+            lamda = "Asymptote of learning",
+            beta = "Associativity of US+",
+            betan = "Associativity of US-",
+            gamma = "Weight parameter for past trials",
+            thetaE = "Excitory theta based on LePelley's model",
+            thetaI = "Inhibitory theta based on LePelley's model",
+            habituation = "Habituation",
+            window_size = "Window size for moving average window",
+            num_trials = "Number of trials per experiment (used for random trials)",
+        )
         params = QFormLayout()
         for key, val in AdaptiveType.first_defaults().items():
-            label = self.DualLabel(short_names[key], self, str(val)).addRow(params)
+            label = self.DualLabel(short_names[key], self, str(val), hoverText=descriptions[key]).addRow(params)
             setattr(self, key, label)
+        self.num_trials.box.setGeometry(100, 120, 120, 60)
         self.num_trials.box.setDisabled(True)
 
         params.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
@@ -400,7 +420,7 @@ class PavlovianApp(QDialog):
 
             for cs in sorted(css):
                 if cs not in form:
-                    form[cs] = self.DualLabel(f'{shortnames[perc]}<sub>{cs}</sub>', self, val).addRow(layout)
+                    form[cs] = self.DualLabel(f'{shortnames[perc]}<sub>{cs}</sub>', self, val, hoverText=f'Initial learning rate for {shortnames[perc]}<sub>{cs}</sub>').addRow(layout)
 
     def restoreDefaultParameters(self):
         defaults = AdaptiveType.first_defaults()
