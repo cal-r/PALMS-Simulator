@@ -94,10 +94,7 @@ class Group:
 
                 # We need to calculate max_{i != cs} V_i.
                 # This is always either the maximum V_i, or the second maximum when i = cs.
-                rp.maxAssocRest = maxAssoc
-                if cs == argmaxAssoc:
-                    rp.maxAssocRest = secondMaxAssoc
-
+                rp.maxAssocRest = maxAssoc if cs != argmaxAssoc else secondMaxAssoc
                 self.adaptive_type.run_step(self.s[cs], rp)
 
                 if self.window_size is not None:
