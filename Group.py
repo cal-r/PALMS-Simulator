@@ -81,12 +81,22 @@ class Group:
                 sigmaE = sum(self.s[x].Ve for x in compounds),
                 sigmaI = sum(self.s[x].Vi for x in compounds),
                 count = len(compounds),
-                maxAssoc = max(self.s[x].assoc for x in compounds),
+                maxAssocRest = -1,
             )
+
+            argmaxAssoc = max(compounds, key = lambda x: self.s[x].assoc)
+            maxAssoc = max(self.s[x].assoc for x in compounds)
+            secondMaxAssoc = max([self.s[x].assoc for x in compounds - {argmaxAssoc}], default = 0)
 
             for cs in compounds:
                 if cs not in hist:
                     hist[cs].add(self.s[cs])
+
+                # We need to calculate max_{i != cs} V_i.
+                # This is always either the maximum V_i, or the second maximum when i = cs.
+                rp.maxAssocRest = maxAssoc
+                if cs == argmaxAssoc:
+                    rp.maxAssocRest = secondMaxAssoc
 
                 self.adaptive_type.run_step(self.s[cs], rp)
 

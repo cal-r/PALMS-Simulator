@@ -6,7 +6,7 @@ from typing import Type
 
 from Environment import Stimulus
 
-@dataclass(kw_only = True, frozen = True)
+@dataclass(kw_only = True)
 class RunParameters:
     beta: float
     lamda: float
@@ -15,7 +15,7 @@ class RunParameters:
     sigmaE: float
     sigmaI: float
     count: float
-    maxAssoc: float
+    maxAssocRest: float
 
 class AdaptiveType:
     betan: float
@@ -117,6 +117,8 @@ class AdaptiveType:
         return new_error
 
     def run_step(self, s: Stimulus, rp: RunParameters):
+        assert rp.maxAssocRest != -1
+
         self.delta_v_factor = rp.beta * (rp.lamda - rp.sigma)
         try:
             self.step(s, rp)
@@ -413,8 +415,9 @@ class MlabHybrid(AdaptiveType):
         )
 
     def step(self, s: Stimulus, rp: RunParameters):
+        print(rp.maxAssocRest)
         s.habituation = s.habituation_0 - s.salience_0 * (1 - s.habituation)
-        self.alpha = (s.habituation/rp.count) * (s.nu*(rp.lamda-rp.sigma)**2 + s.rho*(s.assoc-rp.maxAssoc/rp.count)+ s.alpha)
+        self.alpha = (s.habituation/rp.count) * (s.nu*(rp.lamda-rp.sigma)**2 + s.rho*(s.assoc-rp.maxAssocRest/rp.count)+ s.alpha)
 
         DV = s.alpha * (rp.lamda - rp.sigma)
         s.assoc = s.assoc + DV 
