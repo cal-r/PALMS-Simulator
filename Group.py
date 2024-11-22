@@ -73,17 +73,21 @@ class Group:
 
             compounds = set(part)
 
-            count = len(compounds)
-            sigma = sum(self.s[x].assoc for x in compounds)
-            sigmaE = sum(self.s[x].Ve for x in compounds)
-            sigmaI = sum(self.s[x].Vi for x in compounds)
-            maxAssoc = max(self.s[x].assoc for x in compounds)
+            rp = RunParameters(
+                beta = beta,
+                lamda = lamda,
+                sign = sign,
+                sigma = sum(self.s[x].assoc for x in compounds),
+                sigmaE = sum(self.s[x].Ve for x in compounds),
+                sigmaI = sum(self.s[x].Vi for x in compounds),
+                count = len(compounds),
+                maxAssoc = max(self.s[x].assoc for x in compounds),
+            )
 
             for cs in compounds:
                 if cs not in hist:
                     hist[cs].add(self.s[cs])
 
-                rp = RunParameters(beta = beta, lamda = lamda, sign = sign, sigma = sigma, sigmaE = sigmaE, sigmaI = sigmaI, count = count, maxAssoc = maxAssoc)
                 self.adaptive_type.run_step(self.s[cs], rp)
 
                 if self.window_size is not None:
