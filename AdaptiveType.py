@@ -43,11 +43,9 @@ class AdaptiveType:
             'Rescorla Wagner': RescorlaWagner,
             'Rescorla Wagner Linear': RescorlaWagnerLinear,
             'Pearce Kaye Hall': PearceKayeHall,
-            'LePelley': LePelley,
-            'LePelley Hybrid': LePelleyHybrid,
-            'PALMS Hybrid': Hybrid,
-            'PALMS HybridFix': HybridFix,
-             'MLAB Hybrid': MlabHybrid,
+            'Mackintosh Extended': LePelley,
+            'LePelley': LePelleyHybrid,
+            'MLAB Hybrid': MlabHybrid,
             
         }
 
