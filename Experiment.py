@@ -80,6 +80,7 @@ class RWArgs:
 
     rho: float
     nu: float
+    kay: float
 
     plot_phase: None | int = None
     plot_experiments: None | list[str] = None
@@ -120,6 +121,7 @@ class Experiment:
             habituation = args.habituation,
             rho = args.rho,
             nu = args.nu,
+            kay = args.kay,
             betan = args.beta_neg,
             betap = args.beta,
             lamda = args.lamda,

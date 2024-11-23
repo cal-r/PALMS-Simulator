@@ -338,6 +338,7 @@ class PavlovianApp(QDialog):
             alpha_mack = "αᴹ",
             alpha_hall = "αᴴ",
             salience = "S ",
+            kay = "Κ ",
             lamda = "λ ",
             beta = "β⁺",
             betan = "β⁻",
@@ -356,6 +357,7 @@ class PavlovianApp(QDialog):
             alpha_mack = "Learning rate based on Mackintosh's model (if applicable)",
             alpha_hall = "Learning rate based on Pearce-Hall model (if applicable)",
             salience = "Salience of the stimuli",
+            kay = "Constant for hybrid model (temporary)",
             lamda = "Asymptote of learning",
             rho = "Parameter for MLAB hybrid",
             nu = "Parameter for MLAB hybrid",
@@ -482,6 +484,7 @@ class PavlovianApp(QDialog):
             thetaI = self.floatOrZero(self.thetaI.box.text()),
 
             salience = self.floatOrZero(self.salience.box.text()),
+            kay = self.floatOrZero(self.kay.box.text()),
 
             alphas = self.csPercDict('alpha'),
             alpha_macks = self.csPercDict('alpha_mack'),

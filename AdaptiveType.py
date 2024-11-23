@@ -25,8 +25,9 @@ class AdaptiveType:
     gamma: float
     thetaE: float
     thetaI: float
+    kay: float
 
-    def __init__(self, betan: float, betap: float, lamda: float, xi_hall: None | float, gamma: float, thetaE: float, thetaI: float):
+    def __init__(self, betan: float, betap: float, lamda: float, xi_hall: None | float, gamma: float, thetaE: float, thetaI: float, kay: float):
         self.betan = betan
         self.betap = betap
         self.lamda = lamda
@@ -34,6 +35,7 @@ class AdaptiveType:
         self.gamma = gamma
         self.thetaE = thetaE
         self.thetaI = thetaI
+        self.kay = kay
 
     @classmethod
     def types(cls) -> dict[str, Type[AdaptiveType]]:
@@ -69,6 +71,7 @@ class AdaptiveType:
             'habituation',
             'rho',
             'nu',
+            'kay',
         ]
 
     @classmethod
@@ -82,6 +85,7 @@ class AdaptiveType:
             alpha_mack = 0.1,
             alpha_hall = 0.1,
             salience = 0.5,
+            kay = 2,
             lamda = 1,
             beta = 0.3,
             betan = 0.2,
@@ -400,7 +404,7 @@ class HybridFix(AdaptiveType):
 class MlabHybrid(AdaptiveType):
     @classmethod
     def parameters(cls) -> list[str]:
-        return ['alpha','salience', 'habituation', 'lamda','rho','nu']
+        return ['alpha','salience', 'habituation', 'lamda','rho', 'nu', 'kay']
 
     @classmethod
     def defaults(cls) -> dict[str, float]:
@@ -415,10 +419,7 @@ class MlabHybrid(AdaptiveType):
         )
 
     def step(self, s: Stimulus, rp: RunParameters):
-        print(f'{s.alpha=}\t{s.assoc=}\t{rp.maxAssocRest=}\t{rp.count=}')
-        s.alpha = (s.habituation/rp.count) * (s.nu*(rp.lamda-rp.sigma)**2 + s.rho*(s.assoc-(rp.maxAssocRest/rp.count))+ s.alpha)
-        #s.alpha = (s.habituation/rp.count) * (min((s.nu*(rp.lamda-rp.sigma)**2),1) + min(s.rho*(s.assoc-(rp.maxAssocRest/rp.count)),1)+ min(s.alpha,1))
-
+        s.alpha = (s.habituation/self.kay) * (s.nu*(rp.lamda-rp.sigma)**2 + s.rho*(s.assoc-(rp.maxAssocRest/self.kay))+ s.alpha)
         DV = s.alpha * (rp.lamda - rp.sigma)
         s.habituation = s.habituation_0 - s.salience_0 * (1 - s.habituation)
 

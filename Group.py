@@ -24,6 +24,7 @@ class Group:
         habituation: float,
         rho: float,
         nu: float,
+        kay: float,
         betan: float,
         betap: float,
         lamda: float,
@@ -51,7 +52,7 @@ class Group:
             }
         )
 
-        self.adaptive_type = AdaptiveType.get(adaptive_type, betan = betan, betap = betap, lamda = lamda, xi_hall = xi_hall, gamma = gamma, thetaE = thetaE, thetaI = thetaI)
+        self.adaptive_type = AdaptiveType.get(adaptive_type, betan = betan, betap = betap, lamda = lamda, xi_hall = xi_hall, gamma = gamma, thetaE = thetaE, thetaI = thetaI, kay = kay)
         self.window_size = window_size
 
         # (∃ x) len(x) > 1 if `use_configurals`.
