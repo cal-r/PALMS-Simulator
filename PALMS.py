@@ -82,8 +82,6 @@ class PavlovianApp(QDialog):
         self.rightPhaseButton = QPushButton('>')
         self.rightPhaseButton.clicked.connect(self.nextPhase)
         
-        self.iconBox = QGroupBox()
-
         phaseBoxLayout = QHBoxLayout()
         phaseBoxLayout.addWidget(self.leftPhaseButton)
         phaseBoxLayout.addWidget(self.phaseInfo, stretch = 1, alignment = Qt.AlignmentFlag.AlignCenter)
@@ -101,17 +99,10 @@ class PavlovianApp(QDialog):
         
         self.IconLabel = QLabel()
         self.IconLabel.setPixmap(QPixmap("resources/palms.png").scaled(150,150))
-        self.IconLabel.show()
-        iconBoxLayout = QVBoxLayout()
-        iconBoxLayout.addWidget(self.IconLabel)
-        iconBoxLayout.setStretch(0, 1)
-        iconBoxLayout.setStretch(1, 0)
-        self.iconBox.setLayout(iconBoxLayout)
         
-
         mainLayout = QGridLayout()
         mainLayout.addWidget(self.tableWidget, 0, 0, 1, 4)
-        mainLayout.addWidget(self.iconBox, 0, 4, 1, 1)
+        mainLayout.addWidget(self.IconLabel, 0, 4, 1, 1, alignment = Qt.AlignmentFlag.AlignCenter)
         mainLayout.addWidget(self.adaptiveTypeButtons, 1, 0, 3, 1)
         mainLayout.addWidget(self.parametersGroupBox, 1, 1, 3, 1)
         mainLayout.addWidget(self.alphasBox, 1, 2, 3, 1)
