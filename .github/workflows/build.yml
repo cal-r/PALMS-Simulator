@@ -38,6 +38,8 @@ jobs:
           libxtst6 \
           libgtk-3-0 \
           gtk2-engines-murrine gtk2-engines-pixbuf
+        export DISPLAY=:0
+        export WAYLAND_DISPLAY=
 
     - name: Install dependencies
       run: |
