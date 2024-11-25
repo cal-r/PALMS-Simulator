@@ -22,23 +22,6 @@ jobs:
       with:
         python-version: '3.12.6'
 
-    - name: Install Linux dependencies
-      if: ${{ matrix.os == 'ubuntu-latest' }}
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          libegl1-mesa \
-          libgles2-mesa-dev \
-          libxcb-xinerama0 \
-          libxkbcommon-x11-0 \
-          libgl1-mesa-glx \
-          libgl1-mesa-dri \
-          libxi6 \
-          libxrender1 \
-          libxtst6 \
-          libgtk-3-0 \
-          gtk2-engines-murrine gtk2-engines-pixbuf
-
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
@@ -52,7 +35,6 @@ jobs:
         EXCLUDED_MODULE_OPTIONS=" \
           --exclude-module PyQt5  \
           --exclude-module PyQt6.Qt6.translations  \
-          --exclude-module PyQt6.Qt6.plugins  \
           --exclude-module PyQt6.Qt6.lib.libQt6Pdf  \
           --exclude-module PyQt6.Qt6.lib.libicudata  \
           --exclude-module PyQt6.Qt6.Qt6Network \
