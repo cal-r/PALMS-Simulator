@@ -49,12 +49,12 @@ jobs:
 
         if [[ "${{ matrix.os }}" == "macos-latest" ]]
         then
-          pyinstaller ${COMMON_OPTIONS} --onedir --icon resources/palms.icns PALMS.py
+          pyinstaller ${COMMON_OPTIONS} --add-data "resources/palms.png:resources" --onedir --icon resources/palms.icns PALMS.py
         elif [[ "${{ matrix.os }}" == "windows-latest" ]]
         then
-          pyinstaller ${COMMON_OPTIONS} --onefile --icon resources/palms.ico PALMS.py
+          pyinstaller ${COMMON_OPTIONS} --add-data "resources\palms.png;resources" --onefile --icon resources/palms.ico PALMS.py
         else
-          pyinstaller ${COMMON_OPTIONS} --onefile --icon resources/palms.png PALMS.py
+          pyinstaller ${COMMON_OPTIONS} -add-data "resources/palms.png:resources" --onefile --icon resources/palms.png PALMS.py
         fi
       shell: bash
 
@@ -133,13 +133,13 @@ jobs:
 
     - name: Compress and upload the code to release
       run: |
-        tar -czf release/PALMS.tar.gz *.py LICENSE README.md NOTICE requirements.txt
+        tar -czf release/PALMS.tar.gz *.py resources/* LICENSE README.md NOTICE requirements.txt
         cp LICENSE README.md NOTICE release/
 
     - name: Move the source to their own release
       run: |
         mkdir src/
-        cp -r *.py LICENSE README.md NOTICE requirements.txt src/
+        cp -r *.py resources/* LICENSE README.md NOTICE requirements.txt src/
 
     - name: Add licence and readme to release
       run: |
