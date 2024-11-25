@@ -94,21 +94,15 @@ jobs:
         path: release_*
 
     - name: Upload to GitHub Release
-      run: |
-        n=0
-        until [ "$n" -ge 5 ]
-        do
-          ghrelease_output=$(ghrelease=$(softprops/action-gh-release@v1 --tag_name=latest --files=release_*) 2>&1) && break
-          echo "Attempt $((n+1)) failed, retrying..."
-          n=$((n+1))
-          sleep 10
-        done
-        if [ "$?" -ne 0 ]; then
-          echo "Upload failed after 5 attempts."
-          exit 1
-        fi
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: latest
+        files: release_*
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      retry:
+        max_attempts: 5
+        delay: 10
 
   upload:
     name: Upload to Google Drive
