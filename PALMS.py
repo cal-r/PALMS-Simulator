@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import os
+if 'DISPLAY' in os.environ:
+    os.environ["QT_QPA_PLATFORM"] = "xcb"
+
 import sys
 
 from argparse import ArgumentParser

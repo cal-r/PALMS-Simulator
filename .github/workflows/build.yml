@@ -22,28 +22,6 @@ jobs:
       with:
         python-version: '3.12.6'
 
-    - name: Install Linux dependencies
-      if: ${{ matrix.os == 'ubuntu-latest' }}
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          libegl1-mesa \
-          libgles2-mesa-dev \
-          libxcb-xinerama0 \
-          libxkbcommon-x11-0 \
-          libxcb1 \
-          libxcb-xinerama0 libX11-6 libxrender1 \
-          libgl1-mesa-glx \
-          libgl1-mesa-dri \
-          libxi6 \
-          libxrender1 \
-          libxtst6 \
-          libgtk-3-0 \
-          gtk2-engines-murrine gtk2-engines-pixbuf
-        sudo apt-get remove -y libwayland-client libwayland-egl libwayland-server
-        export DISPLAY=:0
-        export WAYLAND_DISPLAY=
-
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
