@@ -30,8 +30,6 @@ jobs:
           libegl1-mesa \
           libgles2-mesa-dev \
           libxcb-xinerama0 \
-          libxcb \
-          libX11 \
           libxkbcommon-x11-0 \
           libgl1-mesa-glx \
           libgl1-mesa-dri \
