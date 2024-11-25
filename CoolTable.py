@@ -1,6 +1,8 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import *
 
+import re
+
 class CoolTable(QWidget):
     def __init__(self, rows: int, cols: int, parent: None | QWidget = None):
         super().__init__(parent = parent)

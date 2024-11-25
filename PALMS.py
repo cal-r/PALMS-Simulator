@@ -98,7 +98,8 @@ class PavlovianApp(QDialog):
         self.adaptiveTypeButtons = self.addAdaptiveTypeButtons()
         
         self.IconLabel = QLabel()
-        self.IconLabel.setPixmap(QPixmap("resources/palms.png").scaled(150,150))
+        root = getattr(sys, '_MEIPASS', '.')
+        self.IconLabel.setPixmap(QPixmap(os.path.join(root, 'resources', 'palms.png')).scaled(150,150))
         
         mainLayout = QGridLayout()
         mainLayout.addWidget(self.tableWidget, 0, 0, 1, 4)
