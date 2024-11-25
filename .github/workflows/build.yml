@@ -100,9 +100,24 @@ jobs:
         files: release_*
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      retry:
-        max_attempts: 5
-        delay: 10
+
+    - name: Upload to Github Release, attempt 2
+      if: failure()
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: latest
+        files: release_*
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload to Github Release, attempt 3
+      if: failure()
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: latest
+        files: release_*
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   upload:
     name: Upload to Google Drive
