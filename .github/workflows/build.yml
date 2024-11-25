@@ -100,6 +100,9 @@ jobs:
         files: release_*
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      retry:
+        max_attempts: 5
+        delay: 10
 
   upload:
     name: Upload to Google Drive
