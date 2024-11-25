@@ -30,31 +30,24 @@ jobs:
 
     - name: Build executable
       run: |
-        COMMON_OPTIONS="--windowed --noconfirm --clean \
-            --exclude-module PyQt6.QtWebEngineCore \
-            --exclude-module PyQt6.Qt3DCore \
-            --exclude-module PyQt6.QtNetwork \
-            --exclude-module PyQt6.QtHelp \
-            --exclude-module PyQt6.QtPrintSupport \
-            --exclude-module PyQt6.QtSensors \
-            --exclude-module PyQt6.QtTest \
-            --exclude-module PyQt6.QtSvg \
-            --exclude-module PyQt6.QtXml --exclude-module PyQt6.QtXmlPatterns \
-            --exclude-module PyQt6.QtPositioning \
-            --exclude-module tkinter \
-            --exclude-module matplotlib.tests --exclude-module mpl_toolkits.tests \
-            --exclude-module scipy.spatial --exclude-module scipy.special --exclude-module scipy.stats \
-            --exclude-module pandas.tests --exclude-module numpy.testing \
-            --exclude-module IPython --exclude-module jupyter"
+        EXCLUDED_MODULE_OPTIONS=" \
+          --exclude-module PyQt5  \
+          --exclude-module PyQt6.Qt6.translations  \
+          --exclude-module PyQt6.Qt6.plugins  \
+          --exclude-module PyQt6.Qt6.lib.libQt6Pdf  \
+          --exclude-module PyQt6.Qt6.lib.libicudata  \
+          --exclude-module PyQt6.Qt6.Qt6Network \
+        "
+        COMMON_OPTIONS="--windowed --noconfirm --clean"
 
         if [[ "${{ matrix.os }}" == "macos-latest" ]]
         then
-          pyinstaller ${COMMON_OPTIONS} --add-data "resources/palms.png:resources" --onedir --icon resources/palms.icns PALMS.py
+          pyinstaller ${EXCLUDED_MODULE_OPTIONS} ${COMMON_OPTIONS} --add-data "resources/palms.png:resources" --onedir --icon resources/palms.icns PALMS.py
         elif [[ "${{ matrix.os }}" == "windows-latest" ]]
         then
-          pyinstaller ${COMMON_OPTIONS} --add-data "resources\palms.png;resources" --onefile --icon resources/palms.ico PALMS.py
+          pyinstaller ${EXCLUDED_MODULE_OPTIONS} ${COMMON_OPTIONS} --add-data "resources\palms.png;resources" --onefile --icon resources/palms.ico PALMS.py
         else
-          pyinstaller ${COMMON_OPTIONS} --add-data "resources/palms.png:resources" --onefile --icon resources/palms.png PALMS.py
+          pyinstaller ${EXCLUDED_MODULE_OPTIONS} ${COMMON_OPTIONS} --add-data "resources/palms.png:resources" --onefile --icon resources/palms.png PALMS.py
         fi
       shell: bash
 
