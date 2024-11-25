@@ -54,7 +54,7 @@ jobs:
         then
           pyinstaller ${COMMON_OPTIONS} --add-data "resources\palms.png;resources" --onefile --icon resources/palms.ico PALMS.py
         else
-          pyinstaller ${COMMON_OPTIONS} -add-data "resources/palms.png:resources" --onefile --icon resources/palms.png PALMS.py
+          pyinstaller ${COMMON_OPTIONS} --add-data "resources/palms.png:resources" --onefile --icon resources/palms.png PALMS.py
         fi
       shell: bash
 
