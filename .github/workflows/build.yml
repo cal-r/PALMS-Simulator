@@ -31,6 +31,8 @@ jobs:
           libgles2-mesa-dev \
           libxcb-xinerama0 \
           libxkbcommon-x11-0 \
+          libxcb1 \
+          libxcb-xinerama0 libX11-6 libxrender1 \
           libgl1-mesa-glx \
           libgl1-mesa-dri \
           libxi6 \
@@ -38,6 +40,7 @@ jobs:
           libxtst6 \
           libgtk-3-0 \
           gtk2-engines-murrine gtk2-engines-pixbuf
+        sudo apt-get remove -y libwayland-client libwayland-egl libwayland-server
         export DISPLAY=:0
         export WAYLAND_DISPLAY=
 
@@ -49,8 +52,6 @@ jobs:
 
     - name: Build executable
       run: |
-        export QT_QPA_PLATFORM=xcb
-        export QT_STYLE_OVERRIDE=Fusion
         EXCLUDED_MODULE_OPTIONS=" \
           --exclude-module PyQt5  \
           --exclude-module PyQt6.Qt6.translations  \
