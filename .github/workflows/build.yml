@@ -30,6 +30,8 @@ jobs:
 
     - name: Build executable
       run: |
+        export QT_QPA_PLATFORM=xcb
+        export QT_STYLE_OVERRIDE=Fusion
         EXCLUDED_MODULE_OPTIONS=" \
           --exclude-module PyQt5  \
           --exclude-module PyQt6.Qt6.translations  \
