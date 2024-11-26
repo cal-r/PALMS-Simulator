@@ -102,7 +102,8 @@ class PavlovianApp(QDialog):
         
         self.IconLabel = QLabel()
         root = getattr(sys, '_MEIPASS', '.')
-        self.IconLabel.setPixmap(QPixmap(os.path.join(root, 'resources', 'palms.png')).scaled(150,150))
+        pixmap = QPixmap(os.path.join(root, 'resources', 'palms.png'))
+        self.IconLabel.setPixmap(pixmap.scaled(150, 150, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
         
         mainLayout = QGridLayout()
         mainLayout.addWidget(self.tableWidget, 0, 0, 1, 4)
