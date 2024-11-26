@@ -169,6 +169,9 @@ class PavlovianApp(QDialog):
 
     def openFileDialog(self):
         file, _ = QFileDialog.getOpenFileName(self, 'Open File', './Experiments')
+        if file == '':
+            return
+
         self.loadFile(file)
         self.refreshExperiment()
 
@@ -516,11 +519,7 @@ class PavlovianApp(QDialog):
             try:
                 experiment = Experiment(name, phase_strs)
             except ValueError as e:
-                box = QMessageBox.critical(
-                    self,
-                    'Syntax Error',
-                    str(e),
-                )
+                box = QMessageBox.critical(self, 'Syntax Error', str(e))
 
                 # Apologies for the Go-like code. This should be a sum type!
                 return [], {}, args
