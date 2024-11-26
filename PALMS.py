@@ -337,6 +337,7 @@ class PavlovianApp(QDialog):
             alpha_mack = "αᴹ",
             alpha_hall = "αᴴ",
             salience = "S ",
+            habituation = "h ",
             kay = "Κ ",
             lamda = "λ ",
             beta = "β⁺",
@@ -344,33 +345,30 @@ class PavlovianApp(QDialog):
             gamma = "γ ",
             thetaE = "θᴱ",
             thetaI = "θᴵ",
-            habituation = "h ",
             rho = "ρ ",
             nu = "ν ",
-            window_size = "WS",
             num_trials = "№ ",
         )
         
         descriptions = dict(
-            alpha = "Learning rate of the model",
-            alpha_mack = "Learning rate based on Mackintosh's model (if applicable)",
-            alpha_hall = "Learning rate based on Pearce-Hall model (if applicable)",
+            alpha = "Learning rate of the model. α ∈ [0, 1].",
+            alpha_mack = "Learning rate based on Mackintosh's model, which controls how much of an stumulus is remembered between steps. αᴹ ∈ [0, 1].",
+            alpha_hall = "Learning rate based on Hall's model, which controls how much a new stimulus affects the association. αᴴ ∈ [0, 1].",
             salience = "Salience of the stimuli",
-            kay = "Constant for hybrid model (temporary)",
-            lamda = "Asymptote of learning",
-            rho = "Parameter for MLAB hybrid",
-            nu = "Parameter for MLAB hybrid",
-            beta = "Associativity of US+",
-            betan = "Associativity of US-",
-            gamma = "Weight parameter for past trials",
-            thetaE = "Excitory theta based on LePelley's model",
-            thetaI = "Inhibitory theta based on LePelley's model",
-            habituation = "Habituation",
-            window_size = "Window size for moving average window",
-            num_trials = "Number of trials per experiment (used for random trials)",
+            habituation = "Habituation of the stimulus.",
+            kay = "Constant for hybrid model.",
+            lamda = "Asymptote of learning with positive stimuli. λ ∈ (0, 1]",
+            rho = "Parameter for MLAB hybrid formulation.",
+            nu = "Parameter for MLAB hybrid formulation.",
+            beta = "Associativity of positive US.",
+            betan = "Associativity of negative US.",
+            gamma = "Weight parameter for past trials.",
+            thetaE = "Excitory theta based on LePelley's model.",
+            thetaI = "Inhibitory theta based on LePelley's model.",
+            num_trials = "Number of trials per experiment (used for random trials).",
         )
         params = QFormLayout()
-        for key, val in AdaptiveType.first_defaults().items():
+        for key, val in AdaptiveType.initial_defaults().items():
             label = self.DualLabel(short_names[key], self, str(val), hoverText=descriptions[key]).addRow(params)
             setattr(self, key, label)
         self.num_trials.box.setGeometry(100, 120, 120, 60)
@@ -441,7 +439,7 @@ class PavlovianApp(QDialog):
                     form[cs] = self.DualLabel(f'{shortnames[perc]}<sub>{cs}</sub>', self, val, hoverText=f'Initial learning rate for {shortnames[perc]}<sub>{cs}</sub>').addRow(layout)
 
     def restoreDefaultParameters(self):
-        defaults = AdaptiveType.first_defaults()
+        defaults = AdaptiveType.initial_defaults()
         for key, value in defaults.items():
             widget = getattr(self, f'{key}').box
             widget.setText(str(value))
@@ -483,6 +481,8 @@ class PavlovianApp(QDialog):
             thetaI = self.floatOrZero(self.thetaI.box.text()),
 
             salience = self.floatOrZero(self.salience.box.text()),
+            habituation = self.floatOrZero(self.habituation.box.text()),
+
             kay = self.floatOrZero(self.kay.box.text()),
 
             alphas = self.csPercDict('alpha'),
@@ -490,13 +490,10 @@ class PavlovianApp(QDialog):
             alpha_halls = self.csPercDict('alpha_hall'),
             saliences = self.csPercDict('salience'),
 
-            habituation = self.floatOrZero(self.habituation.box.text()),
             rho = self.floatOrZero(self.rho.box.text()),
             nu = self.floatOrZero(self.nu.box.text()),
 
-
-
-            window_size = int(self.window_size.box.text()),
+            window_size = 1,
             num_trials = int(self.num_trials.box.text()),
 
             plot_alpha = self.plot_alpha and not AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
