@@ -316,7 +316,7 @@ class PavlovianApp(QDialog):
         self.refreshExperiment()
 
     class DualLabel:
-        def __init__(self, text, parent, default, font = 'Monospace', hoverText=None):
+        def __init__(self, text, parent, default, font = 'Monospace', hoverText = None):
             self.label = QLabel(text)
             self.label.setAlignment(Qt.AlignmentFlag.AlignRight)
             self.box = QLineEdit(default)
@@ -324,6 +324,7 @@ class PavlovianApp(QDialog):
             self.box.returnPressed.connect(parent.refreshExperiment)
             self.label.setFont(QFont(font))
             
+            self.hoverText = hoverText
             if hoverText:
                 self.label.setToolTip(hoverText)
 
@@ -354,13 +355,13 @@ class PavlovianApp(QDialog):
         )
         
         descriptions = dict(
-            alpha = "Learning rate of the model. α ∈ [0, 1].",
-            alpha_mack = "Learning rate based on Mackintosh's model, which controls how much of an stumulus is remembered between steps. αᴹ ∈ [0, 1].",
-            alpha_hall = "Learning rate based on Hall's model, which controls how much a new stimulus affects the association. αᴴ ∈ [0, 1].",
-            salience = "Salience of the stimuli",
-            habituation = "Habituation of the stimulus.",
+            alpha = "Initial learning rate of the stimuli. α ∈ [0, 1].",
+            alpha_mack = "Initial learning rate of the stimuli based on Mackintosh's model, which controls how much of an stumulus is remembered between steps. αᴹ ∈ [0, 1].",
+            alpha_hall = "Initial learning rate of the stimuli based on Hall's model, which controls how much a new stimulus affects the association. αᴴ ∈ [0, 1].",
+            salience = "Initial salience of the stimuli.",
+            habituation = "Initial habituation of the stimuli.",
             kay = "Constant for hybrid model.",
-            lamda = "Asymptote of learning with positive stimuli. λ ∈ (0, 1]",
+            lamda = "Asymptote of learning with positive stimuli. λ ∈ (0, 1].",
             rho = "Parameter for MLAB hybrid formulation.",
             nu = "Parameter for MLAB hybrid formulation.",
             beta = "Associativity of positive US.",
@@ -372,7 +373,7 @@ class PavlovianApp(QDialog):
         )
         params = QFormLayout()
         for key, val in AdaptiveType.initial_defaults().items():
-            label = self.DualLabel(short_names[key], self, str(val), hoverText=descriptions[key]).addRow(params)
+            label = self.DualLabel(short_names[key], self, str(val), hoverText = descriptions[key]).addRow(params)
             setattr(self, key, label)
         self.num_trials.box.setGeometry(100, 120, 120, 60)
         self.num_trials.box.setDisabled(True)
@@ -439,12 +440,18 @@ class PavlovianApp(QDialog):
 
             for cs in sorted(css):
                 if cs not in form:
-                    form[cs] = self.DualLabel(f'{shortnames[perc]}<sub>{cs}</sub>', self, val, hoverText=f'Initial learning rate for {shortnames[perc]}<sub>{cs}</sub>').addRow(layout)
+                    hoverText = getattr(self, perc).hoverText.replace('of the stimuli', f' for stimulus {cs}')
+                    form[cs] = self.DualLabel(
+                        f'{shortnames[perc]}<sub>{cs}</sub>',
+                        self,
+                        val,
+                        hoverText = hoverText,
+                    ).addRow(layout)
 
     def restoreDefaultParameters(self):
         defaults = AdaptiveType.initial_defaults()
         for key, value in defaults.items():
-            widget = getattr(self, f'{key}').box
+            widget = getattr(self, f'').box
             widget.setText(str(value))
 
     # Convenience function: convert a string to a float, or return a default.
