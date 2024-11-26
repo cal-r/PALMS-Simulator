@@ -101,9 +101,7 @@ class PavlovianApp(QDialog):
         self.adaptiveTypeButtons = self.addAdaptiveTypeButtons()
         
         self.IconLabel = QLabel()
-        root = getattr(sys, '_MEIPASS', '.')
-        pixmap = QPixmap(os.path.join(root, 'resources', 'palms.png'))
-        self.IconLabel.setPixmap(pixmap.scaled(150, 150, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation))
+        self.IconLabel.setPixmap(self.getPixmap('palms.png'))
         
         mainLayout = QGridLayout()
         mainLayout.addWidget(self.tableWidget, 0, 0, 1, 4)
@@ -163,6 +161,11 @@ class PavlovianApp(QDialog):
     def loadFile(self, filename):
         lines = [x.strip() for x in open(filename)]
         self.tableWidget.loadFile(lines)
+
+    def getPixmap(self, filename):
+        root = getattr(sys, '_MEIPASS', '.')
+        pixmap = QPixmap(os.path.join(root, 'resources', filename), flags = Qt.ImageConversionFlag.NoFormatConversion)
+        return pixmap.scaled(150, 150, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
 
     def openFileDialog(self):
         file, _ = QFileDialog.getOpenFileName(self, 'Open File', './Experiments')
