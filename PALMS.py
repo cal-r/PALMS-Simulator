@@ -49,7 +49,7 @@ class PavlovianApp(QDialog):
         self.phaseNum = 1
         self.numPhases = 0
 
-        percs = ['alpha', 'alpha_mack', 'alpha_hall', 'salience']
+        percs = ['alpha', 'alpha_mack', 'alpha_hall', 'salience', 'habituation']
         self.per_cs_box = {}
         self.per_cs_param = {x: {} for x in percs}
         self.enabled_params = set()
@@ -423,7 +423,7 @@ class PavlovianApp(QDialog):
                 self.per_cs_box[key].setVisible(True)
 
     def refreshAlphasGroupBox(self, css: set[str]):
-        shortnames = {'alpha': 'α', 'alpha_mack': 'αᴹ', 'alpha_hall': 'αᴴ', 'salience': 'S'}
+        shortnames = {'alpha': 'α', 'alpha_mack': 'αᴹ', 'alpha_hall': 'αᴴ', 'salience': 'S', 'habituation': 'h'}
         for perc, form in self.per_cs_param.items():
             val = getattr(self, perc).box.text()
             layout = self.per_cs_box[perc].layout()
@@ -491,7 +491,9 @@ class PavlovianApp(QDialog):
             alphas = self.csPercDict('alpha'),
             alpha_macks = self.csPercDict('alpha_mack'),
             alpha_halls = self.csPercDict('alpha_hall'),
+
             saliences = self.csPercDict('salience'),
+            habituations = self.csPercDict('habituation'),
 
             rho = self.floatOrZero(self.rho.box.text()),
             nu = self.floatOrZero(self.nu.box.text()),

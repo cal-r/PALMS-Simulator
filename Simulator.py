@@ -34,6 +34,7 @@ def parse_args() -> argparse.Namespace:
   --alpha_mack-[A-Z] ALPHA\n\t\t\tAssociative strength (Mackintosh) of CS A..Z.
   --alpha_hall-[A-Z] ALPHA\n\t\t\tAssociative strength (Hall) of CS A..Z.
   --saliences-[A-Z] SALIENCE\n\t\t\tSalience of CS A..Z.
+  --habituations-[A-Z] HABITUATION\n\t\t\tHabituation of CS A..Z.
 ''',
     )
 
@@ -80,10 +81,11 @@ def parse_args() -> argparse.Namespace:
         help="Path to the experiment file."
     )
 
-    # Accept parameters for alphas and saliences.
+    # Accept parameters for alphas, saliences, and habituations.
     args, rest = parser.parse_known_args()
     args.alphas, rest = match_args('alpha', rest)
     args.saliences, rest = match_args('salience', rest)
+    args.habituations, rest = match_args('habituation', rest)
     args.alpha_macks, rest = match_args('alpha_mack', rest)
     args.alpha_halls, rest = match_args('alpha_hall', rest)
     if rest:

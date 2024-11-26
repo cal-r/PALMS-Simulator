@@ -76,6 +76,7 @@ class RWArgs:
     saliences: dict[str, float]
     salience: float
 
+    habituations: dict[str, float]
     habituation: float
 
     rho: float
@@ -118,7 +119,8 @@ class Experiment:
             default_alpha_hall = args.alpha_hall,
             saliences = args.saliences,
             default_salience = args.salience,
-            habituation = args.habituation,
+            habituations = args.habituations,
+            default_habituation = args.habituation,
             rho = args.rho,
             nu = args.nu,
             kay = args.kay,

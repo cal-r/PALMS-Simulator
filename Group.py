@@ -13,6 +13,7 @@ class Group:
     def __init__(
         self,
         name: str,
+
         alphas: dict[str, float],
         default_alpha: float,
         alpha_macks: dict[str, float],
@@ -21,7 +22,9 @@ class Group:
         default_alpha_hall: None | float,
         saliences: dict[str, float],
         default_salience: float,
-        habituation: float,
+        habituations: dict[str, float],
+        default_habituation: float,
+
         rho: float,
         nu: float,
         kay: float,
@@ -36,10 +39,11 @@ class Group:
         window_size: None | int = None,
         xi_hall: None | float = None,
     ):
-        cs = (cs or set()) | alphas.keys() | saliences.keys() | alpha_macks.keys() | alpha_halls.keys()
+        cs = (cs or set()) | alphas.keys() | saliences.keys() | habituations.keys() | alpha_macks.keys() | alpha_halls.keys()
         if cs is not None:
             alphas = {k: alphas.get(k, default_alpha) for k in cs}
             saliences = {k: saliences.get(k, default_salience) for k in cs}
+            habituations = {k: habituations.get(k, default_salience) for k in cs}
             alpha_macks = {k: alpha_macks.get(k, default_alpha_mack) for k in cs}
             alpha_halls = {k: alpha_halls.get(k, default_alpha_hall) for k in cs}
 
@@ -47,7 +51,16 @@ class Group:
 
         self.s = Environment(
             s = {
-                k: Stimulus(assoc = 0, alpha = alphas[k], salience = saliences[k], alpha_mack = alpha_macks[k], alpha_hall = alpha_halls[k], habituation = habituation, rho = rho, nu = nu)
+                k: Stimulus(
+                    assoc = 0,
+                    alpha = alphas[k],
+                    salience = saliences[k],
+                    habituation = habituations[k],
+                    alpha_mack = alpha_macks[k],
+                    alpha_hall = alpha_halls[k],
+                    rho = rho,
+                    nu = nu,
+                )
                 for k in cs
             }
         )
