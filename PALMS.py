@@ -102,21 +102,27 @@ class PavlovianApp(QDialog):
         
         self.IconLabel = QLabel()
         self.IconLabel.setPixmap(self.getPixmap('palms.png'))
+
+        self.aboutButton = QPushButton('About')
+        self.aboutButton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.aboutButton.clicked.connect(self.aboutPALMS)
         
         mainLayout = QGridLayout()
         mainLayout.addWidget(self.tableWidget, 0, 0, 1, 4)
         mainLayout.addWidget(self.IconLabel, 0, 4, 1, 1, alignment = Qt.AlignmentFlag.AlignCenter)
-        mainLayout.addWidget(self.adaptiveTypeButtons, 1, 0, 3, 1)
-        mainLayout.addWidget(self.parametersGroupBox, 1, 1, 3, 1)
-        mainLayout.addWidget(self.alphasBox, 1, 2, 3, 1)
-        mainLayout.addWidget(self.plotBox, 1, 3, 3, 1)
+        mainLayout.addWidget(self.adaptiveTypeButtons, 1, 0, 4, 1)
+        mainLayout.addWidget(self.parametersGroupBox, 1, 1, 4, 1)
+        mainLayout.addWidget(self.alphasBox, 1, 2, 4, 1)
+        mainLayout.addWidget(self.plotBox, 1, 3, 4, 1)
         mainLayout.addWidget(self.phaseOptionsGroupBox, 1, 4, 1, 1)
         mainLayout.addWidget(self.plotOptionsGroupBox, 2, 4, 1, 1)
         mainLayout.addWidget(self.fileOptionsGroupBox, 3, 4, 1, 1)
-        mainLayout.setRowStretch(0, 1)
+        mainLayout.addWidget(self.aboutButton, 4, 4, 1, 1)
+        mainLayout.setRowStretch(0, 0)
         mainLayout.setRowStretch(1, 0)
-        mainLayout.setRowStretch(2, 1)
-        mainLayout.setRowStretch(3, 1)
+        mainLayout.setRowStretch(2, 0)
+        mainLayout.setRowStretch(3, 0)
+        mainLayout.setRowStretch(4, 4)
         mainLayout.setColumnStretch(0, 0)
         mainLayout.setColumnStretch(1, 0)
         mainLayout.setColumnStretch(2, 0)
@@ -235,14 +241,12 @@ class PavlovianApp(QDialog):
         plotOptionsLayout.addWidget(self.refreshButton)
         plotOptionsLayout.addWidget(self.printButton)
         plotOptionsLayout.addWidget(self.hideButton)
-
         self.plotOptionsGroupBox.setLayout(plotOptionsLayout)
 
         fileOptionsLayout = QVBoxLayout()
         fileOptionsLayout.addWidget(self.fileButton)
         fileOptionsLayout.addWidget(self.saveButton)
         fileOptionsLayout.addWidget(self.setDefaultParamsButton)
-        fileOptionsLayout.addStretch()
         self.fileOptionsGroupBox.setLayout(fileOptionsLayout)
 
     def toggleRand(self):
@@ -271,6 +275,20 @@ class PavlovianApp(QDialog):
             self.resize(self.width() + self.plotCanvas.width(), self.height())
 
         self.refreshExperiment()
+
+    def aboutPALMS(self):
+        about = '''\
+PALMS: Pavlovian Associative Learning Models Simulator
+Version 0.xx
+
+Built by Alessandro Abati, Martin Fixman, Julián Jimenez and Sean Lim with a lot of help from Esther Mondragón.
+
+For the MSc in Artificial Intelligence in City St George's, University of London. \
+If you have any questions, contact any of the authors.
+
+2024. All rights reserved. Licensed under the LGPL v3. See LICENSE for details.\
+        '''
+        QMessageBox.information(self, 'About', about)
 
     def saveExperiment(self):
         default_directory = os.path.join(os.getcwd(), 'Experiments')
@@ -528,7 +546,7 @@ class PavlovianApp(QDialog):
             try:
                 experiment = Experiment(name, phase_strs)
             except ValueError as e:
-                box = QMessageBox.critical(self, 'Syntax Error', str(e))
+                QMessageBox.critical(self, 'Syntax Error', str(e))
 
                 # Apologies for the Go-like code. This should be a sum type!
                 return [], {}, args
