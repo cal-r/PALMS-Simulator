@@ -351,7 +351,7 @@ class PavlovianApp(QDialog):
             thetaI = "θᴵ",
             rho = "ρ ",
             nu = "ν ",
-            num_trials = "№ ",
+            num_trials = "Nº",
         )
         
         descriptions = dict(
@@ -369,7 +369,7 @@ class PavlovianApp(QDialog):
             gamma = "Weight parameter for past trials.",
             thetaE = "Excitory theta based on LePelley's model.",
             thetaI = "Inhibitory theta based on LePelley's model.",
-            num_trials = "Number of trials per experiment (used for random trials).",
+            num_trials = "Number of random trials per experiment.",
         )
         params = QFormLayout()
         for key, val in AdaptiveType.initial_defaults().items():
