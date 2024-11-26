@@ -513,7 +513,18 @@ class PavlovianApp(QDialog):
             if not any(phase_strs):
                 continue
 
-            experiment = Experiment(name, phase_strs)
+            try:
+                experiment = Experiment(name, phase_strs)
+            except ValueError as e:
+                box = QMessageBox.critical(
+                    self,
+                    'Syntax Error',
+                    str(e),
+                )
+
+                # Apologies for the Go-like code. This should be a sum type!
+                return [], {}, args
+
             local_strengths = experiment.run_all_phases(args)
 
             strengths = [a | b for a, b in zip_longest(strengths, local_strengths, fillvalue = StimulusHistory.emptydict())]

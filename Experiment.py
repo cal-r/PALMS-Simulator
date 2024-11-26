@@ -49,7 +49,7 @@ class Phase:
             elif not part.strip():
                 continue
             else:
-                raise ValueError(f'Part not understood: "{part}"')
+                raise ValueError(f'Cannot parse this part: "{part}" of phase "{self.phase_str}"')
 
 @dataclass(kw_only = True)
 class RWArgs:
