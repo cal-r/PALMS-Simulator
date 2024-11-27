@@ -51,7 +51,7 @@ class Phase:
             else:
                 raise ValueError(f'Cannot parse this part: "{part}" of phase "{self.phase_str}"')
 
-@dataclass(kw_only = True)
+@dataclass
 class RWArgs:
     alphas: dict[str, float]
     alpha_macks: dict[str, float]

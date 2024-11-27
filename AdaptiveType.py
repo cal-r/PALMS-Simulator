@@ -6,7 +6,7 @@ from typing import Type
 
 from Environment import Stimulus
 
-@dataclass(kw_only = True)
+@dataclass
 class RunParameters:
     beta: float
     lamda: float
