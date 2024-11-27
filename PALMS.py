@@ -132,7 +132,7 @@ class PavlovianApp(QDialog):
         self.setLayout(mainLayout)
 
         self.setWindowTitle("PALMS Simulator")
-
+        self.setWindowFlags(Qt.WindowType.Window | Qt.WindowType.WindowCloseButtonHint | Qt.WindowType.WindowMaximizeButtonHint)
         self.adaptiveTypeButtons.children()[1].click()
 
         self.resize(1250, 600)
