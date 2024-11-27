@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import random
 import re
 from dataclasses import dataclass
@@ -68,11 +70,6 @@ class RWArgs:
     xi_hall: float
     num_trials: int
 
-    # TODO: Change this to default_alpha or something like that
-    alpha: float
-    alpha_mack: None | float = None
-    alpha_hall: None | float = None
-
     saliences: dict[str, float]
     salience: float
 
@@ -82,6 +79,11 @@ class RWArgs:
     rho: float
     nu: float
     kay: float
+
+    # TODO: Change this to default_alpha or something like that
+    alpha: float
+    alpha_mack: None | float = None
+    alpha_hall: None | float = None
 
     plot_phase: None | int = None
     plot_experiments: None | list[str] = None
