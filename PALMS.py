@@ -100,8 +100,9 @@ class PavlovianApp(QDialog):
 
         self.adaptiveTypeButtons = self.addAdaptiveTypeButtons()
         
-        self.IconLabel = QLabel()
+        self.IconLabel = QLabel(self)
         self.IconLabel.setPixmap(self.getPixmap('palms.png'))
+        self.IconLabel.setToolTip('Made with love by the PALMS team.')
 
         self.aboutButton = QPushButton('About')
         self.aboutButton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
