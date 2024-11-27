@@ -22,7 +22,7 @@ The latest releases can be found in [this link](https://github.com/mfixman/rw-mo
 
 ### Requirements
 
-- Python ≥ 3.10
+- Python ≥ 3.9
 - Seaborn
 - PyQt6
 
