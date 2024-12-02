@@ -38,7 +38,7 @@ class Stimulus:
         self.alpha_hall = alpha_hall or alpha
 
         self.salience = salience
-        self.habituation = habituation
+        self.habituation = habituation_0 or habituation
 
         self.rho = rho
         self.nu = nu
