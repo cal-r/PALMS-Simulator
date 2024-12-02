@@ -98,10 +98,7 @@ class CoolTable(QWidget):
             if self.table.verticalHeaderItem(row) is not None:
                 name = self.table.verticalHeaderItem(row).name
 
-            default = \
-                'Control' if row == 0 else \
-                'Test' if self.rowCount() == 2 else \
-                f'Test {row}'
+            default = f'Test {1 + row}'
 
             item = QTableWidgetItem(name or default)
             item.name = name
