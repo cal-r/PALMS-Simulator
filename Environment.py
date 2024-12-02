@@ -95,14 +95,23 @@ class Stimulus:
 class StimulusHistory:
     hist: list[Stimulus]
 
-    def __init__(self):
-        self.hist = []
+    def __init__(self, hist: None | list[Stimulus] = None):
+        self.hist = hist or []
 
     def add(self, ind: Stimulus):
         self.hist.append(ind.copy())
 
     def __getattr__(self, key):
         return [getattr(p, key) for p in self.hist]
+
+    def __len__(self):
+        return len(self.hist)
+
+    def __getitem__(self, key):
+        if isinstance(key, slice):
+            return StimulusHistory(self.hist[key])
+
+        return self.hist[key]
 
     @classmethod
     def emptydict(cls) -> dict[str, StimulusHistory]:
