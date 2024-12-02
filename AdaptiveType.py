@@ -46,7 +46,7 @@ class AdaptiveType:
             'Mackintosh Extended': LePelley,
             'LePelley': LePelleyHybrid,
             'MLAB Hybrid': MlabHybrid,
-            
+
         }
 
     @classmethod
@@ -396,7 +396,7 @@ class HybridFix(AdaptiveType):
         s.alpha_mack = ((1 - s.alpha_mack) * (2 * s.assoc - rp.sigma)) ** 2 + (1 - (s.alpha_hall_0 + (1 - s.salience_0) * (1 - s.alpha_hall_0))) ** 2
 
         DV = s.alpha_hall * (rp.lamda - rp.sigma)
-        s.assoc = s.assoc * s.alpha_mack + DV 
+        s.assoc = s.assoc * s.alpha_mack + DV
 
 class MlabHybrid(AdaptiveType):
     @classmethod
@@ -422,8 +422,7 @@ class MlabHybrid(AdaptiveType):
         # s.assoc = s.assoc + DV
 
         #print(f"Habituation: {s.habituation} Alpha: {s.alpha}" )
-        print(f"Assoc: {s.assoc}" )
         s.habituation = s.habituation * math.exp(-self.kay * s.salience_0)
         s.alpha = (1-s.habituation) * (rp.lamda - rp.sigma) * (s.assoc + s.rho * (rp.sigma - rp.maxAssocRest)) + s.habituation * s.alpha
         DV = s.alpha * s.salience_0* (rp.lamda - rp.sigma)
-        s.assoc = s.assoc + DV 
+        s.assoc = s.assoc + DV
