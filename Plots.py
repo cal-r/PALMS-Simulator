@@ -12,12 +12,6 @@ from itertools import chain
 
 from Experiment import Phase
 
-class OneLocator(MaxNLocator):
-    def tick_values(self, vmin, vmax):
-        values = set(1 + super().tick_values(vmin, vmax))
-        values.add(1)
-        return list(sorted(int(x) for x in values))
-
 def titleify(filename: str, phases: dict[str, list[Phase]], phase_num: int, suffix: str) -> str:
     titles = []
 
@@ -47,7 +41,7 @@ def titleify(filename: str, phases: dict[str, list[Phase]], phase_num: int, suff
 
     return '\n'.join(titles)
 
-def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | dict[str, list[Phase]] = None, filename = None, plot_phase = None, plot_alpha = False, plot_macknhall = False, title_suffix = None, dpi = None, ticker_threshold = 10, include_base_stimulus = False) -> list[pyplot.Figure]:
+def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | dict[str, list[Phase]] = None, filename = None, plot_phase = None, plot_alpha = False, plot_macknhall = False, title_suffix = None, dpi = None, ticker_threshold = 10, include_last_stimulus = False) -> list[pyplot.Figure]:
     seaborn.set()
 
     if plot_phase is not None:
@@ -65,28 +59,23 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
             fig, axes = pyplot.subplots(1, 2, figsize = (16, 6), dpi = dpi)
 
         for key, hist in experiments.items():
-            x_range = range(len(hist))
+            if not include_last_stimulus:
+                # This is a predictive model. Do not include the last stimulus in the plot.
+                hist = hist[:-1]
 
-            if not include_base_stimulus:
-                # We include the "0" stimulus in the input to mark the state of
-                # a stimulus before this experiment. We should remove it before
-                # plotting.
-                hist = hist[1:]
-                x_range = x_range[1:]
-
-            line = axes[0].plot(x_range, hist.assoc, label=key, marker='D', color = colors[key], markersize=4, alpha=.5, picker = ticker_threshold)
+            line = axes[0].plot(hist.assoc, label=key, marker='D', color = colors[key], markersize=4, alpha=.5, picker = ticker_threshold)
 
             if len(axes) > 1:
                 if plot_alpha and not plot_macknhall:
-                    axes[1].plot(x_range, hist.alpha, label='α: '+str(key), color = colors[key], marker='D', markersize=4, alpha=.5, picker = ticker_threshold)
+                    axes[1].plot(hist.alpha, label='α: '+str(key), color = colors[key], marker='D', markersize=4, alpha=.5, picker = ticker_threshold)
 
                 if plot_macknhall:
-                    axes[1].plot(x_range, hist.alpha_mack, label='Mack: ' + str(key), color = colors[key], marker='$M$', markersize=4, alpha=.5, picker = ticker_threshold)
-                    axes[1].plot(x_range, hist.alpha_hall, label='Hall: ' + str(key), color = colors[key], marker='$H$', markersize=4, alpha=.5, picker = ticker_threshold)
+                    axes[1].plot(hist.alpha_mack, label='Mack: ' + str(key), color = colors[key], marker='$M$', markersize=4, alpha=.5, picker = ticker_threshold)
+                    axes[1].plot(hist.alpha_hall, label='Hall: ' + str(key), color = colors[key], marker='$H$', markersize=4, alpha=.5, picker = ticker_threshold)
 
         axes[0].set_xlabel('Trial Number', fontsize = 'small', labelpad = 3)
         axes[0].set_ylabel('Associative Strength', fontsize = 'small', labelpad = 3)
-        axes[0].xaxis.set_major_locator(OneLocator(integer = True))
+        axes[0].xaxis.set_major_locator(MaxNLocator(integer = True))
 
         axes[0].tick_params(axis = 'both', labelsize = 'x-small', pad = 1)
         axes[0].ticklabel_format(useOffset = False, style = 'plain', axis = 'y')
@@ -101,7 +90,7 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
             axes[1].set_xlabel('Trial Number', fontsize = 'small', labelpad = 3)
             axes[1].set_ylabel('Alpha', fontsize = 'small', labelpad = 3)
             axes[1].set_title(f'Alphas')
-            axes[1].xaxis.set_major_locator(OneLocator(integer = True))
+            axes[1].xaxis.set_major_locator(MaxNLocator(integer = True))
             axes[1].yaxis.tick_right()
             axes[1].tick_params(axis = 'both', labelsize = 'x-small', pad = 1)
             axes[1].tick_params(axis = 'y', which = 'both', right = True, length = 0)
