@@ -20,14 +20,17 @@ class CoolTable(QWidget):
         self.rightPlus = QPushButton('+')
         self.rightPlus.clicked.connect(self.addColumn)
         self.rightPlus.setToolTip('Add a new phase.')
+        self.rightPlus.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.bottomPlus = QPushButton('+')
         self.bottomPlus.clicked.connect(self.addRow)
         self.bottomPlus.setToolTip('Add a new experiment.')
+        self.bottomPlus.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.cButton = QPushButton('C')
         self.cButton.clicked.connect(self.clearEmptyCells)
         self.cButton.setToolTip('Clear empty phases and experiments.')
+        self.cButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.rightPlus.setFixedWidth(20)
         self.bottomPlus.setFixedHeight(20)

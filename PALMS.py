@@ -78,12 +78,14 @@ class PavlovianApp(QDialog):
 
         self.leftPhaseButton = QPushButton('<')
         self.leftPhaseButton.clicked.connect(self.prevPhase)
+        self.leftPhaseButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.phaseInfo = QLabel('')
         self.phaseInfo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
         self.rightPhaseButton = QPushButton('>')
         self.rightPhaseButton.clicked.connect(self.nextPhase)
+        self.rightPhaseButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         
         phaseBoxLayout = QHBoxLayout()
         phaseBoxLayout.addWidget(self.leftPhaseButton)
@@ -102,11 +104,12 @@ class PavlovianApp(QDialog):
         
         self.IconLabel = QLabel(self)
         self.IconLabel.setPixmap(self.getPixmap('palms.png'))
-        self.IconLabel.setToolTip('Pavlovian\N{bellhop bell} \N{dog face} Associative\N{handshake} Models\N{bar chart} Simulator\N{desktop computer}.')
+        self.IconLabel.setToolTip('Pavlovian\N{bellhop bell} \N{dog face} Associative\N{handshake} Learning\N{brain} Models\N{bar chart} Simulator\N{desktop computer}.')
 
         self.aboutButton = QPushButton('About')
         self.aboutButton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.aboutButton.clicked.connect(self.aboutPALMS)
+        self.aboutButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         
         mainLayout = QGridLayout()
         mainLayout.addWidget(self.tableWidget, 0, 0, 1, 4)
@@ -150,6 +153,7 @@ class PavlovianApp(QDialog):
             button = QPushButton(adaptive_type)
             button.adaptive_type = adaptive_type
             button.setCheckable(True)
+            button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
             noMarginStyle = ""
             checkedStyle = "QPushButton:checked { background-color: lightblue; font-weight: bold; border: 2px solid #0057D8; }"
@@ -189,13 +193,16 @@ class PavlovianApp(QDialog):
 
         self.fileButton = QPushButton('Load file')
         self.fileButton.clicked.connect(self.openFileDialog)
+        self.fileButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.saveButton = QPushButton("Save Experiment")
         self.saveButton.clicked.connect(self.saveExperiment)
+        self.saveButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         
         self.expand_canvas = False
 
         self.plotAlphaButton = QPushButton('Plot α')
+        self.plotAlphaButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         checkedStyle = "QPushButton:checked { background-color: lightblue; font-weight: bold; border: 2px solid #0057D8; }"
         self.plotAlphaButton.setStyleSheet(checkedStyle)
         self.plotAlphaButton.setFixedHeight(50)
@@ -208,28 +215,35 @@ class PavlovianApp(QDialog):
         self.toggleRandButton.clicked.connect(self.toggleRand)
         self.toggleRandButton.setCheckable(True)
         self.toggleRandButton.setStyleSheet(checkedStyle)
+        self.toggleRandButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.phaseLambdaButton = QPushButton('Per-Phase λ')
         self.phaseLambdaButton.clicked.connect(self.togglePhaseLambda)
         self.phaseLambdaButton.setCheckable(True)
         self.phaseLambdaButton.setStyleSheet(checkedStyle)
+        self.phaseLambdaButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.toggleAlphasButton = QPushButton('Per-CS Parameters')
         self.toggleAlphasButton.clicked.connect(self.toggleAlphasBox)
         self.toggleAlphasButton.setCheckable(True)
         self.toggleAlphasButton.setStyleSheet(checkedStyle)
+        self.toggleAlphasButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.setDefaultParamsButton = QPushButton("Restore Default Parameters")
         self.setDefaultParamsButton.clicked.connect(self.restoreDefaultParameters)
+        self.setDefaultParamsButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.refreshButton = QPushButton("Refresh")
         self.refreshButton.clicked.connect(self.refreshExperiment)
+        self.refreshButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.printButton = QPushButton("Plot")
         self.printButton.clicked.connect(self.plotExperiment)
+        self.printButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.hideButton = QPushButton("Toggle Visibility")
         self.hideButton.clicked.connect(self.hideExperiment)
+        self.hideButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         phaseOptionsLayout = QVBoxLayout()
         phaseOptionsLayout.addWidget(self.toggleRandButton)
@@ -282,7 +296,7 @@ class PavlovianApp(QDialog):
 PALMS: Pavlovian Associative Learning Models Simulator
 Version 0.xx
 
-Built by Alessandro Abati, Martin Fixman, Julián Jimenez Nimmo, Esther Mondragón and Sean Lim.
+Built by Alessandro Abati, Martin Fixman, Julián Jimenez Nimmo, Sean Lim and Esther Mondragón.
 
 For the MSc in Artificial Intelligence in City St George's, University of London. \
 If you have any questions, contact any of the authors.
