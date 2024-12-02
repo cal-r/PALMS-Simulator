@@ -102,10 +102,10 @@ class PavlovianApp(QDialog):
         
         self.IconLabel = QLabel(self)
         self.IconLabel.setPixmap(self.getPixmap('palms.png'))
-        self.IconLabel.setToolTip('Made with love by the PALMS team.')
+        self.IconLabel.setToolTip('Pavlovian\N{bellhop bell} \N{dog face} Associative\N{handshake} Models\N{bar chart} Simulator\N{desktop computer}.')
 
         self.aboutButton = QPushButton('About')
-        self.aboutButton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.aboutButton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.aboutButton.clicked.connect(self.aboutPALMS)
         
         mainLayout = QGridLayout()
@@ -282,7 +282,7 @@ class PavlovianApp(QDialog):
 PALMS: Pavlovian Associative Learning Models Simulator
 Version 0.xx
 
-Built by Alessandro Abati, Martin Fixman, Julián Jimenez and Sean Lim with a lot of help from Esther Mondragón.
+Built by Alessandro Abati, Martin Fixman, Julián Jimenez Nimmo, Esther Mondragón and Sean Lim.
 
 For the MSc in Artificial Intelligence in City St George's, University of London. \
 If you have any questions, contact any of the authors.
