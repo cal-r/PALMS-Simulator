@@ -7,10 +7,16 @@ matplotlib.use('QtAgg')
 
 from matplotlib import pyplot
 from Environment import StimulusHistory
-from matplotlib.ticker import MaxNLocator
+from matplotlib.ticker import MaxNLocator, IndexLocator, LinearLocator
 from itertools import chain
 
 from Experiment import Phase
+
+class OneLocator(MaxNLocator):
+    def tick_values(self, vmin, vmax):
+        values = set(1 + super().tick_values(vmin, vmax))
+        values.add(1)
+        return list(sorted(int(x) for x in values))
 
 def titleify(filename: str, phases: dict[str, list[Phase]], phase_num: int, suffix: str) -> str:
     titles = []
@@ -80,9 +86,11 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
 
         axes[0].set_xlabel('Trial Number', fontsize = 'small', labelpad = 3)
         axes[0].set_ylabel('Associative Strength', fontsize = 'small', labelpad = 3)
-        axes[0].xaxis.set_major_locator(MaxNLocator(integer = True))
+        axes[0].xaxis.set_major_locator(OneLocator(integer = True))
+
         axes[0].tick_params(axis = 'both', labelsize = 'x-small', pad = 1)
         axes[0].ticklabel_format(useOffset = False, style = 'plain', axis = 'y')
+
         if len(experiments) >= 6:
             axes[0].legend(fontsize = 5, ncol = 2).set_draggable(True)
         else:
@@ -93,7 +101,7 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
             axes[1].set_xlabel('Trial Number', fontsize = 'small', labelpad = 3)
             axes[1].set_ylabel('Alpha', fontsize = 'small', labelpad = 3)
             axes[1].set_title(f'Alphas')
-            axes[1].xaxis.set_major_locator(MaxNLocator(integer = True))
+            axes[1].xaxis.set_major_locator(OneLocator(integer = True))
             axes[1].yaxis.tick_right()
             axes[1].tick_params(axis = 'both', labelsize = 'x-small', pad = 1)
             axes[1].tick_params(axis = 'y', which = 'both', right = True, length = 0)
