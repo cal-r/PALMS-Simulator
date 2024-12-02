@@ -406,19 +406,22 @@ class MlabHybrid(AdaptiveType):
     @classmethod
     def defaults(cls) -> dict[str, float]:
         return dict(
-            salience = .5,
-            habituation = 0.99,
+            alpha = 0.8,
+            salience = .1,
+            habituation = 1,
             lamda = 1,
-            rho = 0.2,
-            nu = 0.25,
+            rho = 0.5,
+            nu = 0.5,
+            kay = 0.005,
         )
 
     def step(self, s: Stimulus, rp: RunParameters):
         # s.alpha = (s.habituation/self.kay) * (s.nu*(rp.lamda-rp.sigma)**2 + s.rho*(s.assoc-(rp.maxAssocRest/self.kay))+ s.alpha)
         # DV = s.alpha * (rp.lamda - rp.sigma)
         # s.habituation = s.habituation_0 - s.salience_0 * (1 - s.habituation)
-        # s.assoc = s.assoc + DV 
-        print(f"Habituation: {s.habituation}")
+        # s.assoc = s.assoc + DV
+
+        #print(f"Habituation: {s.habituation} Alpha: {s.alpha}" )
         s.habituation = s.habituation * math.exp(-self.kay * s.salience_0)
         s.alpha = (1-s.habituation) * (rp.lamda - rp.sigma) * (s.assoc + s.rho * (rp.sigma - rp.maxAssocRest)) + s.habituation * s.alpha
         DV = s.alpha * (rp.lamda - rp.sigma)
