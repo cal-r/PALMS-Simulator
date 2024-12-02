@@ -41,7 +41,7 @@ def titleify(filename: str, phases: dict[str, list[Phase]], phase_num: int, suff
 
     return '\n'.join(titles)
 
-def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | dict[str, list[Phase]] = None, filename = None, plot_phase = None, plot_alpha = False, plot_macknhall = False, title_suffix = None, dpi = None, ticker_threshold = 10) -> list[pyplot.Figure]:
+def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | dict[str, list[Phase]] = None, filename = None, plot_phase = None, plot_alpha = False, plot_macknhall = False, title_suffix = None, dpi = None, ticker_threshold = 10, include_base_stimulus = False) -> list[pyplot.Figure]:
     seaborn.set()
 
     if plot_phase is not None:
@@ -59,17 +59,24 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
             fig, axes = pyplot.subplots(1, 2, figsize = (16, 6), dpi = dpi)
 
         for key, hist in experiments.items():
-            line = axes[0].plot(hist.assoc, label=key, marker='D', color = colors[key], markersize=4, alpha=.5, picker = ticker_threshold)
+            x_range = range(len(hist))
+
+            if not include_base_stimulus:
+                # We include the "0" stimulus in the input to mark the state of
+                # a stimulus before this experiment. We should remove it before
+                # plotting.
+                hist = hist[1:]
+                x_range = x_range[1:]
+
+            line = axes[0].plot(x_range, hist.assoc, label=key, marker='D', color = colors[key], markersize=4, alpha=.5, picker = ticker_threshold)
 
             if len(axes) > 1:
                 if plot_alpha and not plot_macknhall:
-                    axes[1].plot(hist.alpha, label='α: '+str(key), color = colors[key], marker='D', markersize=4, alpha=.5, picker = ticker_threshold)
-                #else:
-                    #axes[1].plot([], label=key, color = colors[key], marker='D', markersize=8, alpha=.5, picker = ticker_threshold)
+                    axes[1].plot(x_range, hist.alpha, label='α: '+str(key), color = colors[key], marker='D', markersize=4, alpha=.5, picker = ticker_threshold)
 
                 if plot_macknhall:
-                    axes[1].plot(hist.alpha_mack, label='Mack: ' + str(key), color = colors[key], marker='$M$', markersize=4, alpha=.5, picker = ticker_threshold)
-                    axes[1].plot(hist.alpha_hall, label='Hall: ' + str(key), color = colors[key], marker='$H$', markersize=4, alpha=.5, picker = ticker_threshold)
+                    axes[1].plot(x_range, hist.alpha_mack, label='Mack: ' + str(key), color = colors[key], marker='$M$', markersize=4, alpha=.5, picker = ticker_threshold)
+                    axes[1].plot(x_range, hist.alpha_hall, label='Hall: ' + str(key), color = colors[key], marker='$H$', markersize=4, alpha=.5, picker = ticker_threshold)
 
         axes[0].set_xlabel('Trial Number', fontsize = 'small', labelpad = 3)
         axes[0].set_ylabel('Associative Strength', fontsize = 'small', labelpad = 3)
