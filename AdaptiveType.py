@@ -421,8 +421,9 @@ class MlabHybrid(AdaptiveType):
         # s.habituation = s.habituation_0 - s.salience_0 * (1 - s.habituation)
         # s.assoc = s.assoc + DV
 
-        #print(f"Habituation: {s.habituation} Alpha: {s.alpha}" )
         s.habituation = s.habituation * math.exp(-self.kay * s.salience_0)
-        s.alpha = (1-s.habituation) * (rp.lamda - rp.sigma) * (s.assoc + s.rho * (rp.sigma - rp.maxAssocRest)) + s.habituation * s.alpha
+        s.alpha = (1-s.habituation) * (rp.lamda - rp.sigma)**2 * (s.nu + s.rho * (rp.sigma - rp.maxAssocRest)) + s.habituation * s.alpha
+        # print(f"Habituation: {s.habituation} Assoc: {s.assoc} Sigma: {rp.sigma} Lamda: {rp.lamda} Rho: {s.rho} MaxAss {rp.maxAssocRest} Alpha: {s.alpha}" )
+
         DV = s.alpha * s.salience_0* (rp.lamda - rp.sigma)
-        s.assoc = s.assoc + DV
+        s.assoc = s.assoc + DV 
