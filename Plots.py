@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 import seaborn
 import matplotlib
+import numpy as np
 matplotlib.use('QtAgg')
 
 from matplotlib import pyplot
@@ -80,7 +81,10 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
 
         axes[0].tick_params(axis = 'both', labelsize = 'x-small', pad = 1)
         axes[0].ticklabel_format(useOffset = False, style = 'plain', axis = 'y')
-
+        
+        # just the following line will do it
+        pyplot.xticks(np.arange(len(hist.assoc)), np.arange(1, len(hist.assoc)+1))
+        
         if len(experiments) >= 6:
             axes[0].legend(fontsize = 5, ncol = 2).set_draggable(True)
         else:
