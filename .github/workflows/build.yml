@@ -81,7 +81,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Upload all release files as artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ matrix.os }}-release
         path: release_*
@@ -122,19 +122,19 @@ jobs:
       uses: actions/checkout@v4
 
     - name: Download Linux Artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: ubuntu-latest-release
         path: release/
 
     - name: Download Windows Artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: windows-latest-release
         path: release/
 
     - name: Download MacOS Artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: macos-latest-release
         path: release/
