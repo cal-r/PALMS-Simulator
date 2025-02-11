@@ -87,7 +87,7 @@ class AdaptiveType:
             lamda = 1,
             beta = 0.3,
             betan = 0.2,
-            gamma = 0.5,
+            gamma = 0.15,
             thetaE = 0.3,
             thetaI = 0.1,
             rho = 0.2,
@@ -160,15 +160,15 @@ class PearceHall(AdaptiveType):
 class PearceKayeHall(AdaptiveType):
     @classmethod
     def parameters(cls) -> list[str]:
-        return ['alpha', 'beta', 'betan', 'lamda', 'gamma']
+        return ['alpha', 'beta', 'betan', 'lamda', 'gamma', 'salience']
 
     def step(self, s: Stimulus, rp: RunParameters):
         rho = rp.lamda - (rp.sigmaE - rp.sigmaI)
 
         if rho >= 0:
-            s.Ve += self.betap * s.alpha * rp.lamda
+            s.Ve += self.betap * s.alpha * rp.lamda * s.salience
         else:
-            s.Vi += self.betan * s.alpha * abs(rho)
+            s.Vi += self.betan * s.alpha * abs(rho) * s.salience
 
         s.alpha = self.gamma * abs(rho) + (1 - self.gamma) * s.alpha
         s.assoc = s.Ve - s.Vi
