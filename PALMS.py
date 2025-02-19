@@ -83,6 +83,9 @@ class PavlovianApp(QDialog):
         self.phaseInfo = QLabel('')
         self.phaseInfo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
+        self.coordInfo = QLabel('')
+        self.coordInfo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+
         self.rightPhaseButton = QPushButton('>')
         self.rightPhaseButton.clicked.connect(self.nextPhase)
         self.rightPhaseButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
@@ -90,6 +93,7 @@ class PavlovianApp(QDialog):
         phaseBoxLayout = QHBoxLayout()
         phaseBoxLayout.addWidget(self.leftPhaseButton)
         phaseBoxLayout.addWidget(self.phaseInfo, stretch = 1, alignment = Qt.AlignmentFlag.AlignCenter)
+        phaseBoxLayout.addWidget(self.coordInfo, alignment = Qt.AlignmentFlag.AlignCenter)
         phaseBoxLayout.addWidget(self.rightPhaseButton)
         self.phaseBox.setLayout(phaseBoxLayout)
 
@@ -616,7 +620,7 @@ If you have any questions, contact any of the authors.
         self.plotCanvas.draw()
         self.tableWidget.selectColumn(self.phaseNum - 1)
 
-        self.phaseInfo.setText(f'{self.phaseNum}/{self.numPhases}')
+        self.phaseInfo.setText(f'Phase {self.phaseNum}/{self.numPhases}')
 
         any_rand = any(p[self.phaseNum - 1].rand for p in self.phases.values())
         self.num_trials.box.setDisabled(not any_rand)
@@ -644,7 +648,9 @@ If you have any questions, contact any of the authors.
         if not event.inaxes:
             return
 
-        print(f'{event.x}\t{event.y}\t{event.xdata}\t{event.ydata}')
+        self.mousey = event.ydata
+        self.mousex = event.xdata
+        self.coordInfo.setText(f'X: {event.xdata:.0f}\tY: {event.ydata:.2f}')
 
     def hideLines(self):
         for fig in self.figures:
