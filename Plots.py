@@ -88,6 +88,7 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
         # Instead of fixing the ticks ourselves, we plot in [0, t - 1] and format
         # the ticks to appear as the next number.
         axes[0].xaxis.set_major_formatter(FuncFormatter(lambda x, _: int(x + 1)))
+        axes[1].xaxis.set_major_formatter(FuncFormatter(lambda x, _: int(x + 1)))
 
         if len(experiments) >= 6:
             axes[0].legend(fontsize = 5, ncol = 2).set_draggable(True)
