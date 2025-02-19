@@ -9,6 +9,7 @@ matplotlib.use('QtAgg')
 from matplotlib import pyplot
 from Environment import StimulusHistory
 from matplotlib.ticker import MaxNLocator, IndexLocator, LinearLocator
+from matplotlib.ticker import FuncFormatter
 from itertools import chain
 
 from Experiment import Phase
@@ -64,7 +65,7 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
                 # This is a predictive model. Do not include the last stimulus in the plot.
                 hist = hist[:-1]
 
-            line = axes[0].plot(hist.assoc, label=key, marker='D', color = colors[key], markersize=4, alpha=.5, picker = ticker_threshold)
+            line = axes[0].plot(hist.assoc, label = key, marker = 'D', color = colors[key], markersize = 4, alpha = .5, picker = ticker_threshold)
 
             cs = key.rsplit(' ', 1)[1]
             if len(axes) > 1 and len(cs) == 1:
@@ -82,11 +83,11 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
         axes[0].tick_params(axis = 'both', labelsize = 'x-small', pad = 1)
         axes[0].ticklabel_format(useOffset = False, style = 'plain', axis = 'y')
 
-        # X-Axis Ticks
-        if len(hist.assoc) <= 2:
-            pyplot.xticks(np.arange(len(hist.assoc)), np.arange(1, len(hist.assoc) + 1))
-        else:
-            pyplot.xticks(np.arange(1, len(hist.assoc), 2), np.arange(2, len(hist.assoc) + 1, 2))
+        # UGLY HACK WARNING.
+        # Matplotlib makes it hard to start a plot with xticks = [1, t].
+        # Instead of fixing the ticks ourselves, we plot in [0, t - 1] and format
+        # the ticks to appear as the next number.
+        axes[0].xaxis.set_major_formatter(FuncFormatter(lambda x, _: int(x + 1)))
 
         if len(experiments) >= 6:
             axes[0].legend(fontsize = 5, ncol = 2).set_draggable(True)
