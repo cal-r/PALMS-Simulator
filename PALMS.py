@@ -611,6 +611,7 @@ If you have any questions, contact any of the authors.
         self.plotCanvas.resize(self.plotCanvas.width() - 1, self.plotCanvas.height() - 1)
 
         self.plotCanvas.mpl_connect('pick_event', self.pickLine)
+        self.plotCanvas.mpl_connect('motion_notify_event', self.mouseMove)
 
         self.plotCanvas.draw()
         self.tableWidget.selectColumn(self.phaseNum - 1)
@@ -638,6 +639,12 @@ If you have any questions, contact any of the authors.
                     line.set_alpha(.75 - line.get_alpha())
 
         line.figure.canvas.draw_idle()
+
+    def mouseMove(self, event):
+        if not event.inaxes:
+            return
+
+        print(f'{event.x}\t{event.y}\t{event.xdata}\t{event.ydata}')
 
     def hideLines(self):
         for fig in self.figures:
