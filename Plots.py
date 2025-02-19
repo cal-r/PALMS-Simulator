@@ -54,11 +54,13 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
 
     figures = []
     for phase_num, experiments in enumerate(data, start = 1):
+        multiple = False
         if not plot_alpha and not plot_macknhall:
             fig, axes_ = pyplot.subplots(1, 1, figsize = (8, 4), dpi = dpi)
             axes = [axes_]
         else:
             fig, axes = pyplot.subplots(1, 2, figsize = (16, 6), dpi = dpi)
+            multiple = True
 
         for key, hist in experiments.items():
             if not include_last_stimulus:
@@ -67,14 +69,8 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
 
             line = axes[0].plot(hist.assoc, label = key, marker = 'D', color = colors[key], markersize = 4, alpha = .5, picker = ticker_threshold)
 
-            # UGLY HACK WARNING.
-            # Matplotlib makes it hard to start a plot with xticks = [1, t].
-            # Instead of fixing the ticks ourselves, we plot in [0, t - 1] and format
-            # the ticks to appear as the next number.
-            axes[0].xaxis.set_major_formatter(FuncFormatter(lambda x, _: int(x + 1)))
-
             cs = key.rsplit(' ', 1)[1]
-            if len(axes) > 1 and len(cs) == 1:
+            if multiple:
                 if plot_alpha and not plot_macknhall:
                     axes[1].plot(hist.alpha, label='α: '+str(key), color = colors[key], marker='D', markersize=4, alpha=.5, picker = ticker_threshold)
 
@@ -82,21 +78,25 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
                     axes[1].plot(hist.alpha_mack, label='Mack: ' + str(key), color = colors[key], marker='$M$', markersize=4, alpha=.5, picker = ticker_threshold)
                     axes[1].plot(hist.alpha_hall, label='Hall: ' + str(key), color = colors[key], marker='$H$', markersize=4, alpha=.5, picker = ticker_threshold)
 
-                axes[1].xaxis.set_major_formatter(FuncFormatter(lambda x, _: int(x + 1)))
-
         axes[0].set_xlabel('Trial Number', fontsize = 'small', labelpad = 3)
         axes[0].set_ylabel('Associative Strength', fontsize = 'small', labelpad = 3)
-        axes[0].xaxis.set_major_locator(MaxNLocator(integer = True))
 
         axes[0].tick_params(axis = 'both', labelsize = 'x-small', pad = 1)
         axes[0].ticklabel_format(useOffset = False, style = 'plain', axis = 'y')
 
+        # UGLY HACK WARNING.
+        # Matplotlib makes it hard to start a plot with xticks = [1, t].
+        # Instead of fixing the ticks ourselves, we plot in [0, t - 1] and format
+        # the ticks to appear as the next number.
+        axes[0].xaxis.set_major_formatter(FuncFormatter(lambda x, _: int(x + 1)))
+        axes[0].xaxis.set_major_locator(MaxNLocator(integer = True, min_n_ticks = 1))
+
         if len(experiments) >= 6:
-            axes[0].legend(fontsize = 5, ncol = 2).set_draggable(True)
+            axes[0].legend(fontsize = 8, ncol = 2).set_draggable(True)
         else:
             axes[0].legend(fontsize = 'x-small').set_draggable(True)
 
-        if plot_alpha or plot_macknhall:
+        if multiple:
             axes[0].set_title(f'Associative Strengths')
             axes[1].set_xlabel('Trial Number', fontsize = 'small', labelpad = 3)
             axes[1].set_ylabel('Alpha', fontsize = 'small', labelpad = 3)
@@ -106,8 +106,10 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
             axes[1].tick_params(axis = 'both', labelsize = 'x-small', pad = 1)
             axes[1].tick_params(axis = 'y', which = 'both', right = True, length = 0)
             axes[1].yaxis.set_label_position('right')
+            axes[1].xaxis.set_major_formatter(FuncFormatter(lambda x, _: int(x + 1)))
+            axes[1].xaxis.set_major_locator(MaxNLocator(integer = True, min_n_ticks = 1))
             if len(experiments) >= 6:
-                axes[1].legend(fontsize = 5, ncol = 2).set_draggable(True)
+                axes[1].legend(fontsize = 8, ncol = 2).set_draggable(True)
             else:
                 axes[1].legend(fontsize = 'x-small').set_draggable(True)
 
