@@ -67,6 +67,12 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
 
             line = axes[0].plot(hist.assoc, label = key, marker = 'D', color = colors[key], markersize = 4, alpha = .5, picker = ticker_threshold)
 
+            # UGLY HACK WARNING.
+            # Matplotlib makes it hard to start a plot with xticks = [1, t].
+            # Instead of fixing the ticks ourselves, we plot in [0, t - 1] and format
+            # the ticks to appear as the next number.
+            axes[0].xaxis.set_major_formatter(FuncFormatter(lambda x, _: int(x + 1)))
+
             cs = key.rsplit(' ', 1)[1]
             if len(axes) > 1 and len(cs) == 1:
                 if plot_alpha and not plot_macknhall:
@@ -76,19 +82,14 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
                     axes[1].plot(hist.alpha_mack, label='Mack: ' + str(key), color = colors[key], marker='$M$', markersize=4, alpha=.5, picker = ticker_threshold)
                     axes[1].plot(hist.alpha_hall, label='Hall: ' + str(key), color = colors[key], marker='$H$', markersize=4, alpha=.5, picker = ticker_threshold)
 
+                axes[1].xaxis.set_major_formatter(FuncFormatter(lambda x, _: int(x + 1)))
+
         axes[0].set_xlabel('Trial Number', fontsize = 'small', labelpad = 3)
         axes[0].set_ylabel('Associative Strength', fontsize = 'small', labelpad = 3)
         axes[0].xaxis.set_major_locator(MaxNLocator(integer = True))
 
         axes[0].tick_params(axis = 'both', labelsize = 'x-small', pad = 1)
         axes[0].ticklabel_format(useOffset = False, style = 'plain', axis = 'y')
-
-        # UGLY HACK WARNING.
-        # Matplotlib makes it hard to start a plot with xticks = [1, t].
-        # Instead of fixing the ticks ourselves, we plot in [0, t - 1] and format
-        # the ticks to appear as the next number.
-        axes[0].xaxis.set_major_formatter(FuncFormatter(lambda x, _: int(x + 1)))
-        axes[1].xaxis.set_major_formatter(FuncFormatter(lambda x, _: int(x + 1)))
 
         if len(experiments) >= 6:
             axes[0].legend(fontsize = 5, ncol = 2).set_draggable(True)
