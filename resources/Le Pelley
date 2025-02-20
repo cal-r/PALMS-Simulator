@@ -1,0 +1,25 @@
+\documentclass[varwidth]{standalone}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\begin{document}
+Le Pelley model equations:
+
+\begin{align}
+\Delta V_S^{n+1} = \sigma \alpha_S^n \beta^+ \cdot \left( 1 - \partial V^n_S \right) \cdot \left| R^n \right| \\
+\overline{\Delta V_S^{n+1}} = \sigma \alpha_S^n \beta^- \cdot \left( 1 + \partial V^n_S \right) \cdot \left| R^n \right|
+\end{align}
+
+
+\begin{description}
+	\item[$\alpha_i^{n}$] = associability of the CS $i$ on trial $n$.
+        \item[$\beta$] = Learning rate parameter for the US, where $\beta^+$ (excitatory) > $\beta^-$ (inhibitory)
+	\item[$\lambda_i^n$] = intensity of the US with stimuli i at trial n.
+	\item[$V_{i,j}^{n}$] = associative strength of the CS $i$ on trial $n$.
+        \item[$\overline{V_{i,j}^{n+1}}$] = inhibitory associative strength of the CS $i$ on trial $n + 1$.
+	\item[$\sigma$] = salience associability multiplicative factor
+    \item[$R$] = Reinforcing value (excitatory/inhibitory)
+    \item[$\partial V^n_S$] = $V_S$ - $\overline{V_S}$ Difference between the excitatory and inhibitory CS-US association.
+\end{description} \vspace{10pt}
+
+\end{document}

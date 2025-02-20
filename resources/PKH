@@ -1,0 +1,29 @@
+\documentclass[varwidth]{standalone}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\begin{document}
+Pearce-Hall model equations:
+
+
+\begin{align}
+V_{i,j}^{n+1} = V_{i,j}^n + \Delta V_{i,j}^n \,\,\,\text{(excitatory)} \\
+\overline{V_{i,j}^{n+1}} = \overline{V_{i,j}^n} + \overline{\Delta V_{i,j}^n} \,\,\,\text{(inhibitory)} \\
+\Delta V_{i,j}^{n+1} = \beta_j^{+} \cdot \alpha_i^n \cdot \lambda_j^{n+1} \,\,\,\text{(excitatory)} \\
+\overline{\Delta V_{i,j}^{n+1}} = \beta_j^{-} \cdot \alpha_i^n \cdot \left| \overline{\lambda_j^{n+1}} \right| \,\,\,\text{(inhibitory)} \\
+\overline{\lambda_j^{n+1}} = \lambda_j^{n+1} - \Big( \sum_i V_{i,j}^n - \sum_i \overline{V_{i,j}^n} \Big) \\
+\alpha^{n+1}_i = \gamma \cdot |\overline{\lambda_j^{n+1}}| + (1-\gamma) \cdot \alpha^{n}_i \\
+V_{net_{i,j}}^{n+1} = V_{i,j}^{n+1} - \overline{V_{i,j}^{n+1}}
+\end{align}
+
+
+\begin{description}
+	\item[$\alpha_i^{n}$] = associability of the CS $i$ on trial $n$.
+        \item[$\beta$] = Learning rate (excitory or inhibitory) parameter for the US.
+	\item[$\lambda_i^n$] = asymptote of learning for stimuli i at trial n.
+	\item[$V_{i,j}^{n + 1}$] = associative strength of the CS $i$ on trial $n + 1$.
+        \item[$\overline{V_{i,j}^{n+1}}$] = inhibitory associative strength of the CS $i$ on trial $n + 1$.
+	\item[$\gamma$] = Parameter used for modelling importance on past or present associations.
+\end{description} \vspace{10pt}
+
+\end{document}

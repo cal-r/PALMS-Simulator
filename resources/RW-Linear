@@ -1,0 +1,11 @@
+\documentclass[varwidth]{standalone}
+\usepackage{amsmath}
+
+\begin{document}
+Rescorla-Wagner model (Linear variant) equation:
+$
+\alpha_i ^{n + 1} = \alpha_i ^n \cdot (1 + 0.05 \cdot \operatorname{sign}(\lambda_j^n))
+\label{linear_alpha}
+$
+
+\end{document}
