@@ -8,7 +8,6 @@ from AdaptiveType import AdaptiveType, RunParameters
 class Group:
     name: str
 
-    cs: list[str]
     s: Environment
 
     adaptive_type: AdaptiveType
@@ -72,11 +71,6 @@ class Group:
 
         self.adaptive_type = AdaptiveType.get(adaptive_type, betan = betan, betap = betap, lamda = lamda, xi_hall = xi_hall, gamma = gamma, thetaE = thetaE, thetaI = thetaI, kay = kay)
         self.window_size = window_size
-
-        # (∃ x) len(x) > 1 if `use_configurals`.
-        # `use_configurals` was removed from the current version of the program,
-        # but we keep this line as we might re-add it later.
-        self.cs = [x for x in alphas.keys() if len(x) == 1]
 
     # runPhase runs a single trial of a phase, in order, and returns a list of the Strength values
     # of its CS at every step.
