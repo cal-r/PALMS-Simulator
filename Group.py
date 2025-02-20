@@ -56,6 +56,7 @@ class Group:
         self.s = Environment(
             s = {
                 k: Stimulus(
+                    name = k,
                     assoc = 0,
                     alpha = alphas[k],
                     salience = saliences[k],

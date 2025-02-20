@@ -3,7 +3,11 @@ from collections import deque, defaultdict
 from functools import reduce
 from itertools import combinations
 
+from typing import Any
+
 class Stimulus:
+    name: str
+
     assoc: float
 
     Ve: float
@@ -27,7 +31,9 @@ class Stimulus:
     salience_0: float
     habituation_0: float
 
-    def __init__(self, *, assoc = 0., Ve = 0., Vi = 0., alpha = .5, alpha_mack = None, alpha_hall = None, delta_ma_hall = .2, window = None, salience = None, habituation = None, rho = None, nu = None, alpha_mack_0 = None, alpha_hall_0 = None, salience_0 = None, habituation_0 = None):
+    def __init__(self, name, *, assoc = 0., Ve = 0., Vi = 0., alpha = .5, alpha_mack = None, alpha_hall = None, delta_ma_hall = .2, window = None, salience = None, habituation = None, rho = None, nu = None, alpha_mack_0 = None, alpha_hall_0 = None, salience_0 = None, habituation_0 = None):
+        self.name = name
+
         self.assoc = assoc
 
         self.Ve = Ve
@@ -55,8 +61,11 @@ class Stimulus:
         self.delta_ma_hall = delta_ma_hall
 
     def join(self, other: Stimulus, op) -> Stimulus:
-        ret = {}
+        ret: dict[str, Any] = dict(name = ''.join(sorted(set(self.name + other.name))))
         for prop in self.__dict__.keys():
+            if prop == 'name':
+                continue
+
             this = getattr(self, prop)
             that = getattr(other, prop)
 
@@ -76,8 +85,11 @@ class Stimulus:
         return self.join(other, lambda a, b: a + b)
 
     def __truediv__(self, quot: int) -> Stimulus:
-        ret = {}
+        ret: dict[str, Any] = dict(name = self.name)
         for prop in self.__dict__.keys():
+            if prop == 'name':
+                continue
+
             this = getattr(self, prop)
 
             if type(this) is float or type(this) is int:
@@ -126,7 +138,7 @@ class Environment:
             cs = set(s.keys())
 
         if s is None and cs is not None:
-            s = {k: Stimulus() for k in cs}
+            s = {k: Stimulus(k) for k in cs}
 
         # Weird order of ifs to make mypy happy.
         if cs is None or s is None:
