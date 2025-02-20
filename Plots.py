@@ -14,7 +14,7 @@ from itertools import chain
 
 from Experiment import Phase
 
-def titleify(filename: str, phases: dict[str, list[Phase]], phase_num: int, suffix: str) -> str:
+def titleify(filename: None | str, phases: dict[str, list[Phase]], phase_num: int, suffix: None | str) -> str:
     titles = []
 
     if filename is not None:
