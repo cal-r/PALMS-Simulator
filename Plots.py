@@ -88,7 +88,7 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
         # Matplotlib makes it hard to start a plot with xticks = [1, t].
         # Instead of fixing the ticks ourselves, we plot in [0, t - 1] and format
         # the ticks to appear as the next number.
-        axes[0].xaxis.set_major_formatter(FuncFormatter(lambda x, _: int(x + 1)))
+        axes[0].xaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x + 1:.0f}'))
         axes[0].xaxis.set_major_locator(MaxNLocator(integer = True, min_n_ticks = 1))
 
         if len(experiments) >= 6:
@@ -106,7 +106,7 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
             axes[1].tick_params(axis = 'both', labelsize = 'x-small', pad = 1)
             axes[1].tick_params(axis = 'y', which = 'both', right = True, length = 0)
             axes[1].yaxis.set_label_position('right')
-            axes[1].xaxis.set_major_formatter(FuncFormatter(lambda x, _: int(x + 1)))
+            axes[1].xaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x + 1:.0f}'))
             axes[1].xaxis.set_major_locator(MaxNLocator(integer = True, min_n_ticks = 1))
             if len(experiments) >= 6:
                 axes[1].legend(fontsize = 8, ncol = 2).set_draggable(True)

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import cast
+
 from Environment import Environment, StimulusHistory, Stimulus
 from AdaptiveType import AdaptiveType, RunParameters
 
@@ -43,11 +45,11 @@ class Group:
     ):
         cs = (cs or set()) | alphas.keys() | saliences.keys() | habituations.keys() | alpha_macks.keys() | alpha_halls.keys()
         if cs is not None:
-            alphas = {k: alphas.get(k, default_alpha) for k in cs}
-            saliences = {k: saliences.get(k, default_salience) for k in cs}
-            habituations = {k: habituations.get(k, default_habituation) for k in cs}
-            alpha_macks = {k: alpha_macks.get(k, default_alpha_mack) for k in cs}
-            alpha_halls = {k: alpha_halls.get(k, default_alpha_hall) for k in cs}
+            alphas = {k: alphas.get(k, cast(float, default_alpha)) for k in cs}
+            saliences = {k: saliences.get(k, cast(float, default_salience)) for k in cs}
+            habituations = {k: habituations.get(k, cast(float, default_habituation)) for k in cs}
+            alpha_macks = {k: alpha_macks.get(k, cast(float, default_alpha_mack)) for k in cs}
+            alpha_halls = {k: alpha_halls.get(k, cast(float, default_alpha_hall)) for k in cs}
 
         self.name = name
 

@@ -10,6 +10,7 @@ from argparse import ArgumentParser
 from collections import defaultdict
 from contextlib import nullcontext
 from itertools import chain, zip_longest
+from typing import cast
 from PyQt6.QtCore import QTimer, Qt, QSize
 from PyQt6.QtGui import QFont, QPixmap
 from PyQt6.QtWidgets import *
@@ -282,7 +283,7 @@ class PavlovianApp(QDialog):
 
     def togglePhaseLambda(self):
         set_lambda = any(p[self.phaseNum - 1].lamda is not None for p in self.phases.values())
-        self.tableWidget.setLambdaInSelection(self.floatOrZero(self.lamda.box.text()) if not set_lambda else None)
+        self.tableWidget.setLambdaInSelection(self.floatOr(self.lamda.box.text(), 0) if not set_lambda else None)
         self.refreshExperiment()
 
     def togglePlotAlpha(self):
@@ -464,7 +465,7 @@ If you have any questions, contact any of the authors.
         shortnames = {'alpha': 'α', 'alpha_mack': 'αᴹ', 'alpha_hall': 'αᴴ', 'salience': 'S', 'habituation': 'h'}
         for perc, form in self.per_cs_param.items():
             val = getattr(self, perc).box.text()
-            layout = self.per_cs_box[perc].layout()
+            layout = cast(QFormLayout, self.per_cs_box[perc].layout())
 
             to_remove = []
             for e, (cs, pair) in enumerate(form.items()):
@@ -491,22 +492,24 @@ If you have any questions, contact any of the authors.
             widget = getattr(self, f'').box
             widget.setText(str(value))
 
-    # Convenience function: convert a string to a float, or return a default.
+    # Convenience function: convert a string to a float, or return None if empty.
     @classmethod
-    def floatOr(cls, text: str, default: None | float = None) -> None | float:
+    def floatOrNone(cls, text: str) -> None | float:
+        if text == '':
+            return None
+
+        return float(text)
+
+    # Convenience function: convert a string to a float, or return a default value if empty.
+    @classmethod
+    def floatOr(cls, text: str, default: float) -> float:
         if text == '':
             return default
 
         return float(text)
 
-    # Same as floatOr(text, 0); added separately to help mypy with typing.
-    @classmethod
-    def floatOrZero(cls, text: str) -> float:
-        f = cls.floatOr(text)
-        return f or 0
-
     def csPercDict(self, perc) -> dict[str, float]:
-        value = self.floatOrZero(getattr(self, perc).box.text())
+        value = self.floatOr(getattr(self, perc).box.text(), 0)
         if not self.alphasBox.isVisible() or perc not in self.per_cs_param:
             return defaultdict(lambda: value)
 
@@ -516,21 +519,21 @@ If you have any questions, contact any of the authors.
         args = RWArgs(
             adaptive_type = self.current_adaptive_type,
 
-            alpha = self.floatOrZero(self.alpha.box.text()),
-            alpha_mack = self.floatOr(self.alpha_mack.box.text()),
-            alpha_hall = self.floatOr(self.alpha_hall.box.text()),
+            alpha = self.floatOr(self.alpha.box.text(), 0),
+            alpha_mack = self.floatOrNone(self.alpha_mack.box.text()),
+            alpha_hall = self.floatOrNone(self.alpha_hall.box.text()),
 
-            beta = self.floatOrZero(self.beta.box.text()),
-            beta_neg = self.floatOrZero(self.betan.box.text()),
-            lamda = self.floatOrZero(self.lamda.box.text()),
-            gamma = self.floatOrZero(self.gamma.box.text()),
-            thetaE = self.floatOrZero(self.thetaE.box.text()),
-            thetaI = self.floatOrZero(self.thetaI.box.text()),
+            beta = self.floatOr(self.beta.box.text(), 0),
+            beta_neg = self.floatOr(self.betan.box.text(), 0),
+            lamda = self.floatOr(self.lamda.box.text(), 0),
+            gamma = self.floatOr(self.gamma.box.text(), 0),
+            thetaE = self.floatOr(self.thetaE.box.text(), 0),
+            thetaI = self.floatOr(self.thetaI.box.text(), 0),
 
-            salience = self.floatOrZero(self.salience.box.text()),
-            habituation = self.floatOrZero(self.habituation.box.text()),
+            salience = self.floatOr(self.salience.box.text(), 0),
+            habituation = self.floatOr(self.habituation.box.text(), 0),
 
-            kay = self.floatOrZero(self.kay.box.text()),
+            kay = self.floatOr(self.kay.box.text(), 0),
 
             alphas = self.csPercDict('alpha'),
             alpha_macks = self.csPercDict('alpha_mack'),
@@ -539,8 +542,8 @@ If you have any questions, contact any of the authors.
             saliences = self.csPercDict('salience'),
             habituations = self.csPercDict('habituation'),
 
-            rho = self.floatOrZero(self.rho.box.text()),
-            nu = self.floatOrZero(self.nu.box.text()),
+            rho = self.floatOr(self.rho.box.text(), 0),
+            nu = self.floatOr(self.nu.box.text(), 0),
 
             window_size = 1,
             num_trials = int(self.num_trials.box.text()),
