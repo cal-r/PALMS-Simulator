@@ -28,8 +28,6 @@ class Stimulus:
 
     alpha_mack_0: float
     alpha_hall_0: float
-    salience_0: float
-    habituation_0: float
 
     def __init__(
             self,
@@ -42,7 +40,7 @@ class Stimulus:
             Ve = 0., Vi = 0.,
             delta_ma_hall = .2,
             window: None | deque = None,
-            alpha_mack_0 = None, alpha_hall_0 = None, salience_0 = None, habituation_0 = None,
+            alpha_mack_0 = None, alpha_hall_0 = None,
         ):
         self.name = name
 
@@ -55,16 +53,14 @@ class Stimulus:
         self.alpha_mack = alpha_mack
         self.alpha_hall = alpha_hall
 
-        self.salience = salience_0 or salience
-        self.habituation = habituation_0 or habituation
+        self.salience =  salience
+        self.habituation = habituation
 
         self.rho = rho
         self.nu = nu
 
         self.alpha_mack_0 = alpha_mack_0 or self.alpha_mack
         self.alpha_hall_0 = alpha_hall_0 or self.alpha_hall
-        self.salience_0 = salience_0 or self.salience
-        self.habituation_0 = habituation_0 or self.habituation
 
         if window is None:
             window = deque([])
