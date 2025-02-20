@@ -1,0 +1,20 @@
+\documentclass[varwidth]{standalone}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\begin{document}
+Rescorla-Wagner model equation:
+
+$
+\Delta V_{i,j}^n = \beta_j \cdot \alpha_i \cdot \big( \lambda_j^n - \sum_i V_i^{n} \big)
+\label{rw_deltaV}
+$
+
+\begin{description}
+    \item[$\alpha_i$] Learning rate of the CS $i$ or its \emph{significance}.
+    \item[$\beta_j$] Learning rate parameter for the US or its \emph{strength}.
+    \item[$\lambda_j$] Asymptote of learning; the maximum associative value the US can support.
+    \item[$V_{i,j}^n$] Current associative strength between the CS and the US at time step n.
+\end{description} \vspace{10pt}
+
+\end{document}

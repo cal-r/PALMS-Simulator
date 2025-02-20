@@ -1,0 +1,23 @@
+\documentclass[varwidth]{standalone}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+\begin{document}
+Pearce-Hall model equations:
+
+
+\begin{align}
+\alpha_i^{n+1} &= \left| \lambda_j^{n} - \sum_i V^n_i \right| \label{pearce_hall_alpha} \\
+\Delta V^{n+1}_{i,j} &= S_i \cdot \alpha^n_i \cdot \left| \lambda_j^n \right| \label{pearce_hall_deltav} \\
+V^{n+1}_{i,j} &= V^n_i + \Delta V_i^n \label{pearce_hall}
+\end{align}
+
+
+\begin{description}
+	\item[$\alpha_i^{n + 1}$] = associability of the CS $i$ on trial $n + 1$.
+	\item[$\lambda$] = intensity of the US.
+	\item[$V_{i,j}^{n + 1}$] = associative strength of the CS $i$ on trial $n + 1$.
+	\item[$S_i$] = salience of the stimulus.
+\end{description} \vspace{10pt}
+
+\end{document}
