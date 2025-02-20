@@ -130,23 +130,10 @@ class StimulusHistory:
         return defaultdict(lambda: StimulusHistory())
 
 class Environment:
-    cs: set[str]
     s: dict[str, Stimulus]
 
-    def __init__(self, cs: None | set[str] = None, s: None | dict[str, Stimulus] = None):
-        if cs is None and s is not None:
-            cs = set(s.keys())
-
-        if s is None and cs is not None:
-            s = {k: Stimulus(k) for k in cs}
-
-        # Weird order of ifs to make mypy happy.
-        if cs is None or s is None:
-            cs = set()
-            s = {}
-
-        self.cs = set(cs)
-        self.s = dict(s)
+    def __init__(self, s: dict[str, Stimulus]):
+        self.s = s
 
     # fromHistories "transposes" a several histories of single CSs into a single list of many CSs.
     @staticmethod
@@ -187,14 +174,14 @@ class Environment:
         return reduce(lambda a, b: a + b, [self.s[k] for k in key])
 
     def __add__(self, other: Environment) -> Environment:
-        cs = self.cs | other.cs
-        return Environment(cs, {k: self[k] + other[k] for k in cs})
+        cs = self.s.keys() | other.s.keys()
+        return Environment({k: self[k] + other[k] for k in cs})
 
     def __truediv__(self, quot: int) -> Environment:
-        return Environment(self.cs, {k: self.s[k] / quot for k in self.cs})
+        return Environment({k: self.s[k] / quot for k in self.s.keys()})
 
     def copy(self) -> Environment:
-        return Environment(self.cs.copy(), {k: v.copy() for k, v in self.s.items()})
+        return Environment({k: v.copy() for k, v in self.s.items()})
 
     @staticmethod
     def avg(val: list[Environment]) -> Environment:
