@@ -43,7 +43,18 @@ def titleify(filename: str, phases: dict[str, list[Phase]], phase_num: int, suff
 
     return '\n'.join(titles)
 
-def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | dict[str, list[Phase]] = None, filename = None, plot_phase = None, plot_alpha = False, plot_macknhall = False, title_suffix = None, dpi = None, ticker_threshold = 10, include_last_stimulus = False) -> list[pyplot.Figure]:
+def generate_figures(
+        data: list[dict[str, StimulusHistory]],
+        *,
+        phases: None | dict[str, list[Phase]] = None,
+        filename: None | str = None,
+        plot_phase: None | int = None,
+        plot_alpha: bool = False,
+        plot_macknhall: bool = False,
+        title_suffix: None | str = None,
+        dpi: None | float = None,
+        ticker_threshold: int = 10,
+    ) -> list[pyplot.Figure]:
     seaborn.set()
 
     if plot_phase is not None:
@@ -63,9 +74,8 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
             multiple = True
 
         for key, hist in experiments.items():
-            if not include_last_stimulus:
-                # This is a predictive model. Do not include the last stimulus in the plot.
-                hist = hist[:-1]
+            # This is a predictive model. Do not include the last stimulus in the plot.
+            hist = hist[:-1]
 
             line = axes[0].plot(hist.assoc, label = key, marker = 'D', color = colors[key], markersize = 4, alpha = .5, picker = ticker_threshold)
 

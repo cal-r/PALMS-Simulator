@@ -37,18 +37,17 @@ class Group:
         gamma: float,
         thetaE: float,
         thetaI: float,
-        cs: None | set[str] = None,
+        cs: set[str] = set(),
         adaptive_type: None | str = None,
         window_size: None | int = None,
         xi_hall: None | float = None,
     ):
-        cs = (cs or set()) | alphas.keys() | saliences.keys() | habituations.keys() | alpha_macks.keys() | alpha_halls.keys()
-        if cs is not None:
-            alphas = {k: alphas.get(k, cast(float, default_alpha)) for k in cs}
-            saliences = {k: saliences.get(k, cast(float, default_salience)) for k in cs}
-            habituations = {k: habituations.get(k, cast(float, default_habituation)) for k in cs}
-            alpha_macks = {k: alpha_macks.get(k, cast(float, default_alpha_mack)) for k in cs}
-            alpha_halls = {k: alpha_halls.get(k, cast(float, default_alpha_hall)) for k in cs}
+        cs = cs | alphas.keys() | saliences.keys() | habituations.keys() | alpha_macks.keys() | alpha_halls.keys()
+        alphas = {k: alphas.get(k, cast(float, default_alpha)) for k in cs}
+        saliences = {k: saliences.get(k, cast(float, default_salience)) for k in cs}
+        habituations = {k: habituations.get(k, cast(float, default_habituation)) for k in cs}
+        alpha_macks = {k: alpha_macks.get(k, cast(float, default_alpha_mack)) for k in cs}
+        alpha_halls = {k: alpha_halls.get(k, cast(float, default_alpha_hall)) for k in cs}
 
         self.name = name
 
@@ -56,7 +55,6 @@ class Group:
             s = {
                 k: Stimulus(
                     name = k,
-                    assoc = 0,
                     alpha = alphas[k],
                     salience = saliences[k],
                     habituation = habituations[k],
@@ -69,7 +67,17 @@ class Group:
             }
         )
 
-        self.adaptive_type = AdaptiveType.get(adaptive_type, betan = betan, betap = betap, lamda = lamda, xi_hall = xi_hall, gamma = gamma, thetaE = thetaE, thetaI = thetaI, kay = kay)
+        self.adaptive_type = AdaptiveType.get(
+            adaptive_type,
+            betan = betan,
+            betap = betap,
+            lamda = lamda,
+            xi_hall = xi_hall,
+            gamma = gamma,
+            thetaE = thetaE,
+            thetaI = thetaI,
+            kay = kay,
+        )
         self.window_size = window_size
 
     # runPhase runs a single trial of a phase, in order, and returns a list of the Strength values
