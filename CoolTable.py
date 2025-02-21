@@ -13,9 +13,10 @@ class CoolTable(QWidget):
 
         self.table = QTableWidget(rows, cols)
         self.table.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        self.table.verticalHeader().sectionDoubleClicked.connect(self.editExperimentNames)
-        self.table.horizontalHeader().setMinimumSectionSize(300)
-        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+
+        self.table.verticalHeader().sectionDoubleClicked.connect(self.editExperimentNames) # type: ignore
+        self.table.horizontalHeader().setMinimumSectionSize(300) # type: ignore
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents) # type: ignore
 
         self.rightPlus = QPushButton('+')
         self.rightPlus.clicked.connect(self.addColumn)

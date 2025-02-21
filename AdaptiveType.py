@@ -352,52 +352,6 @@ class OldHybrid(AdaptiveType):
 
         s.assoc = s.alpha_mack * (s.Ve - s.Vi)
 
-class Hybrid(AdaptiveType):
-    @classmethod
-    def parameters(cls) -> list[str]:
-        return ['alpha_mack', 'alpha_hall', 'salience', 'habituation', 'lamda']
-
-    @classmethod
-    def defaults(cls) -> dict[str, float]:
-        return dict(
-            salience = .5,
-            habituation = 0.99,
-            alpha_mack = 0.1,
-            alpha_hall = 0.3,
-            lamda = 1,
-        )
-
-    def step(self, s: Stimulus, rp: RunParameters):
-        s.habituation = s.habituation_0 - s.salience_0 * (1 - s.habituation)
-        s.alpha_hall = (1 - s.habituation) * (rp.lamda - rp.sigma) ** 2 + s.habituation * s.alpha_hall
-        s.alpha_mack = ((1 - s.alpha_mack) * (2 * s.assoc - rp.sigma)) ** 2 + (1 - (s.alpha_hall_0 + (1 - s.salience_0) * (1 - s.alpha_hall_0))) ** 2
-
-        DV = s.alpha_hall * (rp.lamda - rp.sigma)
-        s.assoc = s.assoc + DV * s.alpha_mack
-
-class HybridFix(AdaptiveType):
-    @classmethod
-    def parameters(cls) -> list[str]:
-        return ['alpha_mack', 'alpha_hall', 'salience', 'habituation', 'lamda']
-
-    @classmethod
-    def defaults(cls) -> dict[str, float]:
-        return dict(
-            salience = .5,
-            habituation = 0.99,
-            alpha_mack = 0.1,
-            alpha_hall = 0.3,
-            lamda = 1,
-        )
-
-    def step(self, s: Stimulus, rp: RunParameters):
-        s.habituation = s.habituation_0 - s.salience_0 * (1 - s.habituation)
-        s.alpha_hall = (1 - s.habituation) * (rp.lamda - rp.sigma) ** 2 + s.habituation * s.alpha_hall
-        s.alpha_mack = ((1 - s.alpha_mack) * (2 * s.assoc - rp.sigma)) ** 2 + (1 - (s.alpha_hall_0 + (1 - s.salience_0) * (1 - s.alpha_hall_0))) ** 2
-
-        DV = s.alpha_hall * (rp.lamda - rp.sigma)
-        s.assoc = s.assoc * s.alpha_mack + DV
-
 class MlabHybrid(AdaptiveType):
     @classmethod
     def parameters(cls) -> list[str]:
@@ -416,15 +370,8 @@ class MlabHybrid(AdaptiveType):
         )
 
     def step(self, s: Stimulus, rp: RunParameters):
-        # s.alpha = (s.habituation/self.kay) * (s.nu*(rp.lamda-rp.sigma)**2 + s.rho*(s.assoc-(rp.maxAssocRest/self.kay))+ s.alpha)
-        # DV = s.alpha * (rp.lamda - rp.sigma)
-        # s.habituation = s.habituation_0 - s.salience_0 * (1 - s.habituation)
-        # s.assoc = s.assoc + DV
-
-
-        s.habituation = s.habituation * math.exp(-self.kay * s.salience_0)
-        DV = s.alpha * s.salience_0* (rp.lamda - rp.sigma)
+        s.habituation = s.habituation * math.exp(-self.kay * s.salience)
+        DV = s.alpha * s.salience * (rp.lamda - rp.sigma)
         s.alpha = (1-s.habituation) * (rp.lamda - rp.sigma)**2 * (s.nu + s.rho * ((rp.sigma - s.assoc) + (rp.sigma - rp.maxAssocRest))) + s.habituation * s.alpha
-        #print(f"Habituation: {s.habituation} Assoc: {s.assoc} Sigma: {rp.sigma} Lamda: {rp.lamda} Rho: {s.rho} MaxAss {rp.maxAssocRest} Alpha: {s.alpha}" )
 
         s.assoc = s.assoc + DV 

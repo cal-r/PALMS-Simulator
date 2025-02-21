@@ -14,7 +14,7 @@ from itertools import chain
 
 from Experiment import Phase
 
-def titleify(filename: str, phases: dict[str, list[Phase]], phase_num: int, suffix: str) -> str:
+def titleify(filename: None | str, phases: dict[str, list[Phase]], phase_num: int, suffix: None | str) -> str:
     titles = []
 
     if filename is not None:
@@ -43,14 +43,26 @@ def titleify(filename: str, phases: dict[str, list[Phase]], phase_num: int, suff
 
     return '\n'.join(titles)
 
-def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | dict[str, list[Phase]] = None, filename = None, plot_phase = None, plot_alpha = False, plot_macknhall = False, title_suffix = None, dpi = None, ticker_threshold = 10, include_last_stimulus = False) -> list[pyplot.Figure]:
+def generate_figures(
+        data: list[dict[str, StimulusHistory]],
+        *,
+        phases: None | dict[str, list[Phase]] = None,
+        filename: None | str = None,
+        plot_phase: None | int = None,
+        plot_alpha: bool = False,
+        plot_macknhall: bool = False,
+        title_suffix: None | str = None,
+        dpi: None | float = None,
+        ticker_threshold: int = 10,
+    ) -> list[pyplot.Figure]:
     seaborn.set()
 
     if plot_phase is not None:
         data = [data[plot_phase - 1]]
 
     experiment_css = sorted(set(chain.from_iterable([x.keys() for x in data])))
-    colors = dict(zip(experiment_css, seaborn.color_palette('husl', len(experiment_css))))
+    colors = dict(zip(experiment_css, seaborn.husl_palette(len(experiment_css), s=.9, l=.4)))
+    colors_alt = dict(zip(experiment_css, seaborn.hls_palette(len(experiment_css), l=.7)))
 
     figures = []
     for phase_num, experiments in enumerate(data, start = 1):
@@ -63,9 +75,8 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
             multiple = True
 
         for key, hist in experiments.items():
-            if not include_last_stimulus:
-                # This is a predictive model. Do not include the last stimulus in the plot.
-                hist = hist[:-1]
+            # This is a predictive model. Do not include the last stimulus in the plot.
+            hist = hist[:-1]
 
             line = axes[0].plot(hist.assoc, label = key, marker = 'D', color = colors[key], markersize = 4, alpha = .5, picker = ticker_threshold)
 
@@ -76,7 +87,7 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
 
                 if plot_macknhall:
                     axes[1].plot(hist.alpha_mack, label='Mack: ' + str(key), color = colors[key], marker='$M$', markersize=4, alpha=.5, picker = ticker_threshold)
-                    axes[1].plot(hist.alpha_hall, label='Hall: ' + str(key), color = colors[key], marker='$H$', markersize=4, alpha=.5, picker = ticker_threshold)
+                    axes[1].plot(hist.alpha_hall, label='Hall: ' + str(key), color = colors_alt[key], marker='$H$', markersize=4, alpha=.5, picker = ticker_threshold)
 
         axes[0].set_xlabel('Trial Number', fontsize = 'small', labelpad = 3)
         axes[0].set_ylabel('Associative Strength', fontsize = 'small', labelpad = 3)
@@ -88,7 +99,7 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
         # Matplotlib makes it hard to start a plot with xticks = [1, t].
         # Instead of fixing the ticks ourselves, we plot in [0, t - 1] and format
         # the ticks to appear as the next number.
-        axes[0].xaxis.set_major_formatter(FuncFormatter(lambda x, _: int(x + 1)))
+        axes[0].xaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x + 1:.0f}'))
         axes[0].xaxis.set_major_locator(MaxNLocator(integer = True, min_n_ticks = 1))
 
         if len(experiments) >= 6:
@@ -106,7 +117,7 @@ def generate_figures(data: list[dict[str, StimulusHistory]], *, phases: None | d
             axes[1].tick_params(axis = 'both', labelsize = 'x-small', pad = 1)
             axes[1].tick_params(axis = 'y', which = 'both', right = True, length = 0)
             axes[1].yaxis.set_label_position('right')
-            axes[1].xaxis.set_major_formatter(FuncFormatter(lambda x, _: int(x + 1)))
+            axes[1].xaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x + 1:.0f}'))
             axes[1].xaxis.set_major_locator(MaxNLocator(integer = True, min_n_ticks = 1))
             if len(experiments) >= 6:
                 axes[1].legend(fontsize = 8, ncol = 2).set_draggable(True)
