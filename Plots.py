@@ -61,8 +61,8 @@ def generate_figures(
         data = [data[plot_phase - 1]]
 
     experiment_css = sorted(set(chain.from_iterable([x.keys() for x in data])))
-    colors = dict(zip(experiment_css, seaborn.husl_palette(len(experiment_css))))
-    colors_alt = dict(zip(experiment_css, seaborn.hls_palette(len(experiment_css))))
+    colors = dict(zip(experiment_css, seaborn.husl_palette(len(experiment_css), s=.9, l=.4)))
+    colors_alt = dict(zip(experiment_css, seaborn.hls_palette(len(experiment_css), l=.7)))
 
     figures = []
     for phase_num, experiments in enumerate(data, start = 1):
