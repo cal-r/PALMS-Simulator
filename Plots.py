@@ -61,7 +61,8 @@ def generate_figures(
         data = [data[plot_phase - 1]]
 
     experiment_css = sorted(set(chain.from_iterable([x.keys() for x in data])))
-    colors = dict(zip(experiment_css, seaborn.color_palette('husl', len(experiment_css))))
+    colors = dict(zip(experiment_css, seaborn.husl_palette(len(experiment_css))))
+    colors_alt = dict(zip(experiment_css, seaborn.hls_palette(len(experiment_css))))
 
     figures = []
     for phase_num, experiments in enumerate(data, start = 1):
@@ -86,7 +87,7 @@ def generate_figures(
 
                 if plot_macknhall:
                     axes[1].plot(hist.alpha_mack, label='Mack: ' + str(key), color = colors[key], marker='$M$', markersize=4, alpha=.5, picker = ticker_threshold)
-                    axes[1].plot(hist.alpha_hall, label='Hall: ' + str(key), color = colors[key], marker='$H$', markersize=4, alpha=.5, picker = ticker_threshold)
+                    axes[1].plot(hist.alpha_hall, label='Hall: ' + str(key), color = colors_alt[key], marker='$H$', markersize=4, alpha=.5, picker = ticker_threshold)
 
         axes[0].set_xlabel('Trial Number', fontsize = 'small', labelpad = 3)
         axes[0].set_ylabel('Associative Strength', fontsize = 'small', labelpad = 3)
