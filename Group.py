@@ -92,7 +92,7 @@ class Group:
             else:
                 beta, lamda, sign = self.adaptive_type.betan, 0., -1
 
-            compounds = set(part)
+            compounds = Stimulus.split(part)
 
             rp = RunParameters(
                 beta = beta,
@@ -107,7 +107,7 @@ class Group:
 
             argmaxAssoc = max(compounds, key = lambda x: self.s[x].assoc)
             maxAssoc = max(self.s[x].assoc for x in compounds)
-            secondMaxAssoc = max([self.s[x].assoc for x in compounds - {argmaxAssoc}], default = 0)
+            secondMaxAssoc = max([self.s[x].assoc for x in compounds if x != argmaxAssoc], default = 0)
 
             for cs in compounds:
                 if cs not in hist:
