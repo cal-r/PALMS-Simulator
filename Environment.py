@@ -121,7 +121,11 @@ class Stimulus:
     # splitCS("AA'A''A'''BC''") = ["A", "A'", "A''", "A'''", "B", "C''"]
     @staticmethod
     def split(cs) -> list[cs]:
-        return sorted(re.findall(r"[a-zA-ZñÑ]'*", cs))
+        values = sorted(re.findall(r"[a-zA-ZñÑ]'*", cs))
+        if len(''.join(set(values))) != len(cs):
+            raise ValueError(f'"{cs}" cannot be split into unique separate CS.')
+
+        return values
 
     def splitName(self) -> list[cs]:
         return self.split(self.name)
