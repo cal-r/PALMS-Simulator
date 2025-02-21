@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from itertools import combinations
 
 from Group import Group
-from Environment import Environment, StimulusHistory
+from Environment import Stimulus, Environment, StimulusHistory
 
 class Phase:
     # elems contains a list of ([CS], US) of an experiment.
@@ -25,12 +25,12 @@ class Phase:
     def cs(self) -> set[str]:
         if not self.elems:
             return set()
-        return set.union(*[set(x[0]) for x in self.elems])
+        return set.union(*[set(Stimulus.split(x[0])) for x in self.elems])
 
     # Return the list of applicable compound CS.
     # self.compound_cs() ⊇ self.cs()
     def compound_cs(self) -> set[str]:
-        compound = {''.join(sorted(cs)) for cs, _ in self.elems}
+        compound = {cs for cs, _ in self.elems}
         return self.cs() | compound
 
     def __init__(self, phase_str: str):
@@ -42,11 +42,11 @@ class Phase:
         for part in self.phase_str.strip().split('/'):
             if part == 'rand':
                 self.rand = True
-            elif (match := re.fullmatch(r'lamb?da *= *([0-9]*(?:\.[0-9]*)?)', part)) is not None:
+            elif (match := re.fullmatch(r"lamb?da *= *([0-9]*(?:\.[0-9]*)?)", part)) is not None:
                 self.lamda = float(match.group(1))
-            elif (match := re.fullmatch(r'([0-9]*)([A-Za-zÑñ]+)([+-]?)', part)) is not None:
+            elif (match := re.fullmatch(r"([0-9]*)((?:[A-Za-zÑñ]'*)+)([+-]?)", part)) is not None:
                 num, cs, sign = match.groups()
-                cs = cs.upper()
+                cs = ''.join(Stimulus.split(cs.upper()))
                 self.elems += int(num or '1') * [(cs, sign or '+')]
             elif not part.strip():
                 continue
