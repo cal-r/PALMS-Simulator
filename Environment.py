@@ -5,6 +5,8 @@ from itertools import combinations
 
 from typing import Any
 
+import re
+
 class Stimulus:
     name: str
 
@@ -69,7 +71,10 @@ class Stimulus:
         self.delta_ma_hall = delta_ma_hall
 
     def join(self, other: Stimulus, op) -> Stimulus:
-        ret: dict[str, Any] = dict(name = ''.join(sorted(set(self.name + other.name))))
+        ret: dict[str, Any] = dict(
+            name = ''.join(sorted(set(self.splitName() + other.splitName())))
+        )
+
         for prop in self.__dict__.keys():
             if prop == 'name':
                 continue
@@ -111,6 +116,15 @@ class Stimulus:
 
     def copy(self) -> Stimulus:
         return Stimulus(**self.__dict__)
+
+    # Splits a compound CS into its constituent parts.
+    # splitCS("AA'A''A'''BC''") = ["A", "A'", "A''", "A'''", "B", "C''"]
+    @staticmethod
+    def split(cs) -> list[cs]:
+        return sorted(re.findall(r"[a-zA-ZñÑ]'*", cs))
+
+    def splitName(self) -> list[cs]:
+        return self.split(self.name)
 
 class StimulusHistory:
     hist: list[Stimulus]
@@ -162,24 +176,21 @@ class Environment:
     def combined_cs(self) -> set[str]:
         h = set()
 
-        simples = {k: v for k, v in self.s.items() if len(k) == 1}
+        simples = self.s.keys()
         for size in range(1, len(self.s) + 1):
-            for comb in combinations(simples.items(), size):
-                names = [x[0] for x in comb]
-                assocs = [x[1] for x in comb]
-                h.add(''.join(sorted(names)))
+            for comb in combinations(simples, size):
+                h.add(''.join(sorted(comb)))
 
         return h
 
     def ordered_cs(self) -> list[str]:
         cs = self.combined_cs()
-        return sorted(cs, key = lambda x: (len(x), x))
+        return sorted(cs, key = lambda x: (len(x.strip("'")), x))
 
     # Get the individual values of either a single key (len(key) == 1), or
     # the combined values of a combination of keys (sum of values).
     def __getitem__(self, key: str) -> Stimulus:
-        assert len(set(key)) == len(key)
-        return reduce(lambda a, b: a + b, [self.s[k] for k in key])
+        return reduce(lambda a, b: a + b, [self.s[k] for k in Stimulus.split(key)])
 
     def __add__(self, other: Environment) -> Environment:
         cs = self.s.keys() | other.s.keys()
