@@ -174,8 +174,7 @@ class Experiment:
         for phase_num, strength_hist in enumerate(results):
             for strengths in strength_hist:
                 for cs in strengths.ordered_cs():
-                    current_phase = self.phases[phase_num]
-                    if args.plot_stimuli is None and cs in current_phase.compound_cs() or args.plot_stimuli is not None and cs in args.plot_stimuli:
+                    if args.plot_stimuli is None and cs in self.phases[phase_num].compound_cs() or args.plot_stimuli is not None and cs in args.plot_stimuli:
                         group_strengths[phase_num][f'{self.name} - {cs}'].add(strengths[cs])
 
         return group_strengths
