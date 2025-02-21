@@ -10,6 +10,7 @@ from argparse import ArgumentParser
 from collections import defaultdict
 from contextlib import nullcontext
 from itertools import chain, zip_longest
+from typing import cast
 from PyQt6.QtCore import QTimer, Qt, QSize
 from PyQt6.QtGui import QFont, QPixmap
 from PyQt6.QtWidgets import *
@@ -32,6 +33,8 @@ class PavlovianApp(QDialog):
     phaseNum: int
     numPhases: int
 
+    params: dict[str, PavlovianApp.DualLabel]
+
     per_cs_box: dict[str, QWidget]
     per_cs_param: dict[str, dict[str, PavlovianApp.DualLabel]]
     enabled_params: set[str]
@@ -48,6 +51,8 @@ class PavlovianApp(QDialog):
         self.phases = {}
         self.phaseNum = 1
         self.numPhases = 0
+
+        self.params = {}
 
         percs = ['alpha', 'alpha_mack', 'alpha_hall', 'salience', 'habituation']
         self.per_cs_box = {}
@@ -83,8 +88,10 @@ class PavlovianApp(QDialog):
         self.phaseInfo = QLabel('')
         self.phaseInfo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
-        self.coordInfo = QLabel('')
-        self.coordInfo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.xCoordInfo = QLabel('')
+        self.xCoordInfo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.yCoordInfo = QLabel('')
+        self.yCoordInfo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
         self.rightPhaseButton = QPushButton('>')
         self.rightPhaseButton.clicked.connect(self.nextPhase)
@@ -92,8 +99,9 @@ class PavlovianApp(QDialog):
         
         phaseBoxLayout = QHBoxLayout()
         phaseBoxLayout.addWidget(self.leftPhaseButton)
+        phaseBoxLayout.addWidget(self.xCoordInfo, stretch = 1, alignment = Qt.AlignmentFlag.AlignRight)
         phaseBoxLayout.addWidget(self.phaseInfo, stretch = 1, alignment = Qt.AlignmentFlag.AlignCenter)
-        phaseBoxLayout.addWidget(self.coordInfo, alignment = Qt.AlignmentFlag.AlignCenter)
+        phaseBoxLayout.addWidget(self.yCoordInfo, stretch = 1, alignment = Qt.AlignmentFlag.AlignLeft)
         phaseBoxLayout.addWidget(self.rightPhaseButton)
         self.phaseBox.setLayout(phaseBoxLayout)
 
@@ -282,7 +290,7 @@ class PavlovianApp(QDialog):
 
     def togglePhaseLambda(self):
         set_lambda = any(p[self.phaseNum - 1].lamda is not None for p in self.phases.values())
-        self.tableWidget.setLambdaInSelection(self.floatOrZero(self.lamda.box.text()) if not set_lambda else None)
+        self.tableWidget.setLambdaInSelection(self.floatOr(self.params['lamda'].box.text(), 0) if not set_lambda else None)
         self.refreshExperiment()
 
     def togglePlotAlpha(self):
@@ -345,7 +353,7 @@ If you have any questions, contact any of the authors.
         self.enableParams()
 
         for key, default in AdaptiveType.types()[self.current_adaptive_type].defaults().items():
-            getattr(self, key).box.setText(str(default))
+            self.params[key].box.setText(str(default))
             if key in self.per_cs_param:
                 for pair in self.per_cs_param[key].values():
                     pair.box.setText(str(default))
@@ -411,9 +419,11 @@ If you have any questions, contact any of the authors.
         params = QFormLayout()
         for key, val in AdaptiveType.initial_defaults().items():
             label = self.DualLabel(short_names[key], self, str(val), hoverText = descriptions[key]).addRow(params)
-            setattr(self, key, label)
-        self.num_trials.box.setGeometry(100, 120, 120, 60)
-        self.num_trials.box.setDisabled(True)
+            self.params[key] = label
+            # setattr(self, key, label)
+
+        self.params['num_trials'].box.setGeometry(100, 120, 120, 60)
+        self.params['num_trials'].box.setDisabled(True)
 
         params.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
         self.parametersGroupBox.setLayout(params)
@@ -438,7 +448,7 @@ If you have any questions, contact any of the authors.
 
             for perc, form in self.per_cs_param.items():
                 for cs, pair in form.items():
-                    pair.box.setText(getattr(self, perc).box.text())
+                    pair.box.setText(self.params[perc].box.text())
         else:
             self.alphasBox.setVisible(False)
             self.refreshExperiment()
@@ -447,7 +457,7 @@ If you have any questions, contact any of the authors.
 
     def enableParams(self):
         for key in AdaptiveType.parameters():
-            widget = getattr(self, f'{key}').box
+            widget = self.params[key].box
             widget.setDisabled(True)
 
             if key in self.per_cs_box:
@@ -455,7 +465,7 @@ If you have any questions, contact any of the authors.
 
         for key in self.enabled_params:
             if not self.alphasBox.isVisible() or key not in self.per_cs_param:
-                widget = getattr(self, f'{key}').box
+                widget = self.params[key].box
                 widget.setDisabled(False)
             else:
                 self.per_cs_box[key].setVisible(True)
@@ -463,8 +473,8 @@ If you have any questions, contact any of the authors.
     def refreshAlphasGroupBox(self, css: set[str]):
         shortnames = {'alpha': 'α', 'alpha_mack': 'αᴹ', 'alpha_hall': 'αᴴ', 'salience': 'S', 'habituation': 'h'}
         for perc, form in self.per_cs_param.items():
-            val = getattr(self, perc).box.text()
-            layout = self.per_cs_box[perc].layout()
+            val = self.params[perc].box.text()
+            layout = cast(QFormLayout, self.per_cs_box[perc].layout())
 
             to_remove = []
             for e, (cs, pair) in enumerate(form.items()):
@@ -477,7 +487,7 @@ If you have any questions, contact any of the authors.
 
             for cs in sorted(css):
                 if cs not in form:
-                    hoverText = getattr(self, perc).hoverText.replace('of the stimuli', f' for stimulus {cs}')
+                    hoverText = self.params[perc].hoverText.replace('of the stimuli', f' for stimulus {cs}')
                     form[cs] = self.DualLabel(
                         f'{shortnames[perc]}<sub>{cs}</sub>',
                         self,
@@ -488,25 +498,26 @@ If you have any questions, contact any of the authors.
     def restoreDefaultParameters(self):
         defaults = AdaptiveType.initial_defaults()
         for key, value in defaults.items():
-            widget = getattr(self, f'').box
-            widget.setText(str(value))
+            self.params[key].setText(str(value))
 
-    # Convenience function: convert a string to a float, or return a default.
+    # Convenience function: convert a string to a float, or return None if empty.
     @classmethod
-    def floatOr(cls, text: str, default: None | float = None) -> None | float:
+    def floatOrNone(cls, text: str) -> None | float:
+        if text == '':
+            return None
+
+        return float(text)
+
+    # Convenience function: convert a string to a float, or return a default value if empty.
+    @classmethod
+    def floatOr(cls, text: str, default: float) -> float:
         if text == '':
             return default
 
         return float(text)
 
-    # Same as floatOr(text, 0); added separately to help mypy with typing.
-    @classmethod
-    def floatOrZero(cls, text: str) -> float:
-        f = cls.floatOr(text)
-        return f or 0
-
     def csPercDict(self, perc) -> dict[str, float]:
-        value = self.floatOrZero(getattr(self, perc).box.text())
+        value = self.floatOr(self.params[perc].box.text(), 0)
         if not self.alphasBox.isVisible() or perc not in self.per_cs_param:
             return defaultdict(lambda: value)
 
@@ -516,21 +527,21 @@ If you have any questions, contact any of the authors.
         args = RWArgs(
             adaptive_type = self.current_adaptive_type,
 
-            alpha = self.floatOrZero(self.alpha.box.text()),
-            alpha_mack = self.floatOr(self.alpha_mack.box.text()),
-            alpha_hall = self.floatOr(self.alpha_hall.box.text()),
+            alpha = self.floatOr(self.params['alpha'].box.text(), 0),
+            alpha_mack = self.floatOrNone(self.params['alpha_mack'].box.text()),
+            alpha_hall = self.floatOrNone(self.params['alpha_hall'].box.text()),
 
-            beta = self.floatOrZero(self.beta.box.text()),
-            beta_neg = self.floatOrZero(self.betan.box.text()),
-            lamda = self.floatOrZero(self.lamda.box.text()),
-            gamma = self.floatOrZero(self.gamma.box.text()),
-            thetaE = self.floatOrZero(self.thetaE.box.text()),
-            thetaI = self.floatOrZero(self.thetaI.box.text()),
+            beta = self.floatOr(self.params['beta'].box.text(), 0),
+            beta_neg = self.floatOr(self.params['betan'].box.text(), 0),
+            lamda = self.floatOr(self.params['lamda'].box.text(), 0),
+            gamma = self.floatOr(self.params['gamma'].box.text(), 0),
+            thetaE = self.floatOr(self.params['thetaE'].box.text(), 0),
+            thetaI = self.floatOr(self.params['thetaI'].box.text(), 0),
 
-            salience = self.floatOrZero(self.salience.box.text()),
-            habituation = self.floatOrZero(self.habituation.box.text()),
+            salience = self.floatOr(self.params['salience'].box.text(), 0),
+            habituation = self.floatOr(self.params['habituation'].box.text(), 0),
 
-            kay = self.floatOrZero(self.kay.box.text()),
+            kay = self.floatOr(self.params['kay'].box.text(), 0),
 
             alphas = self.csPercDict('alpha'),
             alpha_macks = self.csPercDict('alpha_mack'),
@@ -539,11 +550,11 @@ If you have any questions, contact any of the authors.
             saliences = self.csPercDict('salience'),
             habituations = self.csPercDict('habituation'),
 
-            rho = self.floatOrZero(self.rho.box.text()),
-            nu = self.floatOrZero(self.nu.box.text()),
+            rho = self.floatOr(self.params['rho'].box.text(), 0),
+            nu = self.floatOr(self.params['nu'].box.text(), 0),
 
             window_size = 1,
-            num_trials = int(self.num_trials.box.text()),
+            num_trials = int(self.params['num_trials'].box.text()),
 
             plot_alpha = self.plot_alpha and not AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
             plot_macknhall = self.plot_alpha and AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
@@ -623,7 +634,7 @@ If you have any questions, contact any of the authors.
         self.phaseInfo.setText(f'Phase {self.phaseNum}/{self.numPhases}')
 
         any_rand = any(p[self.phaseNum - 1].rand for p in self.phases.values())
-        self.num_trials.box.setDisabled(not any_rand)
+        self.params['num_trials'].box.setDisabled(not any_rand)
         self.toggleRandButton.setChecked(any_rand)
 
         any_lambda = any(p[self.phaseNum - 1].lamda is not None for p in self.phases.values())
@@ -648,9 +659,16 @@ If you have any questions, contact any of the authors.
         if not event.inaxes:
             return
 
-        self.mousey = event.ydata
-        self.mousex = event.xdata
-        self.coordInfo.setText(f'X: {event.xdata:.0f}\tY: {event.ydata:.2f}')
+        yaxis = event.inaxes.yaxis.label._text
+        if yaxis.endswith('Strength'):
+            ylabel = 'V'
+        elif yaxis.endswith('Alpha'):
+            ylabel = 'α'
+        else:
+            ylabel = 'Y'
+
+        self.xCoordInfo.setText(f'Trial: {event.xdata:.0f}')
+        self.yCoordInfo.setText(f'{ylabel}: {event.ydata:.2f}')
 
     def hideLines(self):
         for fig in self.figures:

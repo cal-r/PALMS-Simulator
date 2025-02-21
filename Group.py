@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+from typing import cast
+
 from Environment import Environment, StimulusHistory, Stimulus
 from AdaptiveType import AdaptiveType, RunParameters
 
 class Group:
     name: str
 
-    cs: list[str]
     s: Environment
 
     adaptive_type: AdaptiveType
@@ -36,25 +37,24 @@ class Group:
         gamma: float,
         thetaE: float,
         thetaI: float,
-        cs: None | set[str] = None,
+        cs: set[str] = set(),
         adaptive_type: None | str = None,
         window_size: None | int = None,
         xi_hall: None | float = None,
     ):
-        cs = (cs or set()) | alphas.keys() | saliences.keys() | habituations.keys() | alpha_macks.keys() | alpha_halls.keys()
-        if cs is not None:
-            alphas = {k: alphas.get(k, default_alpha) for k in cs}
-            saliences = {k: saliences.get(k, default_salience) for k in cs}
-            habituations = {k: habituations.get(k, default_habituation) for k in cs}
-            alpha_macks = {k: alpha_macks.get(k, default_alpha_mack) for k in cs}
-            alpha_halls = {k: alpha_halls.get(k, default_alpha_hall) for k in cs}
+        cs = cs | alphas.keys() | saliences.keys() | habituations.keys() | alpha_macks.keys() | alpha_halls.keys()
+        alphas = {k: alphas.get(k, cast(float, default_alpha)) for k in cs}
+        saliences = {k: saliences.get(k, cast(float, default_salience)) for k in cs}
+        habituations = {k: habituations.get(k, cast(float, default_habituation)) for k in cs}
+        alpha_macks = {k: alpha_macks.get(k, cast(float, default_alpha_mack)) for k in cs}
+        alpha_halls = {k: alpha_halls.get(k, cast(float, default_alpha_hall)) for k in cs}
 
         self.name = name
 
         self.s = Environment(
             s = {
                 k: Stimulus(
-                    assoc = 0,
+                    name = k,
                     alpha = alphas[k],
                     salience = saliences[k],
                     habituation = habituations[k],
@@ -67,13 +67,18 @@ class Group:
             }
         )
 
-        self.adaptive_type = AdaptiveType.get(adaptive_type, betan = betan, betap = betap, lamda = lamda, xi_hall = xi_hall, gamma = gamma, thetaE = thetaE, thetaI = thetaI, kay = kay)
+        self.adaptive_type = AdaptiveType.get(
+            adaptive_type,
+            betan = betan,
+            betap = betap,
+            lamda = lamda,
+            xi_hall = xi_hall,
+            gamma = gamma,
+            thetaE = thetaE,
+            thetaI = thetaI,
+            kay = kay,
+        )
         self.window_size = window_size
-
-        # (∃ x) len(x) > 1 if `use_configurals`.
-        # `use_configurals` was removed from the current version of the program,
-        # but we keep this line as we might re-add it later.
-        self.cs = [x for x in alphas.keys() if len(x) == 1]
 
     # runPhase runs a single trial of a phase, in order, and returns a list of the Strength values
     # of its CS at every step.
@@ -87,7 +92,7 @@ class Group:
             else:
                 beta, lamda, sign = self.adaptive_type.betan, 0., -1
 
-            compounds = set(part)
+            compounds = Stimulus.split(part)
 
             rp = RunParameters(
                 beta = beta,
@@ -102,7 +107,7 @@ class Group:
 
             argmaxAssoc = max(compounds, key = lambda x: self.s[x].assoc)
             maxAssoc = max(self.s[x].assoc for x in compounds)
-            secondMaxAssoc = max([self.s[x].assoc for x in compounds - {argmaxAssoc}], default = 0)
+            secondMaxAssoc = max([self.s[x].assoc for x in compounds if x != argmaxAssoc], default = 0)
 
             for cs in compounds:
                 if cs not in hist:

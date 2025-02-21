@@ -3,7 +3,13 @@ from collections import deque, defaultdict
 from functools import reduce
 from itertools import combinations
 
+from typing import Any
+
+import re
+
 class Stimulus:
+    name: str
+
     assoc: float
 
     Ve: float
@@ -24,29 +30,39 @@ class Stimulus:
 
     alpha_mack_0: float
     alpha_hall_0: float
-    salience_0: float
-    habituation_0: float
 
-    def __init__(self, *, assoc = 0., Ve = 0., Vi = 0., alpha = .5, alpha_mack = None, alpha_hall = None, delta_ma_hall = .2, window = None, salience = None, habituation = None, rho = None, nu = None, alpha_mack_0 = None, alpha_hall_0 = None, salience_0 = None, habituation_0 = None):
+    def __init__(
+            self,
+            name: str,
+            *,
+            alpha, alpha_mack, alpha_hall,
+            salience, habituation,
+            rho, nu,
+            assoc = 0.,
+            Ve = 0., Vi = 0.,
+            delta_ma_hall = .2,
+            window: None | deque = None,
+            alpha_mack_0 = None, alpha_hall_0 = None,
+        ):
+        self.name = name
+
         self.assoc = assoc
 
         self.Ve = Ve
         self.Vi = Vi
 
         self.alpha = alpha
-        self.alpha_mack = alpha_mack or alpha
-        self.alpha_hall = alpha_hall or alpha
+        self.alpha_mack = alpha_mack
+        self.alpha_hall = alpha_hall
 
-        self.salience = salience
-        self.habituation = habituation_0 or habituation
+        self.salience =  salience
+        self.habituation = habituation
 
         self.rho = rho
         self.nu = nu
 
         self.alpha_mack_0 = alpha_mack_0 or self.alpha_mack
         self.alpha_hall_0 = alpha_hall_0 or self.alpha_hall
-        self.salience_0 = salience_0 or self.salience
-        self.habituation_0 = habituation_0 or self.habituation
 
         if window is None:
             window = deque([])
@@ -55,8 +71,14 @@ class Stimulus:
         self.delta_ma_hall = delta_ma_hall
 
     def join(self, other: Stimulus, op) -> Stimulus:
-        ret = {}
+        ret: dict[str, Any] = dict(
+            name = ''.join(sorted(set(self.splitName() + other.splitName())))
+        )
+
         for prop in self.__dict__.keys():
+            if prop == 'name':
+                continue
+
             this = getattr(self, prop)
             that = getattr(other, prop)
 
@@ -76,8 +98,11 @@ class Stimulus:
         return self.join(other, lambda a, b: a + b)
 
     def __truediv__(self, quot: int) -> Stimulus:
-        ret = {}
+        ret: dict[str, Any] = dict(name = self.name)
         for prop in self.__dict__.keys():
+            if prop == 'name':
+                continue
+
             this = getattr(self, prop)
 
             if type(this) is float or type(this) is int:
@@ -91,6 +116,19 @@ class Stimulus:
 
     def copy(self) -> Stimulus:
         return Stimulus(**self.__dict__)
+
+    # Splits a compound CS into its constituent parts.
+    # splitCS("AA'A''A'''BC''") = ["A", "A'", "A''", "A'''", "B", "C''"]
+    @staticmethod
+    def split(cs) -> list[cs]:
+        values = sorted(re.findall(r"[a-zA-ZñÑ]'*", cs))
+        if len(''.join(set(values))) != len(cs):
+            raise ValueError(f'"{cs}" cannot be split into unique separate CS.')
+
+        return values
+
+    def splitName(self) -> list[cs]:
+        return self.split(self.name)
 
 class StimulusHistory:
     hist: list[Stimulus]
@@ -118,23 +156,10 @@ class StimulusHistory:
         return defaultdict(lambda: StimulusHistory())
 
 class Environment:
-    cs: set[str]
     s: dict[str, Stimulus]
 
-    def __init__(self, cs: None | set[str] = None, s: None | dict[str, Stimulus] = None):
-        if cs is None and s is not None:
-            cs = set(s.keys())
-
-        if s is None and cs is not None:
-            s = {k: Stimulus() for k in cs}
-
-        # Weird order of ifs to make mypy happy.
-        if cs is None or s is None:
-            cs = set()
-            s = {}
-
-        self.cs = set(cs)
-        self.s = dict(s)
+    def __init__(self, s: dict[str, Stimulus]):
+        self.s = s
 
     # fromHistories "transposes" a several histories of single CSs into a single list of many CSs.
     @staticmethod
@@ -155,34 +180,31 @@ class Environment:
     def combined_cs(self) -> set[str]:
         h = set()
 
-        simples = {k: v for k, v in self.s.items() if len(k) == 1}
+        simples = self.s.keys()
         for size in range(1, len(self.s) + 1):
-            for comb in combinations(simples.items(), size):
-                names = [x[0] for x in comb]
-                assocs = [x[1] for x in comb]
-                h.add(''.join(sorted(names)))
+            for comb in combinations(simples, size):
+                h.add(''.join(sorted(comb)))
 
         return h
 
     def ordered_cs(self) -> list[str]:
         cs = self.combined_cs()
-        return sorted(cs, key = lambda x: (len(x), x))
+        return sorted(cs, key = lambda x: (len(x.strip("'")), x))
 
     # Get the individual values of either a single key (len(key) == 1), or
     # the combined values of a combination of keys (sum of values).
     def __getitem__(self, key: str) -> Stimulus:
-        assert len(set(key)) == len(key)
-        return reduce(lambda a, b: a + b, [self.s[k] for k in key])
+        return reduce(lambda a, b: a + b, [self.s[k] for k in Stimulus.split(key)])
 
     def __add__(self, other: Environment) -> Environment:
-        cs = self.cs | other.cs
-        return Environment(cs, {k: self[k] + other[k] for k in cs})
+        cs = self.s.keys() | other.s.keys()
+        return Environment({k: self[k] + other[k] for k in cs})
 
     def __truediv__(self, quot: int) -> Environment:
-        return Environment(self.cs, {k: self.s[k] / quot for k in self.cs})
+        return Environment({k: self.s[k] / quot for k in self.s.keys()})
 
     def copy(self) -> Environment:
-        return Environment(self.cs.copy(), {k: v.copy() for k, v in self.s.items()})
+        return Environment({k: v.copy() for k, v in self.s.items()})
 
     @staticmethod
     def avg(val: list[Environment]) -> Environment:
