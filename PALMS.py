@@ -88,8 +88,10 @@ class PavlovianApp(QDialog):
         self.phaseInfo = QLabel('')
         self.phaseInfo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
-        self.coordInfo = QLabel('')
-        self.coordInfo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.xCoordInfo = QLabel('')
+        self.xCoordInfo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.yCoordInfo = QLabel('')
+        self.yCoordInfo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
         self.rightPhaseButton = QPushButton('>')
         self.rightPhaseButton.clicked.connect(self.nextPhase)
@@ -97,8 +99,9 @@ class PavlovianApp(QDialog):
         
         phaseBoxLayout = QHBoxLayout()
         phaseBoxLayout.addWidget(self.leftPhaseButton)
+        phaseBoxLayout.addWidget(self.xCoordInfo, stretch = 1, alignment = Qt.AlignmentFlag.AlignRight)
         phaseBoxLayout.addWidget(self.phaseInfo, stretch = 1, alignment = Qt.AlignmentFlag.AlignCenter)
-        phaseBoxLayout.addWidget(self.coordInfo, alignment = Qt.AlignmentFlag.AlignCenter)
+        phaseBoxLayout.addWidget(self.yCoordInfo, stretch = 1, alignment = Qt.AlignmentFlag.AlignLeft)
         phaseBoxLayout.addWidget(self.rightPhaseButton)
         self.phaseBox.setLayout(phaseBoxLayout)
 
@@ -656,9 +659,16 @@ If you have any questions, contact any of the authors.
         if not event.inaxes:
             return
 
-        self.mousey = event.ydata
-        self.mousex = event.xdata
-        self.coordInfo.setText(f'X: {event.xdata:.0f}\tY: {event.ydata:.2f}')
+        yaxis = event.inaxes.yaxis.label._text
+        if yaxis.endswith('Strength'):
+            ylabel = 'V'
+        elif yaxis.endswith('Alpha'):
+            ylabel = 'α'
+        else:
+            ylabel = 'Y'
+
+        self.xCoordInfo.setText(f'Trial: {event.xdata:.0f}')
+        self.yCoordInfo.setText(f'{ylabel}: {event.ydata:.2f}')
 
     def hideLines(self):
         for fig in self.figures:
