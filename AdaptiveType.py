@@ -48,6 +48,20 @@ class AdaptiveType:
             'MLAB Hybrid': MlabHybrid,
 
         }
+        
+    def image_types(cls) -> dict[str, Type[AdaptiveType]]:
+        # Code to get the corresponding image of the adaptive type
+        
+        image_dict = {
+            'Rescorla Wagner': 'RW.png',
+            'Rescorla Wagner Linear': 'RW-Linear.png',
+            'Pearce Kaye Hall': 'PKH.png',
+            'Mackintosh Extended': 'Extended_Mack.png',
+            'LePelley': 'Lepelley.png',
+            'MLAB Hybrid': 'MLAB.png',
+        }
+        
+        return image_dict[cls]
 
     @classmethod
     def get(cls, adaptive_type_name, *args, **kwargs) -> AdaptiveType:

@@ -23,6 +23,7 @@ from CoolTable import CoolTable
 
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib import pyplot
+from PIL import Image
 
 class PavlovianApp(QDialog):
     adaptive_types: list[str]
@@ -151,6 +152,17 @@ class PavlovianApp(QDialog):
         self.adaptiveTypeButtons.children()[1].click()
 
         self.resize(1250, 600)
+        
+    def showModelInfo(self):
+        # Code to show model equations
+        current_adaptive_type = self.current_adaptive_type
+        root = getattr(sys, '_MEIPASS', '.')
+        image_filename = AdaptiveType.image_types(current_adaptive_type)
+        image_path = os.path.join(root, 'resources', image_filename)
+        
+        image = Image.open(image_path)
+        image.show()
+        
 
     def addAdaptiveTypeButtons(self):
         buttons = QGroupBox('Adaptive Type')
@@ -217,7 +229,7 @@ class PavlovianApp(QDialog):
         self.plotAlphaButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         checkedStyle = "QPushButton:checked { background-color: lightblue; font-weight: bold; border: 2px solid #0057D8; }"
         self.plotAlphaButton.setStyleSheet(checkedStyle)
-        self.plotAlphaButton.setFixedHeight(50)
+        # self.plotAlphaButton.setFixedHeight(50)
         self.plotAlphaButton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
         self.plotAlphaButton.clicked.connect(self.togglePlotAlpha)
         self.plotAlphaButton.setCheckable(True)
@@ -240,6 +252,7 @@ class PavlovianApp(QDialog):
         self.toggleAlphasButton.setCheckable(True)
         self.toggleAlphasButton.setStyleSheet(checkedStyle)
         self.toggleAlphasButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        
 
         self.setDefaultParamsButton = QPushButton("Restore Default Parameters")
         self.setDefaultParamsButton.clicked.connect(self.restoreDefaultParameters)
@@ -256,6 +269,10 @@ class PavlovianApp(QDialog):
         self.hideButton = QPushButton("Toggle Visibility")
         self.hideButton.clicked.connect(self.hideExperiment)
         self.hideButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        
+        self.modelInfoButton = QPushButton('Model Info')
+        self.modelInfoButton.clicked.connect(self.showModelInfo)
+        self.modelInfoButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         phaseOptionsLayout = QVBoxLayout()
         phaseOptionsLayout.addWidget(self.toggleRandButton)
@@ -268,7 +285,9 @@ class PavlovianApp(QDialog):
         plotOptionsLayout.addWidget(self.refreshButton)
         plotOptionsLayout.addWidget(self.printButton)
         plotOptionsLayout.addWidget(self.hideButton)
+        plotOptionsLayout.addWidget(self.modelInfoButton)
         self.plotOptionsGroupBox.setLayout(plotOptionsLayout)
+        
 
         fileOptionsLayout = QVBoxLayout()
         fileOptionsLayout.addWidget(self.fileButton)
