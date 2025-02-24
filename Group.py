@@ -41,6 +41,7 @@ class Group:
         adaptive_type: None | str = None,
         window_size: None | int = None,
         xi_hall: None | float = None,
+        configural_cues: bool = False,
     ):
         cs = cs | alphas.keys() | saliences.keys() | habituations.keys() | alpha_macks.keys() | alpha_halls.keys()
         alphas = {k: alphas.get(k, cast(float, default_alpha)) for k in cs}
@@ -50,6 +51,7 @@ class Group:
         alpha_halls = {k: alpha_halls.get(k, cast(float, default_alpha_hall)) for k in cs}
 
         self.name = name
+        self.configural_cues = configural_cues
 
         self.s = Environment(
             s = {
@@ -64,7 +66,8 @@ class Group:
                     nu = nu,
                 )
                 for k in cs
-            }
+            },
+            configural_cues = self.configural_cues
         )
 
         self.adaptive_type = AdaptiveType.get(
@@ -130,4 +133,4 @@ class Group:
 
                 hist[cs].add(self.s[cs])
 
-        return Environment.fromHistories(hist)
+        return Environment.fromHistories(hist, configural_cues = self.configural_cues)
