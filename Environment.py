@@ -117,18 +117,8 @@ class Stimulus:
     def copy(self) -> Stimulus:
         return Stimulus(**self.__dict__)
 
-    # Splits a compound CS into its constituent parts.
-    # splitCS("AA'A''A'''BC''") = ["A", "A'", "A''", "A'''", "B", "C''"]
-    @staticmethod
-    def split(cs) -> list[cs]:
-        values = sorted(re.findall(r"[a-zA-ZñÑ]'*|\((?:[a-zA-ZñÑ]'*)+\)", cs))
-        if len(''.join(set(values))) != len(cs):
-            raise ValueError(f'"{cs}" cannot be split into unique separate CS.')
-
-        return values
-
-    def splitName(self) -> list[cs]:
-        return self.split(self.name)
+    def splitName(self) -> list[str]:
+        return Environment.split_cs(self.name)
 
 class StimulusHistory:
     hist: list[Stimulus]
@@ -182,7 +172,7 @@ class Environment:
             for i in range(longest)
         ]
 
-    # combined_cs returns the whole list of CSs, including compound ones.
+    # Returns the whole list of CSs, including compound ones.
     def combined_cs(self) -> set[str]:
         h = set()
 
@@ -191,19 +181,29 @@ class Environment:
             for comb in combinations(simples, size):
                 h.add(''.join(sorted(comb)))
 
-        if self.configural_cues:
-            print('Also I am using configural cues')
-
         return h
 
     def ordered_cs(self) -> list[str]:
         cs = self.combined_cs()
         return sorted(cs, key = lambda x: (len(x.strip("'")), x))
 
+    # Splits a compound CS into its constituent parts.
+    # split_cs("AA'A''A'''BC''") = ["A", "A'", "A''", "A'''", "B", "C''"]
+    @classmethod
+    def split_cs(cls, cs) -> list[str]:
+        values = sorted(re.findall(r"[a-zA-ZñÑ]'*", cs))
+        if len(''.join(set(values))) != len(cs):
+            raise ValueError(f'"{cs}" cannot be split into unique separate CS.')
+
+        if cls.configural_cues:
+            values += [f'({cs})']
+
+        return values
+
     # Get the individual values of either a single key (len(key) == 1), or
     # the combined values of a combination of keys (sum of values).
     def __getitem__(self, key: str) -> Stimulus:
-        return reduce(lambda a, b: a + b, [self.s[k] for k in Stimulus.split(key)])
+        return reduce(lambda a, b: a + b, [self.s[k] for k in self.split_cs(key)])
 
     def __add__(self, other: Environment) -> Environment:
         cs = self.s.keys() | other.s.keys()

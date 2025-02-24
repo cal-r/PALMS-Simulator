@@ -92,7 +92,7 @@ class Group:
             else:
                 beta, lamda, sign = self.adaptive_type.betan, 0., -1
 
-            compounds = Stimulus.split(part)
+            compounds = Environment.split_cs(part)
 
             rp = RunParameters(
                 beta = beta,

@@ -2,7 +2,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import math
-from typing import Type
+from typing import Type, ClassVar
 
 from Environment import Stimulus
 
@@ -18,6 +18,8 @@ class RunParameters:
     maxAssocRest: float
 
 class AdaptiveType:
+    image_filename: ClassVar[str] = ''
+
     betan: float
     betap: float
     lamda: float
@@ -48,20 +50,6 @@ class AdaptiveType:
             'MLAB Hybrid': MlabHybrid,
 
         }
-        
-    def image_types(cls) -> dict[str, Type[AdaptiveType]]:
-        # Code to get the corresponding image of the adaptive type
-        
-        image_dict = {
-            'Rescorla Wagner': 'RW.png',
-            'Rescorla Wagner Linear': 'RW-Linear.png',
-            'Pearce Kaye Hall': 'PKH.png',
-            'Mackintosh Extended': 'Extended_Mack.png',
-            'LePelley': 'Lepelley.png',
-            'MLAB Hybrid': 'MLAB.png',
-        }
-        
-        return image_dict[cls]
 
     @classmethod
     def get(cls, adaptive_type_name, *args, **kwargs) -> AdaptiveType:
@@ -145,6 +133,8 @@ class AdaptiveType:
         raise NotImplementedError('Calling step in abstract function is undefined.')
 
 class RescorlaWagner(AdaptiveType):
+    image_filename: ClassVar[str] = 'RW.png'
+
     @classmethod
     def parameters(cls) -> list[str]:
         return ['alpha', 'beta', 'betan', 'lamda']
@@ -153,6 +143,8 @@ class RescorlaWagner(AdaptiveType):
         s.assoc += s.alpha * self.delta_v_factor
 
 class RescorlaWagnerLinear(AdaptiveType):
+    image_filename: ClassVar[str] = 'RW-Linear.png'
+
     @classmethod
     def parameters(cls) -> list[str]:
         return ['alpha', 'beta', 'betan', 'lamda']
@@ -172,6 +164,8 @@ class PearceHall(AdaptiveType):
         s.assoc += s.salience * s.alpha * abs(rp.lamda)
 
 class PearceKayeHall(AdaptiveType):
+    image_filename: ClassVar[str] = 'PKH.png'
+
     @classmethod
     def parameters(cls) -> list[str]:
         return ['alpha', 'beta', 'betan', 'lamda', 'gamma', 'salience']
@@ -188,6 +182,8 @@ class PearceKayeHall(AdaptiveType):
         s.assoc = s.Ve - s.Vi
 
 class LePelley(AdaptiveType):
+    image_filename: ClassVar[str] = 'Extended_Mack.png'
+
     @classmethod
     def parameters(cls) -> list[str]:
         return ['alpha', 'beta', 'betan', 'lamda', 'thetaE', 'thetaI']
@@ -216,6 +212,8 @@ class LePelley(AdaptiveType):
         s.assoc = s.Ve - s.Vi
 
 class LePelleyHybrid(AdaptiveType):
+    image_filename: ClassVar[str] = 'LePelley.png'
+
     @classmethod
     def parameters(cls) -> list[str]:
         return ['alpha_mack', 'alpha_hall', 'beta', 'betan', 'lamda', 'gamma', 'thetaE', 'thetaI']
