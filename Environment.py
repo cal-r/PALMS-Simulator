@@ -157,7 +157,9 @@ class Environment:
     s: dict[str, Stimulus]
 
     def __init__(self, s: dict[str, Stimulus]):
-        print(s.keys())
+        if len(s) < 3:
+            ipdb.set_trace()
+
         self.s = s
 
     # fromHistories "transposes" a several histories of single CSs into a single list of many CSs.
