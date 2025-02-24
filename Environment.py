@@ -7,8 +7,6 @@ from typing import Any, ClassVar
 
 import re
 
-import ipdb
-
 class Stimulus:
     name: str
 
@@ -157,9 +155,6 @@ class Environment:
     s: dict[str, Stimulus]
 
     def __init__(self, s: dict[str, Stimulus]):
-        if len(s) < 3:
-            ipdb.set_trace()
-
         self.s = s
 
     # fromHistories "transposes" a several histories of single CSs into a single list of many CSs.
@@ -200,6 +195,9 @@ class Environment:
     # the combined values of a combination of keys (sum of values).
     def __getitem__(self, key: str) -> Stimulus:
         return reduce(lambda a, b: a + b, [self.s[k] for k in self.list_cs(key)])
+
+    def filter_keys(self, keys: list[str]) -> list[str]:
+        return [k for k in keys if all(t in self.s for t in self.list_cs(k))]
 
     def __add__(self, other: Environment) -> Environment:
         cs = self.s.keys() | other.s.keys()
