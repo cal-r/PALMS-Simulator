@@ -8,6 +8,8 @@ from itertools import combinations
 from Group import Group
 from Environment import Stimulus, Environment, StimulusHistory
 
+import ipdb
+
 class Phase:
     # elems contains a list of ([CS], US) of an experiment.
     elems: list[tuple[str, str]]
@@ -21,17 +23,17 @@ class Phase:
     # String description of this phase.
     phase_str: str
 
-    # Return the set of single (one-character) CS.
+    # Return the set of single CS.
     def cs(self) -> set[str]:
         if not self.elems:
             return set()
-        return set.union(*[set(Environment.split_cs(x[0])) for x in self.elems])
+        return set.union(*[set(Environment.list_cs(x[0])) for x in self.elems])
 
     # Return the list of applicable compound CS.
     # self.compound_cs() ⊇ self.cs()
     def compound_cs(self) -> set[str]:
         compound = {cs for cs, _ in self.elems}
-        return self.cs() | compound
+        return sorted(self.cs() | compound, key = lambda x: (len(x.strip("'()")), x))
 
     def __init__(self, phase_str: str):
         self.phase_str = phase_str
@@ -174,12 +176,12 @@ class Experiment:
 
         return results
 
+    @ipdb.launch_ipdb_on_exception()
     def group_results(self, results: list[list[Environment]], args: RWArgs) -> list[dict[str, StimulusHistory]]:
         group_strengths = [StimulusHistory.emptydict() for _ in results]
         for phase_num, strength_hist in enumerate(results):
             for strengths in strength_hist:
-                for cs in strengths.ordered_cs():
-                    if args.plot_stimuli is None and cs in self.phases[phase_num].compound_cs() or args.plot_stimuli is not None and cs in args.plot_stimuli:
-                        group_strengths[phase_num][f'{self.name} - {cs}'].add(strengths[cs])
+                for cs in self.phases[phase_num].compound_cs():
+                    group_strengths[phase_num][f'{self.name} - {cs}'].add(strengths[cs])
 
         return group_strengths
