@@ -7,6 +7,8 @@ from typing import Any, ClassVar
 
 import re
 
+import ipdb
+
 class Stimulus:
     name: str
 
@@ -155,6 +157,7 @@ class Environment:
     s: dict[str, Stimulus]
 
     def __init__(self, s: dict[str, Stimulus]):
+        print(s.keys())
         self.s = s
 
     # fromHistories "transposes" a several histories of single CSs into a single list of many CSs.
@@ -172,30 +175,21 @@ class Environment:
             for i in range(longest)
         ]
 
-    # Returns the whole list of CSs, including compound ones.
-    def combined_cs(self) -> set[str]:
-        h = set()
-
-        simples = self.s.keys()
-        for size in range(1, len(self.s) + 1):
-            for comb in combinations(simples, size):
-                h.add(''.join(sorted(comb)))
-
-        return h
-
-    def ordered_cs(self) -> list[str]:
-        cs = self.combined_cs()
-        return sorted(cs, key = lambda x: (len(x.strip("'")), x))
-
     # Splits a compound CS into its constituent parts.
     # split_cs("AA'A''A'''BC''") = ["A", "A'", "A''", "A'''", "B", "C''"]
-    @classmethod
-    def split_cs(cls, cs) -> list[str]:
-        values = sorted(re.findall(r"[a-zA-ZñÑ]'*", cs))
+    @staticmethod
+    def split_cs(cs) -> list[str]:
+        values = sorted(re.findall(r"[a-zA-ZñÑ]'*|\((?:[a-zA-ZñÑ]'*)+\)", cs))
         if len(''.join(set(values))) != len(cs):
             raise ValueError(f'"{cs}" cannot be split into unique separate CS.')
 
-        if cls.configural_cues:
+        return values
+
+    # Same as split_cs, but adds configural cues if necessary.
+    @classmethod
+    def list_cs(cls, cs) -> list[str]:
+        values = cls.split_cs(cs)
+        if cls.configural_cues and len(values) > 1:
             values += [f'({cs})']
 
         return values
@@ -203,7 +197,7 @@ class Environment:
     # Get the individual values of either a single key (len(key) == 1), or
     # the combined values of a combination of keys (sum of values).
     def __getitem__(self, key: str) -> Stimulus:
-        return reduce(lambda a, b: a + b, [self.s[k] for k in self.split_cs(key)])
+        return reduce(lambda a, b: a + b, [self.s[k] for k in self.list_cs(key)])
 
     def __add__(self, other: Environment) -> Environment:
         cs = self.s.keys() | other.s.keys()
