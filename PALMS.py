@@ -703,7 +703,7 @@ If you have any questions, contact any of the authors.
         else:
             ylabel = 'Y'
 
-        self.xCoordInfo.setText(f'Trial: {event.xdata:.0f}')
+        self.xCoordInfo.setText(f'Trial: {max(1 + event.xdata, 1):.0f}')
         self.yCoordInfo.setText(f'{ylabel}: {event.ydata:.2f}')
 
     def hideLines(self):
