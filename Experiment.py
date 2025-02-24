@@ -80,6 +80,8 @@ class RWArgs:
     nu: float
     kay: float
 
+    configural_cues: bool
+
     # TODO: Change this to default_alpha or something like that
     alpha: float
     alpha_mack: None | float = None
@@ -136,6 +138,7 @@ class Experiment:
             adaptive_type = args.adaptive_type,
             window_size = args.window_size,
             xi_hall = args.xi_hall,
+            configural_cues = args.configural_cues,
         )
 
         return g

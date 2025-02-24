@@ -40,6 +40,8 @@ class PavlovianApp(QDialog):
     per_cs_param: dict[str, dict[str, PavlovianApp.DualLabel]]
     enabled_params: set[str]
 
+    configural_cues: bool
+
     hidden: bool
     dpi: int
     def __init__(self, dpi = 200, parent=None):
@@ -59,6 +61,8 @@ class PavlovianApp(QDialog):
         self.per_cs_box = {}
         self.per_cs_param = {x: {} for x in percs}
         self.enabled_params = set()
+
+        self.configural_cues = False
 
         self.hidden = False
         self.dpi = dpi
@@ -100,10 +104,11 @@ class PavlovianApp(QDialog):
         
         phaseBoxLayout = QHBoxLayout()
         phaseBoxLayout.addWidget(self.leftPhaseButton)
-        phaseBoxLayout.addWidget(self.xCoordInfo, stretch = 1, alignment = Qt.AlignmentFlag.AlignRight)
+        phaseBoxLayout.addWidget(self.xCoordInfo, stretch = 1, alignment = Qt.AlignmentFlag.AlignLeft)
         phaseBoxLayout.addWidget(self.phaseInfo, stretch = 1, alignment = Qt.AlignmentFlag.AlignCenter)
-        phaseBoxLayout.addWidget(self.yCoordInfo, stretch = 1, alignment = Qt.AlignmentFlag.AlignLeft)
+        phaseBoxLayout.addWidget(self.yCoordInfo, stretch = 1, alignment = Qt.AlignmentFlag.AlignRight)
         phaseBoxLayout.addWidget(self.rightPhaseButton)
+        phaseBoxLayout.setSpacing(50)
         self.phaseBox.setLayout(phaseBoxLayout)
 
         plotBoxLayout = QVBoxLayout()
@@ -252,7 +257,12 @@ class PavlovianApp(QDialog):
         self.toggleAlphasButton.setCheckable(True)
         self.toggleAlphasButton.setStyleSheet(checkedStyle)
         self.toggleAlphasButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        
+
+        self.configuralButton = QPushButton('Configural Cues')
+        self.configuralButton.clicked.connect(self.toggleConfiguralCues)
+        self.configuralButton.setCheckable(True)
+        self.configuralButton.setStyleSheet(checkedStyle)
+        self.configuralButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.setDefaultParamsButton = QPushButton("Restore Default Parameters")
         self.setDefaultParamsButton.clicked.connect(self.restoreDefaultParameters)
@@ -278,6 +288,7 @@ class PavlovianApp(QDialog):
         phaseOptionsLayout.addWidget(self.toggleRandButton)
         phaseOptionsLayout.addWidget(self.phaseLambdaButton)
         phaseOptionsLayout.addWidget(self.toggleAlphasButton)
+        phaseOptionsLayout.addWidget(self.configuralButton)
         self.phaseOptionsGroupBox.setLayout(phaseOptionsLayout)
 
         plotOptionsLayout = QVBoxLayout()
@@ -474,6 +485,10 @@ If you have any questions, contact any of the authors.
 
         self.enableParams()
 
+    def toggleConfiguralCues(self):
+        self.configural_cues = not self.configural_cues
+        self.refreshExperiment()
+
     def enableParams(self):
         for key in AdaptiveType.parameters():
             widget = self.params[key].box
@@ -561,6 +576,8 @@ If you have any questions, contact any of the authors.
             habituation = self.floatOr(self.params['habituation'].box.text(), 0),
 
             kay = self.floatOr(self.params['kay'].box.text(), 0),
+
+            configural_cues = self.configural_cues,
 
             alphas = self.csPercDict('alpha'),
             alpha_macks = self.csPercDict('alpha_mack'),
