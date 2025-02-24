@@ -105,6 +105,9 @@ class Experiment:
         self.phases = [Phase(phase_str) for phase_str in phase_strs]
 
     def run_all_phases(self, args: RWArgs) -> list[dict[str, StimulusHistory]]:
+        # Set the static configural_cues variable for the entire environment.
+        Environment.configural_cues = args.configural_cues
+
         group = self.initial_group(args)
         results = self.run_group_experiments(group, args.num_trials)
         strengths = self.group_results(results, args)
@@ -138,7 +141,6 @@ class Experiment:
             adaptive_type = args.adaptive_type,
             window_size = args.window_size,
             xi_hall = args.xi_hall,
-            configural_cues = args.configural_cues,
         )
 
         return g
