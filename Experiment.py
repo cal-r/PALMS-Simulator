@@ -25,7 +25,7 @@ class Phase:
     def cs(self) -> set[str]:
         if not self.elems:
             return set()
-        return set.union(*[set(Stimulus.split(x[0])) for x in self.elems])
+        return set.union(*[set(Environment.split_cs(x[0])) for x in self.elems])
 
     # Return the list of applicable compound CS.
     # self.compound_cs() ⊇ self.cs()
@@ -46,7 +46,7 @@ class Phase:
                 self.lamda = float(match.group(1))
             elif (match := re.fullmatch(r"([0-9]*)((?:[A-Za-zÑñ]'*)+)([+-]?)", part)) is not None:
                 num, cs, sign = match.groups()
-                cs = ''.join(Stimulus.split(cs.upper()))
+                cs = ''.join(Environment.split_cs(cs.upper()))
                 self.elems += int(num or '1') * [(cs, sign or '+')]
             elif not part.strip():
                 continue

@@ -159,15 +159,15 @@ class PavlovianApp(QDialog):
         self.resize(1250, 600)
         
     def showModelInfo(self):
-        # Code to show model equations
-        current_adaptive_type = self.current_adaptive_type
         root = getattr(sys, '_MEIPASS', '.')
-        image_filename = AdaptiveType.image_types(current_adaptive_type)
+        image_filename = AdaptiveType.types()[self.current_adaptive_type].image_filename
         image_path = os.path.join(root, 'resources', image_filename)
         
-        image = Image.open(image_path)
-        image.show()
-        
+        try:
+            image = Image.open(image_path)
+            image.show()
+        except (FileNotFoundError, IsADirectoryError):
+             QMessageBox.warning(self, '', 'Rendered formula file not found')
 
     def addAdaptiveTypeButtons(self):
         buttons = QGroupBox('Adaptive Type')
