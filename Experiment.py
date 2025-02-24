@@ -8,8 +8,6 @@ from itertools import combinations
 from Group import Group
 from Environment import Stimulus, Environment, StimulusHistory
 
-import ipdb
-
 class Phase:
     # elems contains a list of ([CS], US) of an experiment.
     elems: list[tuple[str, str]]
@@ -176,12 +174,11 @@ class Experiment:
 
         return results
 
-    @ipdb.launch_ipdb_on_exception()
     def group_results(self, results: list[list[Environment]], args: RWArgs) -> list[dict[str, StimulusHistory]]:
         group_strengths = [StimulusHistory.emptydict() for _ in results]
         for phase_num, strength_hist in enumerate(results):
             for strengths in strength_hist:
-                for cs in self.phases[phase_num].compound_cs():
+                for cs in strengths.filter_keys(self.phases[phase_num].compound_cs()):
                     group_strengths[phase_num][f'{self.name} - {cs}'].add(strengths[cs])
 
         return group_strengths
