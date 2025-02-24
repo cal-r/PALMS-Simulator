@@ -3,7 +3,7 @@ from collections import deque, defaultdict
 from functools import reduce
 from itertools import combinations
 
-from typing import Any
+from typing import Any, ClassVar
 
 import re
 
@@ -156,19 +156,20 @@ class StimulusHistory:
         return defaultdict(lambda: StimulusHistory())
 
 class Environment:
+    # Static class variable indicating whether to use configural cues.
+    configural_cues: ClassVar[bool] = False
+
+    # Dictionary with all singular CS -> stimuli.
+    # Values should be begotten with `env[cs]`, where `cs` can be singular
+    # or multiple CSs together.
     s: dict[str, Stimulus]
 
-    # This is constant and global.
-    # Will Smalltalk-stans like me more or less if I make it a class constant?
-    configural_cues: bool
-
-    def __init__(self, s: dict[str, Stimulus], configural_cues: bool):
+    def __init__(self, s: dict[str, Stimulus]):
         self.s = s
-        self.configural_cues = configural_cues
 
     # fromHistories "transposes" a several histories of single CSs into a single list of many CSs.
     @staticmethod
-    def fromHistories(histories: dict[str, StimulusHistory], configural_cues: bool = False) -> list[Environment]:
+    def fromHistories(histories: dict[str, StimulusHistory]) -> list[Environment]:
         longest = max((len(x.hist) for x in histories.values()), default = 0)
         return [
             Environment(
@@ -177,7 +178,6 @@ class Environment:
                     for cs, h in histories.items()
                     if len(h.hist) > i
                 },
-                configural_cues = configural_cues,
             )
             for i in range(longest)
         ]
@@ -206,16 +206,14 @@ class Environment:
         return reduce(lambda a, b: a + b, [self.s[k] for k in Stimulus.split(key)])
 
     def __add__(self, other: Environment) -> Environment:
-        assert self.configural_cues == other.configural_cues
-
         cs = self.s.keys() | other.s.keys()
-        return Environment({k: self[k] + other[k] for k in cs}, configural_cues = self.configural_cues)
+        return Environment({k: self[k] + other[k] for k in cs})
 
     def __truediv__(self, quot: int) -> Environment:
-        return Environment({k: self.s[k] / quot for k in self.s.keys()}, configural_cues = self.configural_cues)
+        return Environment({k: self.s[k] / quot for k in self.s.keys()})
 
     def copy(self) -> Environment:
-        return Environment({k: v.copy() for k, v in self.s.items()}, configural_cues = self.configural_cues)
+        return Environment({k: v.copy() for k, v in self.s.items()})
 
     @staticmethod
     def avg(val: list[Environment]) -> Environment:
