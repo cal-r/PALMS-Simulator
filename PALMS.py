@@ -162,7 +162,7 @@ class PavlovianApp(QDialog):
         root = getattr(sys, '_MEIPASS', '.')
         image_filename = AdaptiveType.types()[self.current_adaptive_type].image_filename
         image_path = os.path.join(root, 'resources', image_filename)
-        
+        print(image_path)
         try:
             image = Image.open(image_path)
             image.show()
