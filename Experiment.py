@@ -55,6 +55,9 @@ class Phase:
 
 @dataclass
 class RWArgs:
+    adaptive_type: str
+    configural_cues: bool
+
     alphas: dict[str, float]
     alpha_macks: dict[str, float]
     alpha_halls: dict[str, float]
@@ -65,7 +68,6 @@ class RWArgs:
     thetaE: float
     thetaI: float
 
-    adaptive_type: str
     window_size: int
     xi_hall: float
     num_trials: int
@@ -79,8 +81,6 @@ class RWArgs:
     rho: float
     nu: float
     kay: float
-
-    configural_cues: bool
 
     # TODO: Change this to default_alpha or something like that
     alpha: float

@@ -147,6 +147,8 @@ class StimulusHistory:
 
 class Environment:
     # Static class variable indicating whether to use configural cues.
+    # Apologies for using a class variable here. Better solutions require
+    # rewriting large amounts of the code.
     configural_cues: ClassVar[bool] = False
 
     # Dictionary with all singular CS -> stimuli.
