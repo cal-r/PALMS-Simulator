@@ -61,8 +61,11 @@ def generate_figures(
         data = [data[plot_phase - 1]]
 
     experiment_css = sorted(set(chain.from_iterable([x.keys() for x in data])))
-    colors = dict(zip(experiment_css, seaborn.husl_palette(len(experiment_css), s=.9, l=.4)))
+    colors = dict(zip(experiment_css, seaborn.husl_palette(len(experiment_css), s=.9, l=.5)))
     colors_alt = dict(zip(experiment_css, seaborn.hls_palette(len(experiment_css), l=.7)))
+
+    markers = ['o', 's', 'D', '^', 'v', '<', '>', 'p', '*', 'h', 'X', 'd']
+    marker_dict = dict(zip(experiment_css, [markers[i % len(markers)] for i in range(len(experiment_css))]))
 
     figures = []
     for phase_num, experiments in enumerate(data, start = 1):
@@ -78,16 +81,16 @@ def generate_figures(
             # This is a predictive model. Do not include the last stimulus in the plot.
             hist = hist[:-1]
 
-            line = axes[0].plot(hist.assoc, label = key, marker = 'D', color = colors[key], markersize = 4, alpha = .5, picker = ticker_threshold)
+            line = axes[0].plot(hist.assoc, label = key, marker = marker_dict[key], color = colors[key], markersize = 5, alpha = 1, picker = ticker_threshold)
 
             cs = key.rsplit(' ', 1)[1]
             if multiple:
                 if plot_alpha and not plot_macknhall:
-                    axes[1].plot(hist.alpha, label='α: '+str(key), color = colors[key], marker='D', markersize=4, alpha=.5, picker = ticker_threshold)
+                    axes[1].plot(hist.alpha, label='α: '+str(key), color = colors[key], marker='D', markersize=4, alpha=1, picker = ticker_threshold)
 
                 if plot_macknhall:
-                    axes[1].plot(hist.alpha_mack, label='Mack: ' + str(key), color = colors[key], marker='$M$', markersize=4, alpha=.5, picker = ticker_threshold)
-                    axes[1].plot(hist.alpha_hall, label='Hall: ' + str(key), color = colors_alt[key], marker='$H$', markersize=4, alpha=.5, picker = ticker_threshold)
+                    axes[1].plot(hist.alpha_mack, label='Mack: ' + str(key), color = colors[key], marker='$M$', markersize=6, alpha=1, picker = ticker_threshold)
+                    axes[1].plot(hist.alpha_hall, label='Hall: ' + str(key), color = colors_alt[key], marker='$H$', markersize=6, alpha=1, picker = ticker_threshold)
 
         axes[0].set_xlabel('Trial Number', fontsize = 'small', labelpad = 3)
         axes[0].set_ylabel('Associative Strength', fontsize = 'small', labelpad = 3)
