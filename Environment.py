@@ -70,6 +70,12 @@ class Stimulus:
         self.window = window.copy()
         self.delta_ma_hall = delta_ma_hall
 
+    def fullName(self) -> str:
+        if re.fullmatch(r'\(.*\)', self.name):
+            return f'q{self.name}'
+
+        return re.sub(r'\((.*)\)', r'', self.name)
+
     def join(self, other: Stimulus, op) -> Stimulus:
         ret: dict[str, Any] = dict(
             name = ''.join(sorted(set(self.splitName() + other.splitName())))

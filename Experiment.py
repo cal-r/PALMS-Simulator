@@ -179,6 +179,7 @@ class Experiment:
         for phase_num, strength_hist in enumerate(results):
             for strengths in strength_hist:
                 for cs in strengths.filter_keys(self.phases[phase_num].compound_cs()):
-                    group_strengths[phase_num][f'{self.name} - {cs}'].add(strengths[cs])
+                    stimulus = strengths[cs]
+                    group_strengths[phase_num][f'{self.name} - {stimulus.fullName()}'].add(stimulus)
 
         return group_strengths
