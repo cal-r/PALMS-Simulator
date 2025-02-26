@@ -604,7 +604,7 @@ If you have any questions, contact any of the authors.
         strengths = [StimulusHistory.emptydict() for _ in range(columnCount)]
         phases = dict()
         for row in range(rowCount):
-            name = self.tableWidget.table.verticalHeaderItem(row).text()
+            name, *rest = self.tableWidget.table.verticalHeaderItem(row).text().split('/')
             phase_strs = [self.tableWidget.getText(row, column) for column in range(columnCount)]
             if not any(phase_strs):
                 continue
@@ -617,7 +617,16 @@ If you have any questions, contact any of the authors.
                 # Apologies for the Go-like code. This should be a sum type!
                 return [], {}, args
 
+            reset_configural_cues = False
+            if 'conf' in rest and not args.configural_cues:
+                # Easter egg: per-experiment configural cue toggling.
+                reset_configural_cues = True
+                args.configural_cues = True
+
             local_strengths = experiment.run_all_phases(args)
+
+            if reset_configural_cues:
+                args.configural_cues = False
 
             strengths = [a | b for a, b in zip_longest(strengths, local_strengths, fillvalue = StimulusHistory.emptydict())]
             phases[name] = experiment.phases
