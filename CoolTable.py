@@ -99,7 +99,7 @@ class CoolTable(QWidget):
             if self.table.verticalHeaderItem(row) is not None:
                 name = self.table.verticalHeaderItem(row).name
 
-            default = f'Test {1 + row}'
+            default = f'Group {1 + row}'
 
             item = QTableWidgetItem(name or default)
             item.name = name
