@@ -63,7 +63,9 @@ jobs:
     - name: Archive Windows executable
       if: ${{ matrix.os == 'windows-latest' }}
       run: |
-        7z a -tzip release_windows.zip dist/PALMS.exe
+        cd dist
+        7z a -tzip ../release_windows.zip PALMS.exe
+        cd ..
         7z a -tzip release_windows.zip Experiments
 
     - name: Archive MacOS executable
