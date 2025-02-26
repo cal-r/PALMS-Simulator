@@ -42,12 +42,12 @@ jobs:
 
         if [[ "${{ matrix.os }}" == "macos-latest" ]]
         then
-          pyinstaller ${EXCLUDED_MODULE_OPTIONS} ${COMMON_OPTIONS} --add-data "resources/palms.png:resources" --onedir --icon resources/palms.icns PALMS.py
+          pyinstaller ${EXCLUDED_MODULE_OPTIONS} ${COMMON_OPTIONS} --add-data "resources:resources" --onedir --icon resources/palms.icns PALMS.py
         elif [[ "${{ matrix.os }}" == "windows-latest" ]]
         then
-          pyinstaller ${EXCLUDED_MODULE_OPTIONS} ${COMMON_OPTIONS} --add-data "resources\palms.png;resources" --onefile --icon resources/palms.ico PALMS.py
+          pyinstaller ${EXCLUDED_MODULE_OPTIONS} ${COMMON_OPTIONS} --add-data "resources;resources" --onefile --icon resources/palms.ico PALMS.py
         else
-          pyinstaller ${EXCLUDED_MODULE_OPTIONS} ${COMMON_OPTIONS} --add-data "resources/palms.png:resources" --onefile --icon resources/palms.png PALMS.py
+          pyinstaller ${EXCLUDED_MODULE_OPTIONS} ${COMMON_OPTIONS} --add-data "resources:resources" --onefile --icon resources/palms.png PALMS.py
         fi
       shell: bash
 
@@ -63,7 +63,8 @@ jobs:
     - name: Archive Windows executable
       if: ${{ matrix.os == 'windows-latest' }}
       run: |
-        tar -czf release_windows.tar.gz Experiments -C dist PALMS.exe
+        zip -j -r release_windows.zip dist/PALMS.txt
+        zip -r release_windows.zip Experiments
 
     - name: Archive MacOS executable
       if: ${{ matrix.os == 'macos-latest' }}
