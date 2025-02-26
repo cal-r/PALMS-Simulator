@@ -17,7 +17,7 @@ from PyQt6.QtWidgets import *
 
 from Experiment import RWArgs, Experiment, Phase
 from Plots import show_plots, generate_figures
-from Environment import StimulusHistory
+from Environment import StimulusHistory, Stimulus
 from AdaptiveType import AdaptiveType
 from CoolTable import CoolTable
 
