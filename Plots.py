@@ -71,7 +71,7 @@ def generate_figures(
     for phase_num, experiments in enumerate(data, start = 1):
         multiple = False
         if not plot_alpha and not plot_macknhall:
-            fig, axes_ = pyplot.subplots(1, 1, figsize = (8, 4), dpi = dpi)
+            fig, axes_ = pyplot.subplots(1, 1, figsize = (8, 6), dpi = dpi)
             axes = [axes_]
         else:
             fig, axes = pyplot.subplots(1, 2, figsize = (16, 6), dpi = dpi)
