@@ -162,7 +162,6 @@ class PavlovianApp(QDialog):
         root = getattr(sys, '_MEIPASS', '.')
         image_filename = AdaptiveType.types()[self.current_adaptive_type].image_filename
         image_path = os.path.join(root, 'resources', image_filename)
-        print(image_path)
         try:
             image = Image.open(image_path)
             image.show()
@@ -665,6 +664,7 @@ If you have any questions, contact any of the authors.
 
     def refreshFigure(self):
         current_figure = self.figures[self.phaseNum - 1]
+
         self.plotCanvas.figure = current_figure
 
         self.plotCanvas.resize(self.plotCanvas.width() + 1, self.plotCanvas.height() + 1)
@@ -674,6 +674,7 @@ If you have any questions, contact any of the authors.
         self.plotCanvas.mpl_connect('motion_notify_event', self.mouseMove)
 
         self.plotCanvas.draw()
+
         self.tableWidget.selectColumn(self.phaseNum - 1)
 
         self.phaseInfo.setText(f'Phase {self.phaseNum}/{self.numPhases}')
@@ -779,7 +780,7 @@ If you have any questions, contact any of the authors.
 
 def parse_args():
     args = ArgumentParser('Display a GUI for simulating models.')
-    args.add_argument('--dpi', type = int, default = 200, help = 'DPI for shown and outputted figures.')
+    args.add_argument('--dpi', type = int, default = None, help = 'DPI for shown and outputted figures.')
     args.add_argument('--debug', action = 'store_true', help = 'Whether to go to a debugging console if there is an exception')
     args.add_argument('load_file', nargs = '?', help = 'File to load initially')
     return args.parse_args()
@@ -788,7 +789,12 @@ def main():
     args = parse_args()
 
     app = QApplication(sys.argv)
-    gallery = PavlovianApp(dpi = args.dpi)
+
+    dpi = args.dpi
+    if dpi is None:
+        dpi = 110 * app.primaryScreen().devicePixelRatio()
+
+    gallery = PavlovianApp(dpi = dpi)
     gallery.show()
 
     if args.load_file:

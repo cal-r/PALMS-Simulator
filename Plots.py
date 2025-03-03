@@ -81,7 +81,15 @@ def generate_figures(
             # This is a predictive model. Do not include the last stimulus in the plot.
             hist = hist[:-1]
 
-            line = axes[0].plot(hist.assoc, label = key, marker = marker_dict[key], color = colors[key], markersize = 5, alpha = 1, picker = ticker_threshold)
+            line = axes[0].plot(
+                hist.assoc,
+                label = key,
+                marker = marker_dict[key],
+                color = colors[key],
+                markersize = 5,
+                alpha = 1,
+                picker = ticker_threshold
+            )
 
             cs = key.rsplit(' ', 1)[1]
             if multiple:
