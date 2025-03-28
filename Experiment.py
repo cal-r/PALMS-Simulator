@@ -29,7 +29,7 @@ class Phase:
 
     # Return the list of applicable compound CS.
     # self.compound_cs() ⊇ self.cs()
-    def compound_cs(self) -> set[str]:
+    def compound_cs(self) -> list[str]:
         compound = {cs for cs, _ in self.elems}
         return sorted(self.cs() | compound, key = lambda x: (len(x.strip("'()")), x))
 
