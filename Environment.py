@@ -88,7 +88,9 @@ class Stimulus:
             this = getattr(self, prop)
             that = getattr(other, prop)
 
-            if type(this) is float or type(this) is int:
+            if this is None and that is None:
+                ret[prop] = None
+            elif type(this) is float or type(this) is int:
                 ret[prop] = op(this, that)
             elif type(this) is deque:
                 size = max(len(this), len(that))
