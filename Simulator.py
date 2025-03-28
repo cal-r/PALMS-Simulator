@@ -5,7 +5,7 @@ import random
 import re
 import sys
 from collections import defaultdict
-from Experiment import Experiment, Phase
+from Experiment import Experiment, Phase, RWArgs
 from Group import Group
 from Environment import Environment, StimulusHistory
 from Plots import show_plots, save_plots
@@ -27,7 +27,7 @@ def match_args(name: str, args: list[str]) -> tuple[dict[str, float], list[str]]
 
     return values, rest
 
-def parse_args() -> argparse.Namespace:
+def parse_args() -> RWArgs:
     parser = argparse.ArgumentParser(
         description="Behold! My Rescorla-Wagnerinator!",
         formatter_class = argparse.RawTextHelpFormatter,
@@ -40,7 +40,7 @@ def parse_args() -> argparse.Namespace:
 ''',
     )
 
-    parser.add_argument("--adaptive-type", choices = AdaptiveType.types().keys(), default = 'rescorla_wagner', help = 'Type of adaptive attention mode to use')
+    parser.add_argument("--adaptive-type", choices = AdaptiveType.types().keys(), default = 'Rescorla Wagner', help = 'Type of adaptive attention mode to use')
 
     parser.add_argument('--alpha', type = float, default = .1, help = 'Alpha for all other stimuli')
     parser.add_argument('--alpha-mack', type = float, help = 'Alpha_mack for all other stimuli')
@@ -67,6 +67,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--plot-experiments", nargs = '*', help = 'List of experiments to plot. By default plot everything')
     parser.add_argument("--plot-stimuli", nargs = '*', help = 'List of stimuli, compound and simple, to plot. By default plot everything')
     parser.add_argument('--plot-alphas', type = bool, action = argparse.BooleanOptionalAction, help = 'Whether to plot all the alphas, including total alpha, alpha Mack, and alpha Hall.')
+
+    parser.add_argument('--configural_cues', type = bool, default = False, action = argparse.BooleanOptionalAction, help = 'Whether to use configural cues')
+    parser.add_argument('--rho', type = float, default = .1)
+    parser.add_argument('--nu', type = float, default = .1)
+    parser.add_argument('--kay', type = float, default = .1)
 
     parser.add_argument('--plot-alpha', type = bool, action = argparse.BooleanOptionalAction, help = 'Whether to plot the total alpha.')
     parser.add_argument('--plot-macknhall', type = bool, action = argparse.BooleanOptionalAction, help = 'Whether to plot the alpha Mack and alpha Hall.')
@@ -95,8 +100,11 @@ def parse_args() -> argparse.Namespace:
 
     args.use_adaptive = args.adaptive_type is not None
 
-    if args.adaptive_type.endswith('hall') and args.window_size is None:
-        args.window_size = 3
+    if args.window_size is None:
+        if args.adaptive_type.endswith('hall'):
+            args.window_size = 3
+        else:
+            args.window_size = 1
 
     if args.plot_alphas:
         args.plot_alpha = True
@@ -106,10 +114,13 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
+    experiment_args = RWArgs(
+        **{k: v for k, v in args.__dict__.items() if k in set(RWArgs.__match_args__) and v is not None}
+    )
 
     groups_strengths = None
-
     phases: dict[str, list[Phase]] = dict()
+
     for e, experiment in enumerate(args.experiment_file.readlines()):
         name, *phase_strs = experiment.strip().split('|')
         name = name.strip()
@@ -121,7 +132,7 @@ def main() -> None:
             continue
 
         experiment = Experiment(name, phase_strs)
-        local_strengths = experiment.run_all_phases(args)
+        local_strengths = experiment.run_all_phases(experiment_args)
         groups_strengths = [a | b for a, b in zip(groups_strengths, local_strengths)]
         phases[name] = experiment.phases
 
