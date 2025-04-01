@@ -1,0 +1,3 @@
+Novel|lambda=0.5/40T+||10T+
+Neg Transfer|lambda=0.5/40L+||10T+
+Change|lambda=0.5/40T+|2T-|10T+
