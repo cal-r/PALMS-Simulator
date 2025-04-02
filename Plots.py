@@ -101,7 +101,7 @@ def generate_figures(
                 label = key,
                 marker = marker_dict[key],
                 color = colors[key],
-                markersize = 5,
+                markersize = 4,
                 alpha = 1,
                 picker = ticker_threshold
             )
@@ -126,6 +126,8 @@ def generate_figures(
         # the ticks to appear as the next number.
         axes[0].xaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x + 1:.0f}'))
         axes[0].xaxis.set_major_locator(MaxNLocator(integer = True, min_n_ticks = 1))
+
+        axes[0].yaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x:.1f}'))
 
         if multiple:
             axes[0].set_title(f'Associative Strengths')
@@ -160,7 +162,7 @@ def generate_figures(
 
         legend = fig.legend(
             ncols = len(exp),
-            frameon = False,
+            frameon = True,
             handlelength = 1,
             loc = 'center',
         )
@@ -217,11 +219,16 @@ def save_plots(
         singular_legend = singular_legend,
     )
 
+    if singular_legend:
+        legend_fig = figures[-1]
+        figures = figures[:-1]
+        legend_fig.set_size_inches(11, .1)
+        legend_fig.savefig(f'{filename}_legend.png', dpi = dpi or 150, bbox_inches = 'tight', pad_inches = 0)
+
     for phase_num, fig in enumerate(figures, start = 1):
-        if not singular_legend or phase_num < len(figures) - 1:
-            fig.set_size_inches(8, 2)
-            fig.savefig(f'{filename}_{phase_num}.png', dpi = dpi or 150, bbox_inches = 'tight')
-        else:
-            # ipdb.set_trace()
-            fig.set_size_inches(8, .2)
-            fig.savefig(f'{filename}_legend.png', dpi = dpi or 150, bbox_inches = 'tight', pad_inches = 0)
+        dep = 1.3
+        if phase_num < len(figures):
+            fig.axes[0].set_xlabel(f'')
+
+        fig.set_size_inches(11 / dep, 2 / dep)
+        fig.savefig(f'{filename}_{phase_num}.png', dpi = dpi or 150, bbox_inches = 'tight')
