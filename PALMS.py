@@ -44,7 +44,7 @@ class PavlovianApp(QDialog):
 
     hidden: bool
     dpi: int
-    def __init__(self, dpi = 200, parent=None):
+    def __init__(self, dpi = 200, screenshot_ready = False, parent=None):
         super(PavlovianApp, self).__init__(parent)
 
         self.adaptive_types = AdaptiveType.types().keys()
@@ -66,6 +66,7 @@ class PavlovianApp(QDialog):
 
         self.hidden = False
         self.dpi = dpi
+        self.screenshot_ready = screenshot_ready
 
         self.initUI()
         QTimer.singleShot(100, self.updateWidgets)
@@ -157,6 +158,11 @@ class PavlovianApp(QDialog):
         self.adaptiveTypeButtons.children()[1].click()
 
         self.resize(1250, 600)
+
+        if self.screenshot_ready:
+            self.xCoordInfo.setVisible(False)
+            self.yCoordInfo.setVisible(False)
+            self.resize(1600, 600)
         
     def showModelInfo(self):
         root = getattr(sys, '_MEIPASS', '.')
@@ -781,6 +787,7 @@ If you have any questions, contact any of the authors.
 def parse_args():
     args = ArgumentParser('Display a GUI for simulating models.')
     args.add_argument('--dpi', type = int, default = None, help = 'DPI for shown and outputted figures.')
+    args.add_argument('--screenshot-ready', action = 'store_true', help = 'Hide guide numbers for easier screenshots.')
     args.add_argument('--debug', action = 'store_true', help = 'Whether to go to a debugging console if there is an exception')
     args.add_argument('load_file', nargs = '?', help = 'File to load initially')
     return args.parse_args()
@@ -794,7 +801,7 @@ def main():
     if dpi is None:
         dpi = 110 * app.primaryScreen().devicePixelRatio()
 
-    gallery = PavlovianApp(dpi = dpi)
+    gallery = PavlovianApp(dpi = dpi, screenshot_ready = args.screenshot_ready)
     gallery.show()
 
     if args.load_file:
