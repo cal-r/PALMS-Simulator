@@ -10,20 +10,23 @@ from matplotlib import pyplot
 from Environment import StimulusHistory
 from matplotlib.ticker import MaxNLocator, IndexLocator, LinearLocator
 from matplotlib.ticker import FuncFormatter
+from matplotlib.axes import Axes
 from itertools import chain
 
 from Experiment import Phase
 
-def titleify(filename: None | str, phases: dict[str, list[Phase]], phase_num: int, suffix: None | str) -> str:
+import ipdb
+
+def titleify(title: None | str, phases: dict[str, list[Phase]], phase_num: int, title_suffix: None | str) -> str:
     titles = []
 
-    if filename is not None:
-        filename = re.sub(r'.*\/|\..+', '', re.sub(r'[-_]', ' ', filename))
-        filename = filename.title().replace('Lepelley', 'LePelley').replace('Dualv', 'DualV')
-        if suffix is not None:
-            filename = f'{filename} ({suffix})'
+    if title is not None:
+        title = re.sub(r'.*\/|\..+', '', re.sub(r'[-_]', ' ', title))
+        title = title.title().replace('Lepelley', 'LePelley').replace('Dualv', 'DualV')
+        if title_suffix is not None:
+            title = f'{title} ({title_suffix})'
 
-        titles.append(filename)
+        titles.append(title)
 
     q = max(len(v) for v in phases.values())
     title_length = max(len(k) for k in phases.keys())
@@ -43,17 +46,29 @@ def titleify(filename: None | str, phases: dict[str, list[Phase]], phase_num: in
 
     return '\n'.join(titles)
 
+def add_legend(axes: list[Axes], experiments: dict[str, StimulusHistory], ticker_threshold):
+    if len(experiments) >= 6:
+        properties = dict(fontsize = 7, ncol = 2)
+    else:
+        properties = dict(fontsize = 'x-small')
+
+    for ax in axes:
+        legend = ax.legend(**properties)
+        for line in legend.get_lines():
+            line.set_picker(10)
+
 def generate_figures(
         data: list[dict[str, StimulusHistory]],
         *,
         phases: None | dict[str, list[Phase]] = None,
-        filename: None | str = None,
+        title: None | str = None,
         plot_phase: None | int = None,
         plot_alpha: bool = False,
         plot_macknhall: bool = False,
         title_suffix: None | str = None,
         dpi: None | float = None,
         ticker_threshold: int = 10,
+        singular_legend: bool = False,
     ) -> list[pyplot.Figure]:
     seaborn.set()
 
@@ -106,17 +121,11 @@ def generate_figures(
         axes[0].tick_params(axis = 'both', labelsize = 'x-small', pad = 1)
         axes[0].ticklabel_format(useOffset = False, style = 'plain', axis = 'y')
 
-        # UGLY HACK WARNING.
         # Matplotlib makes it hard to start a plot with xticks = [1, t].
         # Instead of fixing the ticks ourselves, we plot in [0, t - 1] and format
         # the ticks to appear as the next number.
         axes[0].xaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x + 1:.0f}'))
         axes[0].xaxis.set_major_locator(MaxNLocator(integer = True, min_n_ticks = 1))
-
-        if len(experiments) >= 6:
-            axes[0].legend(fontsize = 8, ncol = 2).set_draggable(True)
-        else:
-            axes[0].legend(fontsize = 'x-small').set_draggable(True)
 
         if multiple:
             axes[0].set_title(f'Associative Strengths')
@@ -130,22 +139,33 @@ def generate_figures(
             axes[1].yaxis.set_label_position('right')
             axes[1].xaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x + 1:.0f}'))
             axes[1].xaxis.set_major_locator(MaxNLocator(integer = True, min_n_ticks = 1))
-            if len(experiments) >= 6:
-                axes[1].legend(fontsize = 8, ncol = 2).set_draggable(True)
-            else:
-                axes[1].legend(fontsize = 'x-small').set_draggable(True)
 
-        legend_lines = chain.from_iterable([ax.get_legend().get_lines() for ax in axes])
-        for legend_line in legend_lines:
-            legend_line.set_picker(ticker_threshold)
+        if not singular_legend:
+            add_legend(axes, experiments, ticker_threshold)
 
         if phases is not None:
-            fig.suptitle(titleify(filename, phases, phase_num, title_suffix), fontdict = {'family': 'monospace'}, fontsize = 12)
+            fig.suptitle(titleify(title, phases, phase_num, title_suffix), fontdict = {'family': 'monospace'}, fontsize = 12)
 
             if len(axes) > 1:
                 fig.subplots_adjust(top = .85)
 
         fig.tight_layout()
+        figures.append(fig)
+
+    if singular_legend:
+        fig = pyplot.figure(dpi = dpi)
+        pyplot.axis('off')
+        for exp in experiment_css:
+            pyplot.plot([], [], figure = fig, color = colors[exp], marker = marker_dict[exp], label = exp)
+
+        legend = fig.legend(
+            ncols = len(exp),
+            frameon = False,
+            handlelength = 1,
+            loc = 'center',
+        )
+        fig.canvas.draw()
+
         figures.append(fig)
 
     return figures
@@ -162,9 +182,28 @@ def show_plots(data: list[dict[str, StimulusHistory]], *, phases: None | dict[st
     )
     return figures
 
-def save_plots(data: list[dict[str, StimulusHistory]], *, phases: None | dict[str, list[Phase]] = None, filename: None | str = None, plot_phase = None, plot_alpha = False, plot_macknhall = False, title_suffix = None, dpi = None):
+def save_plots(
+    data: list[dict[str, StimulusHistory]],
+    *,
+    phases: None | dict[str,
+    list[Phase]] = None,
+    filename: None | str = None,
+    plot_phase = None,
+    plot_alpha = False,
+    plot_macknhall = False,
+    title_suffix = None,
+    dpi = None,
+    show_title = False,
+    singular_legend = False,
+):
     if filename is not None:
         filename = filename.removesuffix('.png')
+
+    title = None
+    if show_title:
+        title = filename
+    else:
+        phases = None
 
     figures = generate_figures(
         data = data,
@@ -172,10 +211,17 @@ def save_plots(data: list[dict[str, StimulusHistory]], *, phases: None | dict[st
         plot_phase = plot_phase,
         plot_alpha = plot_alpha,
         plot_macknhall = plot_macknhall,
-        filename = filename,
+        title = title,
         title_suffix = title_suffix,
         dpi = dpi,
+        singular_legend = singular_legend,
     )
 
     for phase_num, fig in enumerate(figures, start = 1):
-        fig.savefig(f'{filename}_{phase_num}.png', dpi = dpi or 150, bbox_inches = 'tight')
+        if not singular_legend or phase_num < len(figures) - 1:
+            fig.set_size_inches(8, 2)
+            fig.savefig(f'{filename}_{phase_num}.png', dpi = dpi or 150, bbox_inches = 'tight')
+        else:
+            # ipdb.set_trace()
+            fig.set_size_inches(8, .2)
+            fig.savefig(f'{filename}_legend.png', dpi = dpi or 150, bbox_inches = 'tight', pad_inches = 0)
