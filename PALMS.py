@@ -16,7 +16,7 @@ from PyQt6.QtGui import QFont, QPixmap
 from PyQt6.QtWidgets import *
 
 from Experiment import RWArgs, Experiment, Phase
-from Plots import show_plots, generate_figures
+from Plots import generate_figures
 from Environment import StimulusHistory, Stimulus
 from AdaptiveType import AdaptiveType
 from CoolTable import CoolTable
@@ -750,12 +750,13 @@ If you have any questions, contact any of the authors.
         if len(phases) == 0:
             return
 
-        figures = show_plots(
+        figures = generate_figures(
             strengths,
             phases = phases,
             plot_alpha = args.plot_alpha and not AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
             plot_macknhall = args.plot_macknhall and AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
             dpi = self.dpi,
+            ticker_threshold = True,
         )
 
         for fig in figures:

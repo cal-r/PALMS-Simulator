@@ -15,17 +15,12 @@ from itertools import chain
 
 from Experiment import Phase
 
-import ipdb
-
-def titleify(title: None | str, phases: dict[str, list[Phase]], phase_num: int, title_suffix: None | str) -> str:
+def titleify(title: None | str, phases: dict[str, list[Phase]], phase_num: int) -> str:
     titles = []
 
     if title is not None:
         title = re.sub(r'.*\/|\..+', '', re.sub(r'[-_]', ' ', title))
         title = title.title().replace('Lepelley', 'LePelley').replace('Dualv', 'DualV')
-        if title_suffix is not None:
-            title = f'{title} ({title_suffix})'
-
         titles.append(title)
 
     q = max(len(v) for v in phases.values())
@@ -65,7 +60,6 @@ def generate_figures(
         plot_phase: None | int = None,
         plot_alpha: bool = False,
         plot_macknhall: bool = False,
-        title_suffix: None | str = None,
         dpi: None | float = None,
         ticker_threshold: int = 10,
         singular_legend: bool = False,
@@ -153,7 +147,7 @@ def generate_figures(
             add_legend(axes, experiments, ticker_threshold)
 
         if phases is not None:
-            fig.suptitle(titleify(title, phases, phase_num, title_suffix), fontdict = {'family': 'monospace'}, fontsize = 12)
+            fig.suptitle(titleify(title, phases, phase_num), fontdict = {'family': 'monospace'}, fontsize = 12)
 
             if len(axes) > 1:
                 fig.subplots_adjust(top = .85)
@@ -179,18 +173,6 @@ def generate_figures(
 
     return figures
 
-def show_plots(data: list[dict[str, StimulusHistory]], *, phases: None | dict[str, list[Phase]] = None, plot_phase = None, plot_alpha = False, plot_macknhall = False, dpi = None):
-    figures = generate_figures(
-        data = data,
-        phases = phases,
-        plot_phase = plot_phase,
-        plot_alpha = plot_alpha,
-        plot_macknhall = plot_macknhall,
-        dpi = dpi,
-        ticker_threshold = True,
-    )
-    return figures
-
 def save_plots(
     data: list[dict[str, StimulusHistory]],
     *,
@@ -200,7 +182,6 @@ def save_plots(
     plot_phase = None,
     plot_alpha = False,
     plot_macknhall = False,
-    title_suffix = None,
     dpi = None,
     show_title = False,
     singular_legend = False,
@@ -221,7 +202,6 @@ def save_plots(
         plot_alpha = plot_alpha,
         plot_macknhall = plot_macknhall,
         title = title,
-        title_suffix = title_suffix,
         dpi = dpi,
         singular_legend = singular_legend,
     )
