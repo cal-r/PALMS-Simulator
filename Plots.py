@@ -3,7 +3,7 @@ from __future__ import annotations
 import re
 import seaborn
 import matplotlib
-import numpy as np
+import numpy
 matplotlib.use('QtAgg')
 
 from matplotlib import pyplot
@@ -63,6 +63,7 @@ def generate_figures(
     colors = dict(zip(experiment_css, seaborn.husl_palette(len(experiment_css), s=.9, l=.5)))
     colors_alt = dict(zip(experiment_css, seaborn.hls_palette(len(experiment_css), l=.7)))
 
+    # markers = ['*', 'X', 'D', 's', 'o', 'd', 'p', 'h', '^', 'v', '<', '>']
     markers = ['o', 's', 'D', '^', 'v', '<', '>', 'p', '*', 'h', 'X', 'd']
     marker_dict = dict(zip(experiment_css, [markers[i % len(markers)] for i in range(len(experiment_css))]))
 
@@ -80,17 +81,18 @@ def generate_figures(
             fig, axes = pyplot.subplots(1, 2, figsize = (16, 6), dpi = dpi)
             multiple = True
 
-        for key, hist in experiments.items():
+        for num, (key, hist) in enumerate(experiments.items()):
             # This is a predictive model. Do not include the last stimulus in the plot.
             hist = hist[:-1]
 
+            ratio = num / (len(experiments.items()) - 1)
             line = axes[0].plot(
                 hist.assoc,
                 label = key,
                 marker = marker_dict[key],
                 color = colors[key],
                 markersize = 4,
-                alpha = 1,
+                alpha = 1 - .5 * ratio,
                 picker = ticker_threshold
             )
 
@@ -143,6 +145,7 @@ def generate_figures(
             for ax in axes:
                 legend = ax.legend(**properties)
                 for legend_line in legend.get_lines():
+                    legend_line.set_alpha(1)
                     legend_line.set_picker(10)
 
         if phases is not None:

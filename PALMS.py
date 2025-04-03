@@ -699,7 +699,7 @@ If you have any questions, contact any of the authors.
         for ax in line.figure.get_axes():
             for line in ax.get_lines():
                 if line.get_label() == label:
-                    line.set_alpha(1. - line.get_alpha())
+                    line.set_alpha(0 if line.get_alpha() > 0 else 1)
 
             for line in ax.get_legend().get_lines():
                 if line.get_label() == label:

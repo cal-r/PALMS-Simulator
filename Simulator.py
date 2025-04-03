@@ -77,7 +77,7 @@ def parse_args():
     parser.add_argument('--plot-macknhall', type = bool, action = argparse.BooleanOptionalAction, help = 'Whether to plot the alpha Mack and alpha Hall.')
 
     parser.add_argument('--show-title', action = 'store_true', help = 'Show title and phases to saved plot.')
-    parser.add_argument('--dpi', type = int, help = 'Dots per inch.')
+    parser.add_argument('--dpi', type = int, default = 200, help = 'Dots per inch.')
     parser.add_argument('--singular-legend', action = 'store_true', help = 'Hide legend in plot, and generate a separate file with all the legends together.')
 
     parser.add_argument('--savefig', type = str, help = 'Instead of showing figures, they will be saved to "fig_n.png"')
