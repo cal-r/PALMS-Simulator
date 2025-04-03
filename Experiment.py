@@ -93,7 +93,6 @@ class RWArgs:
     plot_alpha: bool = False
     plot_macknhall: bool = False
 
-    title_suffix: None | str = None
     savefig: None | str = None
 
 class Experiment:

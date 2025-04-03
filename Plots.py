@@ -17,225 +17,226 @@ from Experiment import Phase
 
 import ipdb
 
-def titleify(title: None | str, phases: dict[str, list[Phase]], phase_num: int, title_suffix: None | str) -> str:
-    titles = []
+class Plotter:
+    data: list[dict[str, StimulusHistory]]
 
-    if title is not None:
-        title = re.sub(r'.*\/|\..+', '', re.sub(r'[-_]', ' ', title))
-        title = title.title().replace('Lepelley', 'LePelley').replace('Dualv', 'DualV')
-        if title_suffix is not None:
-            title = f'{title} ({title_suffix})'
-
-        titles.append(title)
-
-    q = max(len(v) for v in phases.values())
-    title_length = max(len(k) for k in phases.keys())
-    val_lengths = [max(len(v[x].phase_str) for v in phases.values()) for x in range(q)]
-    for k, v in phases.items():
-        group_str = [k.rjust(title_length)]
-        for e, (g, ln) in enumerate(zip(v, val_lengths), start = 1):
-            phase_str = g.phase_str
-            if e == phase_num:
-                phase_str = fr'$\mathbf{{{phase_str}}}$'
-
-            phase_str = (ln - len(g.phase_str)) * ' ' + phase_str
-
-            group_str.append(phase_str)
-
-        titles.append('|'.join(group_str))
-
-    return '\n'.join(titles)
-
-def add_legend(axes: list[Axes], experiments: dict[str, StimulusHistory], ticker_threshold):
-    if len(experiments) >= 6:
-        properties = dict(fontsize = 7, ncol = 2)
-    else:
-        properties = dict(fontsize = 'x-small')
-
-    for ax in axes:
-        legend = ax.legend(**properties)
-        for line in legend.get_lines():
-            line.set_picker(10)
-
-def generate_figures(
+    def __init__(
+        self,
         data: list[dict[str, StimulusHistory]],
+    ):
+        self.data = data
+
+    def generate_figures(
+            *,
+            phases: None | dict[str, list[Phase]] = None,
+            title: None | str = None,
+            plot_phase: None | int = None,
+            plot_alpha: bool = False,
+            plot_macknhall: bool = False,
+            dpi: None | float = None,
+            ticker_threshold: int = 10,
+            singular_legend: bool = False,
+        ) -> list[pyplot.Figure]:
+        seaborn.set()
+
+        data = self.data
+        if plot_phase is not None:
+            data = [data[plot_phase - 1]]
+
+        experiment_css = sorted(set(chain.from_iterable([x.keys() for x in data])))
+        colors = dict(zip(experiment_css, seaborn.husl_palette(len(experiment_css), s=.9, l=.5)))
+        colors_alt = dict(zip(experiment_css, seaborn.hls_palette(len(experiment_css), l=.7)))
+
+        markers = ['o', 's', 'D', '^', 'v', '<', '>', 'p', '*', 'h', 'X', 'd']
+        marker_dict = dict(zip(experiment_css, [markers[i % len(markers)] for i in range(len(experiment_css))]))
+
+        eps = 1e-1
+        lowest  = min(0, min(min(hist.assoc) for experiments in data for hist in experiments.values())) - eps
+        highest = max(1, max(max(hist.assoc) for experiments in data for hist in experiments.values())) + eps
+
+        figures = []
+        for phase_num, experiments in enumerate(data, start = 1):
+            multiple = False
+            if not plot_alpha and not plot_macknhall:
+                fig, axes_ = pyplot.subplots(1, 1, figsize = (8, 6), dpi = dpi)
+                axes = [axes_]
+            else:
+                fig, axes = pyplot.subplots(1, 2, figsize = (16, 6), dpi = dpi)
+                multiple = True
+
+            for key, hist in experiments.items():
+                # This is a predictive model. Do not include the last stimulus in the plot.
+                hist = hist[:-1]
+
+                line = axes[0].plot(
+                    hist.assoc,
+                    label = key,
+                    marker = marker_dict[key],
+                    color = colors[key],
+                    markersize = 4,
+                    alpha = 1,
+                    picker = ticker_threshold
+                )
+
+                cs = key.rsplit(' ', 1)[1]
+                if multiple:
+                    if plot_alpha and not plot_macknhall:
+                        axes[1].plot(hist.alpha, label='α: '+str(key), color = colors[key], marker='D', markersize=4, alpha=1, picker = ticker_threshold)
+
+                    if plot_macknhall:
+                        axes[1].plot(hist.alpha_mack, label='Mack: ' + str(key), color = colors[key], marker='$M$', markersize=6, alpha=1, picker = ticker_threshold)
+                        axes[1].plot(hist.alpha_hall, label='Hall: ' + str(key), color = colors_alt[key], marker='$H$', markersize=6, alpha=1, picker = ticker_threshold)
+
+            axes[0].set_xlabel('Trial Number', fontsize = 'small', labelpad = 3)
+            axes[0].set_ylabel('Associative Strength', fontsize = 'small', labelpad = 3)
+
+            axes[0].tick_params(axis = 'both', labelsize = 'x-small', pad = 1)
+            axes[0].ticklabel_format(useOffset = False, style = 'plain', axis = 'y')
+
+            # Matplotlib makes it hard to start a plot with xticks = [1, t].
+            # Instead of fixing the ticks ourselves, we plot in [0, t - 1] and format
+            # the ticks to appear as the next number.
+            axes[0].xaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x + 1:.0f}'))
+            axes[0].xaxis.set_major_locator(MaxNLocator(integer = True, min_n_ticks = 1))
+
+            axes[0].yaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x:.1f}'))
+
+            axes[0].set_ylim(lowest, highest)
+
+            if multiple:
+                axes[0].set_title(f'Associative Strengths')
+                axes[1].set_xlabel('Trial Number', fontsize = 'small', labelpad = 3)
+                axes[1].set_ylabel('Alpha', fontsize = 'small', labelpad = 3)
+                axes[1].set_title(f'Alphas')
+                axes[1].xaxis.set_major_locator(MaxNLocator(integer = True))
+                axes[1].yaxis.tick_right()
+                axes[1].tick_params(axis = 'both', labelsize = 'x-small', pad = 1)
+                axes[1].tick_params(axis = 'y', which = 'both', right = True, length = 0)
+                axes[1].yaxis.set_label_position('right')
+                axes[1].xaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x + 1:.0f}'))
+                axes[1].xaxis.set_major_locator(MaxNLocator(integer = True, min_n_ticks = 1))
+                axes[1].set_ylim(lowest, highest)
+
+            if not singular_legend:
+                add_legend(axes, experiments, ticker_threshold)
+
+            if phases is not None:
+                fig.suptitle(titleify(title, phases, phase_num), fontdict = {'family': 'monospace'}, fontsize = 12)
+
+                if len(axes) > 1:
+                    fig.subplots_adjust(top = .85)
+
+            fig.tight_layout()
+            figures.append(fig)
+
+        if singular_legend:
+            fig = pyplot.figure(dpi = dpi)
+            pyplot.axis('off')
+            for exp in experiment_css:
+                pyplot.plot([], [], figure = fig, color = colors[exp], marker = marker_dict[exp], label = exp)
+
+            legend = fig.legend(
+                ncols = len(exp),
+                frameon = True,
+                handlelength = 1,
+                loc = 'center',
+            )
+            fig.canvas.draw()
+
+            figures.append(fig)
+
+        return figures
+
+    def save_plots(
         *,
         phases: None | dict[str, list[Phase]] = None,
-        title: None | str = None,
-        plot_phase: None | int = None,
-        plot_alpha: bool = False,
-        plot_macknhall: bool = False,
-        title_suffix: None | str = None,
-        dpi: None | float = None,
-        ticker_threshold: int = 10,
-        singular_legend: bool = False,
-    ) -> list[pyplot.Figure]:
-    seaborn.set()
+        filename: None | str = None,
+        plot_phase = None,
+        plot_alpha = False,
+        plot_macknhall = False,
+        dpi = None,
+        show_title = False,
+        singular_legend = False,
+    ):
+        if filename is not None:
+            filename = filename.removesuffix('.png')
 
-    if plot_phase is not None:
-        data = [data[plot_phase - 1]]
-
-    experiment_css = sorted(set(chain.from_iterable([x.keys() for x in data])))
-    colors = dict(zip(experiment_css, seaborn.husl_palette(len(experiment_css), s=.9, l=.5)))
-    colors_alt = dict(zip(experiment_css, seaborn.hls_palette(len(experiment_css), l=.7)))
-
-    markers = ['o', 's', 'D', '^', 'v', '<', '>', 'p', '*', 'h', 'X', 'd']
-    marker_dict = dict(zip(experiment_css, [markers[i % len(markers)] for i in range(len(experiment_css))]))
-
-    eps = 1e-1
-    lowest  = min(0, min(min(hist.assoc) for experiments in data for hist in experiments.values())) - eps
-    highest = max(1, max(max(hist.assoc) for experiments in data for hist in experiments.values())) + eps
-
-    figures = []
-    for phase_num, experiments in enumerate(data, start = 1):
-        multiple = False
-        if not plot_alpha and not plot_macknhall:
-            fig, axes_ = pyplot.subplots(1, 1, figsize = (8, 6), dpi = dpi)
-            axes = [axes_]
+        title = None
+        if show_title:
+            title = filename
         else:
-            fig, axes = pyplot.subplots(1, 2, figsize = (16, 6), dpi = dpi)
-            multiple = True
+            phases = None
 
-        for key, hist in experiments.items():
-            # This is a predictive model. Do not include the last stimulus in the plot.
-            hist = hist[:-1]
-
-            line = axes[0].plot(
-                hist.assoc,
-                label = key,
-                marker = marker_dict[key],
-                color = colors[key],
-                markersize = 4,
-                alpha = 1,
-                picker = ticker_threshold
-            )
-
-            cs = key.rsplit(' ', 1)[1]
-            if multiple:
-                if plot_alpha and not plot_macknhall:
-                    axes[1].plot(hist.alpha, label='α: '+str(key), color = colors[key], marker='D', markersize=4, alpha=1, picker = ticker_threshold)
-
-                if plot_macknhall:
-                    axes[1].plot(hist.alpha_mack, label='Mack: ' + str(key), color = colors[key], marker='$M$', markersize=6, alpha=1, picker = ticker_threshold)
-                    axes[1].plot(hist.alpha_hall, label='Hall: ' + str(key), color = colors_alt[key], marker='$H$', markersize=6, alpha=1, picker = ticker_threshold)
-
-        axes[0].set_xlabel('Trial Number', fontsize = 'small', labelpad = 3)
-        axes[0].set_ylabel('Associative Strength', fontsize = 'small', labelpad = 3)
-
-        axes[0].tick_params(axis = 'both', labelsize = 'x-small', pad = 1)
-        axes[0].ticklabel_format(useOffset = False, style = 'plain', axis = 'y')
-
-        # Matplotlib makes it hard to start a plot with xticks = [1, t].
-        # Instead of fixing the ticks ourselves, we plot in [0, t - 1] and format
-        # the ticks to appear as the next number.
-        axes[0].xaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x + 1:.0f}'))
-        axes[0].xaxis.set_major_locator(MaxNLocator(integer = True, min_n_ticks = 1))
-
-        axes[0].yaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x:.1f}'))
-
-        axes[0].set_ylim(lowest, highest)
-
-        if multiple:
-            axes[0].set_title(f'Associative Strengths')
-            axes[1].set_xlabel('Trial Number', fontsize = 'small', labelpad = 3)
-            axes[1].set_ylabel('Alpha', fontsize = 'small', labelpad = 3)
-            axes[1].set_title(f'Alphas')
-            axes[1].xaxis.set_major_locator(MaxNLocator(integer = True))
-            axes[1].yaxis.tick_right()
-            axes[1].tick_params(axis = 'both', labelsize = 'x-small', pad = 1)
-            axes[1].tick_params(axis = 'y', which = 'both', right = True, length = 0)
-            axes[1].yaxis.set_label_position('right')
-            axes[1].xaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x + 1:.0f}'))
-            axes[1].xaxis.set_major_locator(MaxNLocator(integer = True, min_n_ticks = 1))
-            axes[1].set_ylim(lowest, highest)
-
-        if not singular_legend:
-            add_legend(axes, experiments, ticker_threshold)
-
-        if phases is not None:
-            fig.suptitle(titleify(title, phases, phase_num, title_suffix), fontdict = {'family': 'monospace'}, fontsize = 12)
-
-            if len(axes) > 1:
-                fig.subplots_adjust(top = .85)
-
-        fig.tight_layout()
-        figures.append(fig)
-
-    if singular_legend:
-        fig = pyplot.figure(dpi = dpi)
-        pyplot.axis('off')
-        for exp in experiment_css:
-            pyplot.plot([], [], figure = fig, color = colors[exp], marker = marker_dict[exp], label = exp)
-
-        legend = fig.legend(
-            ncols = len(exp),
-            frameon = True,
-            handlelength = 1,
-            loc = 'center',
+        figures = generate_figures(
+            phases = phases,
+            plot_phase = plot_phase,
+            plot_alpha = plot_alpha,
+            plot_macknhall = plot_macknhall,
+            title = title,
+            dpi = dpi,
+            singular_legend = singular_legend,
         )
-        fig.canvas.draw()
 
-        figures.append(fig)
+        if singular_legend:
+            legend_fig = figures[-1]
+            figures = figures[:-1]
+            legend_fig.set_size_inches(11, .1)
+            legend_fig.savefig(f'{filename}_legend.png', dpi = dpi or 150, bbox_inches = 'tight', pad_inches = 0)
 
-    return figures
+        for phase_num, fig in enumerate(figures, start = 1):
+            dep = 1.3
+            if phase_num < len(figures):
+                fig.axes[0].set_xlabel(f'')
 
-def show_plots(data: list[dict[str, StimulusHistory]], *, phases: None | dict[str, list[Phase]] = None, plot_phase = None, plot_alpha = False, plot_macknhall = False, dpi = None):
-    figures = generate_figures(
-        data = data,
-        phases = phases,
-        plot_phase = plot_phase,
-        plot_alpha = plot_alpha,
-        plot_macknhall = plot_macknhall,
-        dpi = dpi,
-        ticker_threshold = True,
-    )
-    return figures
+            fig.set_size_inches(10 / dep, 2 / dep)
+            fig.savefig(f'{filename}_{phase_num}.png', dpi = dpi or 150, bbox_inches = 'tight')
 
-def save_plots(
-    data: list[dict[str, StimulusHistory]],
-    *,
-    phases: None | dict[str,
-    list[Phase]] = None,
-    filename: None | str = None,
-    plot_phase = None,
-    plot_alpha = False,
-    plot_macknhall = False,
-    title_suffix = None,
-    dpi = None,
-    show_title = False,
-    singular_legend = False,
-):
-    if filename is not None:
-        filename = filename.removesuffix('.png')
+    def titleify(title: None | str, phases: dict[str, list[Phase]], phase_num: int) -> str:
+        titles = []
 
-    title = None
-    if show_title:
-        title = filename
-    else:
-        phases = None
+        if title is not None:
+            title = re.sub(r'.*\/|\..+', '', re.sub(r'[-_]', ' ', title))
+            title = title.title().replace('Lepelley', 'LePelley').replace('Dualv', 'DualV')
 
-    figures = generate_figures(
-        data = data,
-        phases = phases,
-        plot_phase = plot_phase,
-        plot_alpha = plot_alpha,
-        plot_macknhall = plot_macknhall,
-        title = title,
-        title_suffix = title_suffix,
-        dpi = dpi,
-        singular_legend = singular_legend,
-    )
+            titles.append(title)
 
-    if singular_legend:
-        legend_fig = figures[-1]
-        figures = figures[:-1]
-        legend_fig.set_size_inches(11, .1)
-        legend_fig.savefig(f'{filename}_legend.png', dpi = dpi or 150, bbox_inches = 'tight', pad_inches = 0)
+        q = max(len(v) for v in phases.values())
+        title_length = max(len(k) for k in phases.keys())
+        val_lengths = [max(len(v[x].phase_str) for v in phases.values()) for x in range(q)]
+        for k, v in phases.items():
+            group_str = [k.rjust(title_length)]
+            for e, (g, ln) in enumerate(zip(v, val_lengths), start = 1):
+                phase_str = g.phase_str
+                if e == phase_num:
+                    phase_str = fr'$\mathbf{{{phase_str}}}$'
 
-    for phase_num, fig in enumerate(figures, start = 1):
-        dep = 1.3
-        if phase_num < len(figures):
-            fig.axes[0].set_xlabel(f'')
+                phase_str = (ln - len(g.phase_str)) * ' ' + phase_str
 
-        fig.set_size_inches(10 / dep, 2 / dep)
-        fig.savefig(f'{filename}_{phase_num}.png', dpi = dpi or 150, bbox_inches = 'tight')
+                group_str.append(phase_str)
+
+            titles.append('|'.join(group_str))
+
+        return '\n'.join(titles)
+
+    def add_legend(axes: list[Axes], experiments: dict[str, StimulusHistory], ticker_threshold):
+        if len(experiments) >= 6:
+            properties = dict(fontsize = 7, ncol = 2)
+        else:
+            properties = dict(fontsize = 'x-small')
+
+        for ax in axes:
+            legend = ax.legend(**properties)
+            for line in legend.get_lines():
+                line.set_picker(10)
+
+
+    def show_plots(*, phases: None | dict[str, list[Phase]] = None, plot_phase = None, plot_alpha = False, plot_macknhall = False, dpi = None):
+        figures = generate_figures(
+            phases = phases,
+            plot_phase = plot_phase,
+            plot_alpha = plot_alpha,
+            plot_macknhall = plot_macknhall,
+            dpi = dpi,
+            ticker_threshold = True,
+        )
+        return figures
