@@ -624,7 +624,7 @@ If you have any questions, contact any of the authors.
 
             reset_configural_cues = False
             for option in rest:
-                if option == 'conf' or option == 'configural':
+                if option == 'conf' or option == 'configural' or option == 'cc':
                     # Easter egg: per-experiment configural cue toggling.
                     reset_configural_cues = True
                     args.configural_cues = True
