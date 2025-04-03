@@ -82,6 +82,10 @@ def generate_figures(
     markers = ['o', 's', 'D', '^', 'v', '<', '>', 'p', '*', 'h', 'X', 'd']
     marker_dict = dict(zip(experiment_css, [markers[i % len(markers)] for i in range(len(experiment_css))]))
 
+    eps = 1e-1
+    lowest  = min(0, min(min(hist.assoc) for experiments in data for hist in experiments.values())) - eps
+    highest = max(1, max(max(hist.assoc) for experiments in data for hist in experiments.values())) + eps
+
     figures = []
     for phase_num, experiments in enumerate(data, start = 1):
         multiple = False
@@ -129,6 +133,8 @@ def generate_figures(
 
         axes[0].yaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x:.1f}'))
 
+        axes[0].set_ylim(lowest, highest)
+
         if multiple:
             axes[0].set_title(f'Associative Strengths')
             axes[1].set_xlabel('Trial Number', fontsize = 'small', labelpad = 3)
@@ -141,6 +147,7 @@ def generate_figures(
             axes[1].yaxis.set_label_position('right')
             axes[1].xaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x + 1:.0f}'))
             axes[1].xaxis.set_major_locator(MaxNLocator(integer = True, min_n_ticks = 1))
+            axes[1].set_ylim(lowest, highest)
 
         if not singular_legend:
             add_legend(axes, experiments, ticker_threshold)
@@ -230,5 +237,5 @@ def save_plots(
         if phase_num < len(figures):
             fig.axes[0].set_xlabel(f'')
 
-        fig.set_size_inches(11 / dep, 2 / dep)
+        fig.set_size_inches(10 / dep, 2 / dep)
         fig.savefig(f'{filename}_{phase_num}.png', dpi = dpi or 150, bbox_inches = 'tight')
