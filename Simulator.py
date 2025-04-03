@@ -8,7 +8,7 @@ from collections import defaultdict
 from Experiment import Experiment, Phase, RWArgs
 from Group import Group
 from Environment import Environment, StimulusHistory
-from Plots import save_plots
+from Plots import generate_figures, save_plots
 from AdaptiveType import AdaptiveType
 
 # Given a list of arguments, matches the ones corresponding to a particular name
@@ -27,7 +27,7 @@ def match_args(name: str, args: list[str]) -> tuple[dict[str, float], list[str]]
 
     return values, rest
 
-def parse_args() -> RWArgs:
+def parse_args():
     parser = argparse.ArgumentParser(
         description="Behold! My Rescorla-Wagnerinator!",
         formatter_class = argparse.RawTextHelpFormatter,
