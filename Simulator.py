@@ -8,7 +8,7 @@ from collections import defaultdict
 from Experiment import Experiment, Phase, RWArgs
 from Group import Group
 from Environment import Environment, StimulusHistory
-from Plots import show_plots, save_plots
+from Plots import Plotter
 from AdaptiveType import AdaptiveType
 
 # Given a list of arguments, matches the ones corresponding to a particular name
@@ -140,29 +140,31 @@ def main() -> None:
 
     assert(groups_strengths is not None)
 
+    plotter = Plotter(
+        dpi = args.dpi,
+        show_title = args.show_title,
+        title = args.savefig,
+        phases = phases,
+    )
+
     if args.savefig is None:
-        figures = show_plots(
+        figures = plotter.generate_figures(
             groups_strengths,
-            phases = phases,
             plot_phase = args.plot_phase,
             plot_alpha = args.plot_alpha,
             plot_macknhall = args.plot_macknhall,
-            dpi = args.dpi,
         )
         for fig in figures:
             fig.show()
         input('Press any key to continue...')
     else:
-        save_plots(
+        plotter.save_plots(
             groups_strengths,
-            phases = phases,
             filename = args.savefig,
+            singular_legend = args.singular_legend,
             plot_phase = args.plot_phase,
             plot_alpha = args.plot_alpha,
             plot_macknhall = args.plot_macknhall,
-            show_title = args.show_title,
-            singular_legend = args.singular_legend,
-            dpi = args.dpi,
         )
 
 if __name__ == '__main__':

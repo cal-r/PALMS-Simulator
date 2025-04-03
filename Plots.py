@@ -12,34 +12,47 @@ from matplotlib.ticker import MaxNLocator, IndexLocator, LinearLocator
 from matplotlib.ticker import FuncFormatter
 from matplotlib.axes import Axes
 from itertools import chain
+from typing import Any
 
 from Experiment import Phase
 
-import ipdb
-
 class Plotter:
-    data: list[dict[str, StimulusHistory]]
+    dpi: int
+
+    title: None | str
+    phases: None | dict[str, list[Phase]]
 
     def __init__(
         self,
-        data: list[dict[str, StimulusHistory]],
+        *,
+        dpi: int = 200,
+        show_title: bool = False,
+        title: None | str = None,
+        phases: None | dict[str, list[Phase]] = None,
     ):
-        self.data = data
+        self.dpi = dpi
+
+        self.title = None
+        self.phases = None
+        if show_title:
+            if self.title is None or self.phases is None:
+                raise ValueError('Should show title, but there are empty title or phases!')
+
+            self.title = title
+            self.phases = phases
 
     def generate_figures(
+            self,
+            data: list[dict[str, StimulusHistory]],
             *,
-            phases: None | dict[str, list[Phase]] = None,
-            title: None | str = None,
+            singular_legend: bool = False,
             plot_phase: None | int = None,
             plot_alpha: bool = False,
             plot_macknhall: bool = False,
-            dpi: None | float = None,
             ticker_threshold: int = 10,
-            singular_legend: bool = False,
         ) -> list[pyplot.Figure]:
         seaborn.set()
 
-        data = self.data
         if plot_phase is not None:
             data = [data[plot_phase - 1]]
 
@@ -58,10 +71,10 @@ class Plotter:
         for phase_num, experiments in enumerate(data, start = 1):
             multiple = False
             if not plot_alpha and not plot_macknhall:
-                fig, axes_ = pyplot.subplots(1, 1, figsize = (8, 6), dpi = dpi)
+                fig, axes_ = pyplot.subplots(1, 1, figsize = (8, 6), dpi = self.dpi)
                 axes = [axes_]
             else:
-                fig, axes = pyplot.subplots(1, 2, figsize = (16, 6), dpi = dpi)
+                fig, axes = pyplot.subplots(1, 2, figsize = (16, 6), dpi = self.dpi)
                 multiple = True
 
             for key, hist in experiments.items():
@@ -118,11 +131,22 @@ class Plotter:
                 axes[1].set_ylim(lowest, highest)
 
             if not singular_legend:
-                add_legend(axes, experiments, ticker_threshold)
+                if len(experiments) >= 6:
+                    properties = dict(fontsize = 7, ncol = 2)
+                else:
+                    properties = dict(fontsize = 'x-small')
 
-            if phases is not None:
-                fig.suptitle(titleify(title, phases, phase_num), fontdict = {'family': 'monospace'}, fontsize = 12)
+                for ax in axes:
+                    legend = ax.legend(**properties)
+                    for line in legend.get_lines():
+                        line.set_picker(10)
 
+            if self.title is not None:
+                fig.suptitle(
+                    self.titleify(phase_num),
+                    fontdict = {'family': 'monospace'},
+                    fontsize = 12,
+                )
                 if len(axes) > 1:
                     fig.subplots_adjust(top = .85)
 
@@ -130,7 +154,7 @@ class Plotter:
             figures.append(fig)
 
         if singular_legend:
-            fig = pyplot.figure(dpi = dpi)
+            fig = pyplot.figure(dpi = self.dpi)
             pyplot.axis('off')
             for exp in experiment_css:
                 pyplot.plot([], [], figure = fig, color = colors[exp], marker = marker_dict[exp], label = exp)
@@ -148,40 +172,32 @@ class Plotter:
         return figures
 
     def save_plots(
+        self,
+        data: list[dict[str, StimulusHistory]],
         *,
-        phases: None | dict[str, list[Phase]] = None,
         filename: None | str = None,
+        singular_legend = False,
         plot_phase = None,
         plot_alpha = False,
         plot_macknhall = False,
-        dpi = None,
-        show_title = False,
-        singular_legend = False,
     ):
         if filename is not None:
             filename = filename.removesuffix('.png')
 
-        title = None
-        if show_title:
-            title = filename
-        else:
-            phases = None
-
-        figures = generate_figures(
-            phases = phases,
+        figures = self.generate_figures(
+            data = data,
+            singular_legend = singular_legend,
             plot_phase = plot_phase,
             plot_alpha = plot_alpha,
             plot_macknhall = plot_macknhall,
-            title = title,
-            dpi = dpi,
-            singular_legend = singular_legend,
         )
 
         if singular_legend:
             legend_fig = figures[-1]
             figures = figures[:-1]
             legend_fig.set_size_inches(11, .1)
-            legend_fig.savefig(f'{filename}_legend.png', dpi = dpi or 150, bbox_inches = 'tight', pad_inches = 0)
+            print(f'Writing {filename}_legend.png')
+            legend_fig.savefig(f'{filename}_legend.png', dpi = self.dpi, bbox_inches = 'tight', pad_inches = 0)
 
         for phase_num, fig in enumerate(figures, start = 1):
             dep = 1.3
@@ -189,21 +205,21 @@ class Plotter:
                 fig.axes[0].set_xlabel(f'')
 
             fig.set_size_inches(10 / dep, 2 / dep)
-            fig.savefig(f'{filename}_{phase_num}.png', dpi = dpi or 150, bbox_inches = 'tight')
+            print(f'Writing {filename}_{phase_num}.png')
+            fig.savefig(f'{filename}_{phase_num}.png', dpi = self.dpi, bbox_inches = 'tight')
 
-    def titleify(title: None | str, phases: dict[str, list[Phase]], phase_num: int) -> str:
+    def titleify(self, phases: dict[str, list[Phase]], phase_num: int) -> str:
         titles = []
 
-        if title is not None:
-            title = re.sub(r'.*\/|\..+', '', re.sub(r'[-_]', ' ', title))
-            title = title.title().replace('Lepelley', 'LePelley').replace('Dualv', 'DualV')
+        title = re.sub(r'.*\/|\..+', '', re.sub(r'[-_]', ' ', self.title))
+        title = title.title().replace('Lepelley', 'LePelley').replace('Dualv', 'DualV')
 
-            titles.append(title)
+        titles.append(title)
 
-        q = max(len(v) for v in phases.values())
-        title_length = max(len(k) for k in phases.keys())
-        val_lengths = [max(len(v[x].phase_str) for v in phases.values()) for x in range(q)]
-        for k, v in phases.items():
+        q = max(len(v) for v in self.phases.values())
+        title_length = max(len(k) for k in self.phases.keys())
+        val_lengths = [max(len(v[x].phase_str) for v in self.phases.values()) for x in range(q)]
+        for k, v in self.phases.items():
             group_str = [k.rjust(title_length)]
             for e, (g, ln) in enumerate(zip(v, val_lengths), start = 1):
                 phase_str = g.phase_str
@@ -217,26 +233,3 @@ class Plotter:
             titles.append('|'.join(group_str))
 
         return '\n'.join(titles)
-
-    def add_legend(axes: list[Axes], experiments: dict[str, StimulusHistory], ticker_threshold):
-        if len(experiments) >= 6:
-            properties = dict(fontsize = 7, ncol = 2)
-        else:
-            properties = dict(fontsize = 'x-small')
-
-        for ax in axes:
-            legend = ax.legend(**properties)
-            for line in legend.get_lines():
-                line.set_picker(10)
-
-
-    def show_plots(*, phases: None | dict[str, list[Phase]] = None, plot_phase = None, plot_alpha = False, plot_macknhall = False, dpi = None):
-        figures = generate_figures(
-            phases = phases,
-            plot_phase = plot_phase,
-            plot_alpha = plot_alpha,
-            plot_macknhall = plot_macknhall,
-            dpi = dpi,
-            ticker_threshold = True,
-        )
-        return figures
