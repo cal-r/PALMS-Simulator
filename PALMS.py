@@ -623,10 +623,13 @@ If you have any questions, contact any of the authors.
                 return [], {}, args
 
             reset_configural_cues = False
-            if 'conf' in rest and not args.configural_cues:
-                # Easter egg: per-experiment configural cue toggling.
-                reset_configural_cues = True
-                args.configural_cues = True
+            for option in rest:
+                if option == 'conf' or option == 'configural':
+                    # Easter egg: per-experiment configural cue toggling.
+                    reset_configural_cues = True
+                    args.configural_cues = True
+                else:
+                    raise ValueError(f'Unknown option {option}')
 
             local_strengths = experiment.run_all_phases(args)
 
