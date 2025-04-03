@@ -12,6 +12,7 @@ from matplotlib.ticker import MaxNLocator, IndexLocator, LinearLocator
 from matplotlib.ticker import FuncFormatter
 from matplotlib.axes import Axes
 from itertools import chain
+from typing import Any
 
 from Experiment import Phase
 
@@ -40,17 +41,6 @@ def titleify(title: None | str, phases: dict[str, list[Phase]], phase_num: int) 
         titles.append('|'.join(group_str))
 
     return '\n'.join(titles)
-
-def add_legend(axes: list[Axes], experiments: dict[str, StimulusHistory], ticker_threshold):
-    if len(experiments) >= 6:
-        properties = dict(fontsize = 7, ncol = 2)
-    else:
-        properties = dict(fontsize = 'x-small')
-
-    for ax in axes:
-        legend = ax.legend(**properties)
-        for line in legend.get_lines():
-            line.set_picker(10)
 
 def generate_figures(
         data: list[dict[str, StimulusHistory]],
@@ -144,7 +134,16 @@ def generate_figures(
             axes[1].set_ylim(lowest, highest)
 
         if not singular_legend:
-            add_legend(axes, experiments, ticker_threshold)
+            properties: dict[str, Any]
+            if len(experiments) >= 6:
+                properties = dict(fontsize = 7, ncol = 2)
+            else:
+                properties = dict(fontsize = 'x-small')
+
+            for ax in axes:
+                legend = ax.legend(**properties)
+                for legend_line in legend.get_lines():
+                    legend_line.set_picker(10)
 
         if phases is not None:
             fig.suptitle(titleify(title, phases, phase_num), fontdict = {'family': 'monospace'}, fontsize = 12)
