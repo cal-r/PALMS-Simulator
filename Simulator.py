@@ -68,7 +68,7 @@ def parse_args():
     parser.add_argument("--plot-stimuli", nargs = '*', help = 'List of stimuli, compound and simple, to plot. By default plot everything')
     parser.add_argument('--plot-alphas', type = bool, action = argparse.BooleanOptionalAction, help = 'Whether to plot all the alphas, including total alpha, alpha Mack, and alpha Hall.')
 
-    parser.add_argument('--configural_cues', type = bool, default = False, action = argparse.BooleanOptionalAction, help = 'Whether to use configural cues')
+    parser.add_argument('--configural-cues', type = bool, default = False, action = argparse.BooleanOptionalAction, help = 'Whether to use configural cues')
     parser.add_argument('--rho', type = float, default = .1)
     parser.add_argument('--nu', type = float, default = .1)
     parser.add_argument('--kay', type = float, default = .1)
