@@ -50,6 +50,7 @@ def generate_figures(
         plot_phase: None | int = None,
         plot_alpha: bool = False,
         plot_macknhall: bool = False,
+        plot_stimuli: None | list[str] = None,
         dpi: None | float = None,
         ticker_threshold: int = 10,
         singular_legend: bool = False,
@@ -84,6 +85,10 @@ def generate_figures(
         for num, (key, hist) in enumerate(experiments.items()):
             # This is a predictive model. Do not include the last stimulus in the plot.
             hist = hist[:-1]
+
+            stimulus = key.split(' ')[-1]
+            if plot_stimuli is not None and stimulus not in plot_stimuli:
+                continue
 
             ratio = num / (len(experiments.items()) - 1)
             line = axes[0].plot(
@@ -178,15 +183,15 @@ def generate_figures(
 def save_plots(
     data: list[dict[str, StimulusHistory]],
     *,
-    phases: None | dict[str,
-    list[Phase]] = None,
+    phases: None | dict[str, list[Phase]] = None,
     filename: None | str = None,
-    plot_phase = None,
-    plot_alpha = False,
-    plot_macknhall = False,
-    dpi = None,
-    show_title = False,
-    singular_legend = False,
+    plot_phase: None | int = None,
+    plot_stimuli: None | list[str] = None,
+    plot_alpha: bool = False,
+    plot_macknhall: bool = False,
+    dpi: int = 200,
+    show_title: bool = False,
+    singular_legend: bool = False,
 ):
     if filename is not None:
         filename = filename.removesuffix('.png')
@@ -201,6 +206,7 @@ def save_plots(
         data = data,
         phases = phases,
         plot_phase = plot_phase,
+        plot_stimuli = plot_stimuli,
         plot_alpha = plot_alpha,
         plot_macknhall = plot_macknhall,
         title = title,
