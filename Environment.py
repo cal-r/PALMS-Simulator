@@ -113,7 +113,9 @@ class Stimulus:
 
             this = getattr(self, prop)
 
-            if type(this) is float or type(this) is int:
+            if this is None:
+                ret[prop] = None
+            elif type(this) is float or type(this) is int:
                 ret[prop] = this / quot
             elif type(this) is deque:
                 ret[prop] = deque([a / quot for a in this]) # type: ignore
