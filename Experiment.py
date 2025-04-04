@@ -98,15 +98,28 @@ class RWArgs:
 
 class Experiment:
     name: str
+    force_configural_cues: bool
+    rest: list[str]
     phases: list[Phase]
 
     def __init__(self, name: str, phase_strs: list[str]):
-        self.name = name
+        self.name, *rest = name.split('/')
+        self.force_configural_cues = False
+        for option in rest:
+            if option == 'conf' or option == 'configural' or option == 'cc':
+                self.force_configural_cues = True
+            else:
+                raise ValueError(f'Unknown option {option} on group {self.name}')
+
         self.phases = [Phase(phase_str) for phase_str in phase_strs]
 
     def run_all_phases(self, args: RWArgs) -> list[dict[str, StimulusHistory]]:
         # Set the static configural_cues variable for the entire environment.
         Environment.configural_cues = args.configural_cues
+
+        # Easter egg: force configural cues on group with certain postfixes.
+        if self.force_configural_cues:
+            Environment.configural_cues = True
 
         group = self.initial_group(args)
         results = self.run_group_experiments(group, args.num_trials)

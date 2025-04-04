@@ -11,6 +11,8 @@ from Environment import Environment, StimulusHistory
 from Plots import generate_figures, save_plots
 from AdaptiveType import AdaptiveType
 
+import ipdb
+
 # Given a list of arguments, matches the ones corresponding to a particular name
 # combined with a CS and returns them as a dictionary, along with the remaining
 # arguments.
@@ -61,7 +63,7 @@ def parse_args():
 
     parser.add_argument("--xi-hall", type = float, default = 0.2, help = 'Xi parameter for Hall alpha calculation')
 
-    parser.add_argument("--num-trials", type = int, default = 1000, help = 'Amount of trials done in randomised phases')
+    parser.add_argument("--num-trials", type = int, default = 100, help = 'Amount of trials done in randomised phases')
 
     parser.add_argument('--plot-phase', type = int, help = 'Plot a single phase')
     parser.add_argument("--plot-experiments", nargs = '*', help = 'List of experiments to plot. By default plot everything')
@@ -147,6 +149,7 @@ def main() -> None:
             plot_phase = args.plot_phase,
             plot_alpha = args.plot_alpha,
             plot_macknhall = args.plot_macknhall,
+            plot_stimuli = args.plot_stimuli,
             dpi = args.dpi,
         )
         for fig in figures:
@@ -161,9 +164,11 @@ def main() -> None:
             plot_alpha = args.plot_alpha,
             plot_macknhall = args.plot_macknhall,
             show_title = args.show_title,
+            plot_stimuli = args.plot_stimuli,
             singular_legend = args.singular_legend,
             dpi = args.dpi,
         )
 
 if __name__ == '__main__':
-    main()
+    with ipdb.launch_ipdb_on_exception():
+        main()
