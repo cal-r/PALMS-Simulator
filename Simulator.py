@@ -82,6 +82,8 @@ def parse_args():
     parser.add_argument('--dpi', type = int, default = 200, help = 'Dots per inch.')
     parser.add_argument('--singular-legend', action = 'store_true', help = 'Hide legend in plot, and generate a separate file with all the legends together.')
 
+    parser.add_argument('--plot-width', type = int, default = 11, help = 'Width of the plot')
+
     parser.add_argument('--savefig', type = str, help = 'Instead of showing figures, they will be saved to "fig_n.png"')
 
     parser.add_argument(
@@ -167,6 +169,7 @@ def main() -> None:
             plot_stimuli = args.plot_stimuli,
             singular_legend = args.singular_legend,
             dpi = args.dpi,
+            plot_width = args.plot_width,
         )
 
 if __name__ == '__main__':
