@@ -42,6 +42,16 @@ def titleify(title: None | str, phases: dict[str, list[Phase]], phase_num: int) 
 
     return '\n'.join(titles)
 
+def get_css(data: list[dict[str, StimulusHistory]]) -> list[str]:
+    css = sorted(set(chain.from_iterable([x.keys() for x in data])))
+    colors = dict(zip(css, seaborn.husl_palette(len(css), s=.9, l=.5)))
+    colors_alt = dict(zip(css, seaborn.hls_palette(len(css), l=.7)))
+
+    # markers = ['*', 'X', 'D', 's', 'o', 'd', 'p', 'h', '^', 'v', '<', '>']
+    markers = ['o', 's', 'D', '^', 'v', '<', '>', 'p', '*', 'h', 'X', 'd']
+    marker_dict = dict(zip(css, [markers[i % len(markers)] for i in range(len(css))]))
+    return css, colors, colors_alt, marker_dict
+
 def generate_figures(
         data: list[dict[str, StimulusHistory]],
         *,
@@ -60,13 +70,9 @@ def generate_figures(
     if plot_phase is not None:
         data = [data[plot_phase - 1]]
 
-    experiment_css = sorted(set(chain.from_iterable([x.keys() for x in data])))
-    colors = dict(zip(experiment_css, seaborn.husl_palette(len(experiment_css), s=.9, l=.5)))
-    colors_alt = dict(zip(experiment_css, seaborn.hls_palette(len(experiment_css), l=.7)))
-
-    # markers = ['*', 'X', 'D', 's', 'o', 'd', 'p', 'h', '^', 'v', '<', '>']
-    markers = ['o', 's', 'D', '^', 'v', '<', '>', 'p', '*', 'h', 'X', 'd']
-    marker_dict = dict(zip(experiment_css, [markers[i % len(markers)] for i in range(len(experiment_css))]))
+    priority = lambda cs: 0 if len(cs) == 1 else 1 if cs.startswith('q') else 2
+    experiment_css, colors, colors_alt, markers = get_css(data)
+    experiment_css = sorted(experiment_css, key = lambda x: (priority(x.split(' ')[-1]), x))
 
     eps = 1e-1
     lowest  = min(0, min(min(hist.assoc) for experiments in data for hist in experiments.values())) - eps
@@ -94,7 +100,7 @@ def generate_figures(
             line = axes[0].plot(
                 hist.assoc,
                 label = key,
-                marker = marker_dict[key],
+                marker = markers[key],
                 color = colors[key],
                 markersize = 4,
                 alpha = 1 - .5 * ratio,
@@ -162,23 +168,21 @@ def generate_figures(
         fig.tight_layout()
         figures.append(fig)
 
-    if singular_legend:
-        fig = pyplot.figure(dpi = dpi)
-        pyplot.axis('off')
-        for exp in experiment_css:
-            pyplot.plot([], [], figure = fig, color = colors[exp], marker = marker_dict[exp], label = exp)
-
-        legend = fig.legend(
-            ncols = len(exp),
-            frameon = True,
-            handlelength = 1,
-            loc = 'center',
-        )
-        fig.canvas.draw()
-
-        figures.append(fig)
-
     return figures
+
+def generate_legend(data, plot_stimuli, dpi):
+    css, colors, _, markers = get_css(data)
+    fig = pyplot.figure(dpi = dpi)
+    pyplot.axis('off')
+    for exp in css:
+        if plot_stimuli is not None and exp.split(' ')[-1] not in plot_stimuli:
+            continue
+
+        pyplot.plot([], [], figure = fig, color = colors[exp], marker = markers[exp], label = exp)
+
+    fig.legend(ncols = len(exp), frameon = True, handlelength = 1, loc = 'center')
+    fig.canvas.draw()
+    return fig
 
 def save_plots(
     data: list[dict[str, StimulusHistory]],
@@ -216,9 +220,8 @@ def save_plots(
     )
 
     if singular_legend:
-        legend_fig = figures[-1]
-        figures = figures[:-1]
-        legend_fig.set_size_inches(11, .1)
+        legend_fig = generate_legend(data, plot_stimuli, dpi)
+        legend_fig.set_size_inches(plot_width, .1)
         legend_fig.savefig(f'{filename}_legend.png', dpi = dpi or 150, bbox_inches = 'tight', pad_inches = 0)
 
     for phase_num, fig in enumerate(figures, start = 1):
