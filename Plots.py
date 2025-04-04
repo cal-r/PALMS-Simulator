@@ -192,6 +192,7 @@ def save_plots(
     dpi: int = 200,
     show_title: bool = False,
     singular_legend: bool = False,
+    plot_width: int = 11,
 ):
     if filename is not None:
         filename = filename.removesuffix('.png')
@@ -225,5 +226,5 @@ def save_plots(
         if phase_num < len(figures):
             fig.axes[0].set_xlabel(f'')
 
-        fig.set_size_inches(10 / dep, 2 / dep)
+        fig.set_size_inches(plot_width / dep, 2 / dep)
         fig.savefig(f'{filename}_{phase_num}.png', dpi = dpi or 150, bbox_inches = 'tight')
