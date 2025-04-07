@@ -118,12 +118,15 @@ class Experiment:
         Environment.configural_cues = args.configural_cues
 
         # Easter egg: force configural cues on group with certain postfixes.
+        reset_configural_cues = Environment.configural_cues
         if self.force_configural_cues:
             Environment.configural_cues = True
 
         group = self.initial_group(args)
         results = self.run_group_experiments(group, args.num_trials)
         strengths = self.group_results(results, args)
+
+        Environment.configural_cues = reset_configural_cues
 
         return strengths
 
