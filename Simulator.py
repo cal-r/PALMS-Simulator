@@ -11,8 +11,6 @@ from Environment import Environment, StimulusHistory
 from Plots import generate_figures, save_plots
 from AdaptiveType import AdaptiveType
 
-import ipdb
-
 # Given a list of arguments, matches the ones corresponding to a particular name
 # combined with a CS and returns them as a dictionary, along with the remaining
 # arguments.
@@ -21,7 +19,7 @@ def match_args(name: str, args: list[str]) -> tuple[dict[str, float], list[str]]
     rest = list()
 
     for arg in args:
-        match = re.fullmatch(rf'--{name}[-_]([A-Z])\s*=?\s*([0-9]*\.?[0-9]*)', arg)
+        match = re.fullmatch(rf'--{name}[-_]([A-Z]|\([A-Z]+\))\s*=?\s*([0-9]*\.?[0-9]*)', arg)
         if match:
             values[match.group(1)] = float(match.group(2))
         else:
@@ -173,5 +171,4 @@ def main() -> None:
         )
 
 if __name__ == '__main__':
-    with ipdb.launch_ipdb_on_exception():
-        main()
+    main()

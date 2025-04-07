@@ -43,9 +43,11 @@ def titleify(title: None | str, phases: dict[str, list[Phase]], phase_num: int) 
     return '\n'.join(titles)
 
 def get_css(data: list[dict[str, StimulusHistory]]) -> list[str]:
-    css = sorted(set(chain.from_iterable([x.keys() for x in data])))
-    colors = dict(zip(css, seaborn.husl_palette(len(css), s=.9, l=.5)))
-    colors_alt = dict(zip(css, seaborn.hls_palette(len(css), l=.7)))
+    css = sorted(set(chain.from_iterable([x.keys() for x in data])), key = lambda x: (len(x), x))
+
+    thing = 4
+    colors = dict(zip(css, seaborn.husl_palette(thing, s=.9, l=.5)))
+    colors_alt = dict(zip(css, seaborn.hls_palette(thing, l=.7)))
 
     # markers = ['*', 'X', 'D', 's', 'o', 'd', 'p', 'h', '^', 'v', '<', '>']
     markers = ['o', 's', 'D', '^', 'v', '<', '>', 'p', '*', 'h', 'X', 'd']
@@ -70,13 +72,16 @@ def generate_figures(
     if plot_phase is not None:
         data = [data[plot_phase - 1]]
 
-    priority = lambda cs: 0 if len(cs) == 1 else 1 if cs.startswith('q') else 2
     experiment_css, colors, colors_alt, markers = get_css(data)
-    experiment_css = sorted(experiment_css, key = lambda x: (priority(x.split(' ')[-1]), x))
+    # experiment_css = sorted(experiment_css, key = lambda x: (len(x), x))
 
     eps = 1e-1
-    lowest  = min(0, min(min(hist.assoc) for experiments in data for hist in experiments.values())) - eps
-    highest = max(1, max(max(hist.assoc) for experiments in data for hist in experiments.values())) + eps
+    # lowest  = min(0, min(min(hist.assoc) for experiments in data for hist in experiments.values())) - eps
+    # highest = max(0, max(max(hist.assoc) for experiments in data for hist in experiments.values())) + eps
+    lowest  = -0.6114
+    highest =  0.5826
+
+    # print(lowest, highest)
 
     figures = []
     for phase_num, experiments in enumerate(data, start = 1):
@@ -178,7 +183,8 @@ def generate_legend(data, plot_stimuli, dpi):
         if plot_stimuli is not None and exp.split(' ')[-1] not in plot_stimuli:
             continue
 
-        pyplot.plot([], [], figure = fig, color = colors[exp], marker = markers[exp], label = exp)
+        pyplot.plot([], [], figure = fig, color = colors[exp], marker = markers[exp], label = exp.split(' ')[-1])
+        # pyplot.plot([], [], figure = fig, color = colors[exp], marker = markers[exp], label = exp)
 
     fig.legend(ncols = len(exp), frameon = True, handlelength = 1, loc = 'center')
     fig.canvas.draw()
@@ -226,7 +232,7 @@ def save_plots(
 
     for phase_num, fig in enumerate(figures, start = 1):
         dep = 1.3
-        if phase_num < len(figures):
+        if phase_num < len(figures) - 1 or 'negativepatterning_nocues' in filename:
             fig.axes[0].set_xlabel(f'')
 
         fig.set_size_inches(plot_width / dep, 2 / dep)
