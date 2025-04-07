@@ -21,7 +21,7 @@ def match_args(name: str, args: list[str]) -> tuple[dict[str, float], list[str]]
     rest = list()
 
     for arg in args:
-        match = re.fullmatch(rf'--{name}[-_]([A-Z])\s*=?\s*([0-9]*\.?[0-9]*)', arg)
+        match = re.fullmatch(rf'--{name}[-_]([A-Z]|\([A-Z]+\))\s*=?\s*([0-9]*\.?[0-9]*)', arg)
         if match:
             values[match.group(1)] = float(match.group(2))
         else:
@@ -80,7 +80,9 @@ def parse_args():
 
     parser.add_argument('--show-title', action = 'store_true', help = 'Show title and phases to saved plot.')
     parser.add_argument('--dpi', type = int, default = 200, help = 'Dots per inch.')
+
     parser.add_argument('--singular-legend', action = 'store_true', help = 'Hide legend in plot, and generate a separate file with all the legends together.')
+    parser.add_argument('--plot-width', type = int, default = 11, help = 'Width of the plot')
 
     parser.add_argument('--plot-width', type = int, default = 11, help = 'Width of the plot')
 

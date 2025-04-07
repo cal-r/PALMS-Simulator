@@ -624,9 +624,6 @@ If you have any questions, contact any of the authors.
 
             local_strengths = experiment.run_all_phases(args)
 
-            if reset_configural_cues:
-                args.configural_cues = False
-
             strengths = [a | b for a, b in zip_longest(strengths, local_strengths, fillvalue = StimulusHistory.emptydict())]
             phases[name] = experiment.phases
 
