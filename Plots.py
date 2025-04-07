@@ -73,15 +73,10 @@ def generate_figures(
         data = [data[plot_phase - 1]]
 
     experiment_css, colors, colors_alt, markers = get_css(data)
-    # experiment_css = sorted(experiment_css, key = lambda x: (len(x), x))
 
     eps = 1e-1
-    # lowest  = min(0, min(min(hist.assoc) for experiments in data for hist in experiments.values())) - eps
-    # highest = max(0, max(max(hist.assoc) for experiments in data for hist in experiments.values())) + eps
-    lowest  = -0.6114
-    highest =  0.5826
-
-    # print(lowest, highest)
+    lowest  = min(0, min(min(hist.assoc) for experiments in data for hist in experiments.values())) - eps
+    highest = max(0, max(max(hist.assoc) for experiments in data for hist in experiments.values())) + eps
 
     figures = []
     for phase_num, experiments in enumerate(data, start = 1):
@@ -183,8 +178,7 @@ def generate_legend(data, plot_stimuli, dpi):
         if plot_stimuli is not None and exp.split(' ')[-1] not in plot_stimuli:
             continue
 
-        pyplot.plot([], [], figure = fig, color = colors[exp], marker = markers[exp], label = exp.split(' ')[-1])
-        # pyplot.plot([], [], figure = fig, color = colors[exp], marker = markers[exp], label = exp)
+        pyplot.plot([], [], figure = fig, color = colors[exp], marker = markers[exp], label = exp)
 
     fig.legend(ncols = len(exp), frameon = True, handlelength = 1, loc = 'center')
     fig.canvas.draw()
@@ -232,7 +226,7 @@ def save_plots(
 
     for phase_num, fig in enumerate(figures, start = 1):
         dep = 1.3
-        if phase_num < len(figures) - 1 or 'negativepatterning_nocues' in filename:
+        if phase_num < len(figures) - 1:
             fig.axes[0].set_xlabel(f'')
 
         fig.set_size_inches(plot_width / dep, 2 / dep)
