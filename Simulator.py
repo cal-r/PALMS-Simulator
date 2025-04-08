@@ -11,8 +11,6 @@ from Environment import Environment, StimulusHistory
 from Plots import generate_figures, save_plots
 from AdaptiveType import AdaptiveType
 
-import ipdb
-
 # Given a list of arguments, matches the ones corresponding to a particular name
 # combined with a CS and returns them as a dictionary, along with the remaining
 # arguments.
@@ -51,9 +49,9 @@ def parse_args():
     parser.add_argument("--beta", type = float, default = .3, help="Associativity of the US +.")
     parser.add_argument("--beta-neg", type = float, default = .2, help="Associativity of the absence of US +. Equal to beta by default.")
     parser.add_argument("--lamda", type = float, default = 1, help="Asymptote of learning.")
-    parser.add_argument("--gamma", type = float, default = .5, help = "Weighting how much you rely on past experinces on DualV adaptive type.")
+    parser.add_argument("--gamma", type = float, default = .15, help = "Weighting how much you rely on past experinces on DualV adaptive type.")
 
-    parser.add_argument("--thetaE", type = float, default = .2, help = "Theta for excitatory phenomena in LePelley blocking")
+    parser.add_argument("--thetaE", type = float, default = .3, help = "Theta for excitatory phenomena in LePelley blocking")
     parser.add_argument("--thetaI", type = float, default = .1, help = "Theta for inhibitory phenomena in LePelley blocking")
 
     parser.add_argument("--window-size", type = int, default = None, help = 'Size of sliding window for adaptive learning')
@@ -71,9 +69,9 @@ def parse_args():
     parser.add_argument('--plot-alphas', type = bool, action = argparse.BooleanOptionalAction, help = 'Whether to plot all the alphas, including total alpha, alpha Mack, and alpha Hall.')
 
     parser.add_argument('--configural-cues', type = bool, default = False, action = argparse.BooleanOptionalAction, help = 'Whether to use configural cues')
-    parser.add_argument('--rho', type = float, default = .1)
-    parser.add_argument('--nu', type = float, default = .1)
-    parser.add_argument('--kay', type = float, default = .1)
+    parser.add_argument('--rho', type = float, default = .2)
+    parser.add_argument('--nu', type = float, default = .25)
+    parser.add_argument('--kay', type = float, default = 2)
 
     parser.add_argument('--plot-alpha', type = bool, action = argparse.BooleanOptionalAction, help = 'Whether to plot the total alpha.')
     parser.add_argument('--plot-macknhall', type = bool, action = argparse.BooleanOptionalAction, help = 'Whether to plot the alpha Mack and alpha Hall.')
@@ -90,10 +88,10 @@ def parse_args():
 
     parser.add_argument(
         "experiment_file",
-        nargs='?',
+        nargs = '?',
         type = argparse.FileType('r'),
         default = sys.stdin,
-        help="Path to the experiment file."
+        help = "Path to the experiment file."
     )
 
     # Accept parameters for alphas, saliences, and habituations.
@@ -149,7 +147,7 @@ def main() -> None:
     if args.savefig is None:
         figures = generate_figures(
             groups_strengths,
-            phases = phases,
+            phases = phases
             plot_phase = args.plot_phase,
             plot_alpha = args.plot_alpha,
             plot_macknhall = args.plot_macknhall,
@@ -175,5 +173,4 @@ def main() -> None:
         )
 
 if __name__ == '__main__':
-    with ipdb.launch_ipdb_on_exception():
-        main()
+    main()
