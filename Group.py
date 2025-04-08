@@ -83,12 +83,12 @@ class Group:
     # runPhase runs a single trial of a phase, in order, and returns a list of the Strength values
     # of its CS at every step.
     # It also modifies `self.s` to account for all the strengths modified in this phase.
-    def runPhase(self, parts: list[tuple[str, str]], phase_beta: None | float, phase_lamda: None | float) -> list[Environment]:
+    def runPhase(self, parts: list[tuple[str, str]], phase_lamda: None | float) -> list[Environment]:
         hist = StimulusHistory.emptydict()
 
         for part, plus in parts:
             if plus == '+':
-                beta, lamda, sign = phase_beta or self.adaptive_type.betap, phase_lamda or self.adaptive_type.lamda, 1
+                beta, lamda, sign = self.adaptive_type.betap, phase_lamda or self.adaptive_type.lamda, 1
             else:
                 beta, lamda, sign = self.adaptive_type.betan, 0., -1
 
