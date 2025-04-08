@@ -87,7 +87,9 @@ class Group:
         hist = StimulusHistory.emptydict()
 
         for part, plus in parts:
-            if plus == '+':
+            if plus == '++':
+                beta, lamda, sign = 2 * self.adaptive_type.betap, phase_lamda or self.adaptive_type.lamda, 1
+            elif plus == '+':
                 beta, lamda, sign = self.adaptive_type.betap, phase_lamda or self.adaptive_type.lamda, 1
             else:
                 beta, lamda, sign = self.adaptive_type.betan, 0., -1
