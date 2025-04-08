@@ -16,6 +16,8 @@ from typing import Any
 
 from Experiment import Phase
 
+import ipdb
+
 def titleify(title: None | str, phases: dict[str, list[Phase]], phase_num: int) -> str:
     titles = []
 
@@ -45,9 +47,8 @@ def titleify(title: None | str, phases: dict[str, list[Phase]], phase_num: int) 
 def get_css(data: list[dict[str, StimulusHistory]]) -> list[str]:
     css = sorted(set(chain.from_iterable([x.keys() for x in data])), key = lambda x: (len(x), x))
 
-    thing = 4
-    colors = dict(zip(css, seaborn.husl_palette(thing, s=.9, l=.5)))
-    colors_alt = dict(zip(css, seaborn.hls_palette(thing, l=.7)))
+    colors = dict(zip(css, seaborn.husl_palette(len(css), s=.9, l=.5)))
+    colors_alt = dict(zip(css, seaborn.hls_palette(len(css), l=.7)))
 
     # markers = ['*', 'X', 'D', 's', 'o', 'd', 'p', 'h', '^', 'v', '<', '>']
     markers = ['o', 's', 'D', '^', 'v', '<', '>', 'p', '*', 'h', 'X', 'd']
@@ -96,24 +97,26 @@ def generate_figures(
             if plot_stimuli is not None and stimulus not in plot_stimuli:
                 continue
 
-            ratio = num / (len(experiments.items()) - 1)
-            line = axes[0].plot(
-                hist.assoc,
-                label = key,
+            ratio = 0
+            if len(experiments) > 1:
+                ratio = num / (len(experiments.items()) - 1)
+
+            plot_options = dict(
                 marker = markers[key],
                 color = colors[key],
                 markersize = 4,
                 alpha = 1 - .5 * ratio,
-                picker = ticker_threshold
+                picker = ticker_threshold,
             )
+            line = axes[0].plot(hist.assoc, label = key, **plot_options)
 
             cs = key.rsplit(' ', 1)[1]
             if multiple:
                 if plot_alpha and not plot_macknhall:
-                    axes[1].plot(hist.alpha, label='α: '+str(key), color = colors[key], marker='D', markersize=4, alpha=1, picker = ticker_threshold)
+                    axes[1].plot(hist.alpha, label='α: '+str(key), **plot_opyions)
 
                 if plot_macknhall:
-                    axes[1].plot(hist.alpha_mack, label='Mack: ' + str(key), color = colors[key], marker='$M$', markersize=6, alpha=1, picker = ticker_threshold)
+                    axes[1].plot(hist.alpha_mack, label='Mack: ' + str(key), color = colors[key],     marker='$M$', markersize=6, alpha=1, picker = ticker_threshold)
                     axes[1].plot(hist.alpha_hall, label='Hall: ' + str(key), color = colors_alt[key], marker='$H$', markersize=6, alpha=1, picker = ticker_threshold)
 
         axes[0].set_xlabel('Trial Number', fontsize = 'small', labelpad = 3)
@@ -136,7 +139,7 @@ def generate_figures(
             axes[0].set_title(f'Associative Strengths')
             axes[1].set_xlabel('Trial Number', fontsize = 'small', labelpad = 3)
             axes[1].set_ylabel('Alpha', fontsize = 'small', labelpad = 3)
-            axes[1].set_title(f'Alphas')
+            axes[1].set_title(f'Learning Rate')
             axes[1].xaxis.set_major_locator(MaxNLocator(integer = True))
             axes[1].yaxis.tick_right()
             axes[1].tick_params(axis = 'both', labelsize = 'x-small', pad = 1)
@@ -144,6 +147,7 @@ def generate_figures(
             axes[1].yaxis.set_label_position('right')
             axes[1].xaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x + 1:.0f}'))
             axes[1].xaxis.set_major_locator(MaxNLocator(integer = True, min_n_ticks = 1))
+            axes[1].yaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x:.1f}'))
             axes[1].set_ylim(lowest, highest)
 
         if not singular_legend:
@@ -226,8 +230,13 @@ def save_plots(
 
     for phase_num, fig in enumerate(figures, start = 1):
         dep = 1.3
+        if phase_num > 1:
+            fig.axes[0].set_title('')
+            fig.axes[1].set_title('')
+
         if phase_num < len(figures) - 1:
-            fig.axes[0].set_xlabel(f'')
+            fig.axes[0].set_xlabel('')
+            fig.axes[1].set_xlabel('')
 
         fig.set_size_inches(plot_width / dep, 2 / dep)
         fig.savefig(f'{filename}_{phase_num}.png', dpi = dpi or 150, bbox_inches = 'tight')
