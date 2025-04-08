@@ -44,7 +44,7 @@ class Phase:
                 self.rand = True
             elif (match := re.fullmatch(r"lamb?da *= *([0-9]*(?:\.[0-9]*)?)", part)) is not None:
                 self.lamda = float(match.group(1))
-            elif (match := re.fullmatch(r"([0-9]*)((?:[A-Za-zÑñ]'*)+)([+-]?)", part)) is not None:
+            elif (match := re.fullmatch(r"([0-9]*)((?:[A-Za-zÑñ]'*)+)((?:\+\+|\+|\-)?)", part)) is not None:
                 num, cs, sign = match.groups()
                 cs = ''.join(Environment.split_cs(cs.upper()))
                 self.elems += int(num or '1') * [(cs, sign or '+')]
