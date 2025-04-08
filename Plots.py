@@ -113,7 +113,7 @@ def generate_figures(
             cs = key.rsplit(' ', 1)[1]
             if multiple:
                 if plot_alpha and not plot_macknhall:
-                    axes[1].plot(hist.alpha, label='α: '+str(key), **plot_opyions)
+                    axes[1].plot(hist.alpha, label='α: '+str(key), **plot_options)
 
                 if plot_macknhall:
                     axes[1].plot(hist.alpha_mack, label='Mack: ' + str(key), color = colors[key],     marker='$M$', markersize=6, alpha=1, picker = ticker_threshold)
