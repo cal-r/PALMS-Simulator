@@ -15,10 +15,7 @@ class Phase:
     # Whether this phase should be randomised.
     rand: bool
 
-    # The beta for this phase if different to the environment.
-    beta: None | float
-
-    # The lamda for this phase if different to the enviroment.
+    # The lamda for this phase.
     lamda: None | float
 
     # String description of this phase.
@@ -47,8 +44,6 @@ class Phase:
                 self.rand = True
             elif (match := re.fullmatch(r"lamb?da *= *([0-9]*(?:\.[0-9]*)?)", part)) is not None:
                 self.lamda = float(match.group(1))
-            elif (match := re.fullmatch(r"beta *= *([0-9]*(?:\.[0-9]*)?)", part)) is not None:
-                self.beta = float(match.group(1))
             elif (match := re.fullmatch(r"([0-9]*)((?:[A-Za-zÑñ]'*)+)([+-]?)", part)) is not None:
                 num, cs, sign = match.groups()
                 cs = ''.join(Environment.split_cs(cs.upper()))
@@ -171,7 +166,7 @@ class Experiment:
 
         for trial, phase in enumerate(self.phases):
             if not phase.rand:
-                strength_hist = g.runPhase(phase.elems, phase.beta, phase.lamda)
+                strength_hist = g.runPhase(phase.elems, phase.lamda)
                 results.append(strength_hist)
             else:
                 initial_strengths = g.s.copy()
@@ -182,7 +177,7 @@ class Experiment:
                     random.shuffle(phase.elems)
 
                     g.s = initial_strengths.copy()
-                    strength_hist = g.runPhase(phase.elems, phase.beta, phase.lamda)
+                    strength_hist = g.runPhase(phase.elems, phase.lamda)
                     hist.append(strength_hist)
                     final_strengths.append(g.s.copy())
 
