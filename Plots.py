@@ -159,6 +159,7 @@ def generate_figures(
 
             for ax in axes:
                 legend = ax.legend(**properties)
+                legend.set_draggable(True)
                 for legend_line in legend.get_lines():
                     legend_line.set_alpha(1)
                     legend_line.set_picker(10)
