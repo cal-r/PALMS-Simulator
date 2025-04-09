@@ -25,6 +25,8 @@ from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib import pyplot
 from PIL import Image
 
+import ipdb
+
 class PavlovianApp(QDialog):
     adaptive_types: list[str]
     current_adaptive_type: str
@@ -42,7 +44,8 @@ class PavlovianApp(QDialog):
 
     configural_cues: bool
 
-    hidden: bool
+    line_hidden: dict[str, bool]
+
     dpi: int
     def __init__(self, dpi = 200, screenshot_ready = False, parent=None):
         super(PavlovianApp, self).__init__(parent)
@@ -64,7 +67,7 @@ class PavlovianApp(QDialog):
 
         self.configural_cues = False
 
-        self.hidden = False
+        self.line_hidden = {}
         self.dpi = dpi
         self.screenshot_ready = screenshot_ready
 
@@ -102,7 +105,7 @@ class PavlovianApp(QDialog):
         self.rightPhaseButton = QPushButton('>')
         self.rightPhaseButton.clicked.connect(self.nextPhase)
         self.rightPhaseButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        
+
         phaseBoxLayout = QHBoxLayout()
         phaseBoxLayout.addWidget(self.leftPhaseButton)
         phaseBoxLayout.addWidget(self.xCoordInfo, stretch = 1, alignment = Qt.AlignmentFlag.AlignLeft)
@@ -120,7 +123,7 @@ class PavlovianApp(QDialog):
         self.plotBox.setLayout(plotBoxLayout)
 
         self.adaptiveTypeButtons = self.addAdaptiveTypeButtons()
-        
+
         self.IconLabel = QLabel(self)
         self.IconLabel.setPixmap(self.getPixmap('palms.png'))
         self.IconLabel.setToolTip('Pavlovian\N{bellhop bell} \N{dog face} Associative\N{handshake} Learning\N{brain} Models\N{bar chart} Simulator\N{desktop computer}.')
@@ -129,7 +132,7 @@ class PavlovianApp(QDialog):
         self.aboutButton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.aboutButton.clicked.connect(self.aboutPALMS)
         self.aboutButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        
+
         mainLayout = QGridLayout()
         mainLayout.addWidget(self.tableWidget, 0, 0, 1, 4)
         mainLayout.addWidget(self.IconLabel, 0, 4, 1, 1, alignment = Qt.AlignmentFlag.AlignCenter)
@@ -163,7 +166,7 @@ class PavlovianApp(QDialog):
             self.xCoordInfo.setVisible(False)
             self.yCoordInfo.setVisible(False)
             self.resize(1600, 600)
-        
+
     def showModelInfo(self):
         root = getattr(sys, '_MEIPASS', '.')
         image_filename = AdaptiveType.types()[self.current_adaptive_type].image_filename
@@ -232,7 +235,7 @@ class PavlovianApp(QDialog):
         self.saveButton = QPushButton("Save Experiment")
         self.saveButton.clicked.connect(self.saveExperiment)
         self.saveButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        
+
         self.expand_canvas = False
 
         self.plotAlphaButton = QPushButton('Plot α')
@@ -284,7 +287,7 @@ class PavlovianApp(QDialog):
         self.hideButton = QPushButton("Toggle Visibility")
         self.hideButton.clicked.connect(self.hideExperiment)
         self.hideButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        
+
         self.modelInfoButton = QPushButton('Model Info')
         self.modelInfoButton.clicked.connect(self.showModelInfo)
         self.modelInfoButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
@@ -303,7 +306,7 @@ class PavlovianApp(QDialog):
         plotOptionsLayout.addWidget(self.hideButton)
         plotOptionsLayout.addWidget(self.modelInfoButton)
         self.plotOptionsGroupBox.setLayout(plotOptionsLayout)
-        
+
 
         fileOptionsLayout = QVBoxLayout()
         fileOptionsLayout.addWidget(self.fileButton)
@@ -317,11 +320,9 @@ class PavlovianApp(QDialog):
         self.refreshExperiment()
 
     def hideExperiment(self):
-        if self.hidden:
-            self.hidden = False
-        else:
-            self.hidden = True
-        self.hideLines()
+        value = not all(self.line_hidden.values())
+        self.line_hidden = {k: value for k in self.line_hidden.keys()}
+        self.refreshFigure()
 
     def togglePhaseLambda(self):
         set_lambda = any(p[self.phaseNum - 1].lamda is not None for p in self.phases.values())
@@ -403,7 +404,7 @@ If you have any questions, contact any of the authors.
             self.box.setMaximumWidth(40)
             self.box.returnPressed.connect(parent.refreshExperiment)
             self.label.setFont(QFont(font))
-            
+
             self.hoverText = hoverText
             if hoverText:
                 self.label.setToolTip(hoverText)
@@ -433,7 +434,7 @@ If you have any questions, contact any of the authors.
             nu = "ν ",
             num_trials = "Nº",
         )
-        
+
         descriptions = dict(
             alpha = "Initial learning rate of the stimuli. α ∈ [0, 1].",
             alpha_mack = "Initial learning rate of the stimuli based on Mackintosh's model, which controls how much of an stumulus is remembered between steps. αᴹ ∈ [0, 1].",
@@ -657,12 +658,21 @@ If you have any questions, contact any of the authors.
         for f in self.figures:
             f.set_canvas(self.plotCanvas)
 
+        line_names = set.union(*[set(x.keys()) for x in strengths])
+        self.line_hidden = {k: self.line_hidden.get(k, False) for k in line_names}
+
         self.refreshFigure()
 
     def refreshFigure(self):
         current_figure = self.figures[self.phaseNum - 1]
-
         self.plotCanvas.figure = current_figure
+
+        for ax in current_figure.get_axes():
+            for line in ax.get_lines():
+                line.set_alpha(0 if self.line_hidden[line.get_label()] else 1)
+
+            for line in ax.get_legend().get_lines():
+                line.set_alpha(.25 if self.line_hidden[line.get_label()] else 1)
 
         self.plotCanvas.resize(self.plotCanvas.width() + 1, self.plotCanvas.height() + 1)
         self.plotCanvas.resize(self.plotCanvas.width() - 1, self.plotCanvas.height() - 1)
@@ -684,19 +694,12 @@ If you have any questions, contact any of the authors.
         self.phaseLambdaButton.setChecked(any_lambda)
 
     def pickLine(self, event):
-        line = event.artist
-        label = line.get_label()
+        label = event.artist.get_label()
+        if label == '':
+            return
 
-        for ax in line.figure.get_axes():
-            for line in ax.get_lines():
-                if line.get_label() == label:
-                    line.set_alpha(0 if line.get_alpha() > 0 else 1)
-
-            for line in ax.get_legend().get_lines():
-                if line.get_label() == label:
-                    line.set_alpha(1.25 - line.get_alpha())
-
-        line.figure.canvas.draw_idle()
+        self.line_hidden[label] = not self.line_hidden[label]
+        self.refreshFigure()
 
     def mouseMove(self, event):
         if not event.inaxes:
@@ -712,29 +715,6 @@ If you have any questions, contact any of the authors.
 
         self.xCoordInfo.setText(f'Trial: {max(1 + event.xdata, 1):.0f}')
         self.yCoordInfo.setText(f'{ylabel}: {event.ydata:.2f}')
-
-    def hideLines(self):
-        for fig in self.figures:
-            for ax in fig.get_axes():
-                # Hide/show all lines in the plot
-                for line in ax.get_lines():
-                    if self.hidden:
-                        line.set_alpha(0)
-                    else:
-                        line.set_alpha(.5)
-                
-                # Hide/show all lines in the legend
-                legend = ax.get_legend()
-                if legend is not None:
-                    for legend_handle in legend.legend_handles:
-                        if self.hidden:
-                            legend_handle.set_alpha(.25)
-                        else:
-                            legend_handle.set_alpha(.5)
-            
-            # Redraw the figure
-            fig.canvas.draw_idle()
-
 
     def plotExperiment(self):
         strengths, phases, args = self.generateResults()
@@ -768,7 +748,7 @@ If you have any questions, contact any of the authors.
 
         self.phaseNum -= 1
         self.refreshFigure()
-    
+
     def nextPhase(self):
         if self.phaseNum >= self.numPhases:
             return
