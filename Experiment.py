@@ -39,6 +39,7 @@ class Phase:
     def __init__(self, phase_str: str):
         self.phase_str = phase_str
         self.rand = False
+        self.beta = None
         self.lamda = None
         self.elems = []
 
