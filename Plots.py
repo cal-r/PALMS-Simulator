@@ -65,7 +65,7 @@ def generate_figures(
         plot_macknhall: bool = False,
         plot_stimuli: None | list[str] = None,
         dpi: None | float = None,
-        ticker_threshold: int = 10,
+        ticker_threshold: bool = False,
         singular_legend: bool = False,
     ) -> list[pyplot.Figure]:
     seaborn.set()
