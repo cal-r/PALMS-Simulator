@@ -174,7 +174,7 @@ class PearceKayeHall(AdaptiveType):
         rho = rp.lamda - (rp.sigmaE - rp.sigmaI)
 
         if rho >= 0:
-            s.Ve += self.betap * s.alpha * rp.lamda * s.salience
+            s.Ve += rp.beta * s.alpha * rp.lamda * s.salience
         else:
             s.Vi += self.betan * s.alpha * abs(rho) * s.salience
 
