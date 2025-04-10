@@ -162,7 +162,7 @@ def generate_figures(
                 legend.set_draggable(True)
                 for legend_line in legend.get_lines():
                     legend_line.set_alpha(1)
-                    legend_line.set_picker(10)
+                    legend_line.set_picker(1)
 
         if phases is not None:
             fig.suptitle(titleify(title, phases, phase_num), fontdict = {'family': 'monospace'}, fontsize = 12)
