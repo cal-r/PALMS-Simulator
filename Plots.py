@@ -67,6 +67,7 @@ def generate_figures(
         dpi: None | float = None,
         ticker_threshold: bool = False,
         singular_legend: bool = False,
+        xmax: None | int = None,
     ) -> list[pyplot.Figure]:
     seaborn.set()
 
@@ -76,12 +77,9 @@ def generate_figures(
     experiment_css, colors, colors_alt, markers = get_css(data)
 
     eps = 1e-1
-    lowest  = min(0, min(min(hist.assoc) for experiments in data for hist in experiments.values())) - eps
-    highest = max(0, max(max(hist.assoc) for experiments in data for hist in experiments.values())) + eps
-
+    # lowest  = min(0, min(min(hist.assoc) for experiments in data for hist in experiments.values())) - eps
     lowest = 0
-
-    print(lowest, highest)
+    highest = max(0, max(max(hist.assoc) for experiments in data for hist in experiments.values())) + eps
 
     figures = []
     for phase_num, experiments in enumerate(data, start = 1):
@@ -137,7 +135,8 @@ def generate_figures(
 
         axes[0].yaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x:.1f}'))
 
-        # axes[0].set_xlim(-0.3, 7.2)
+        if xmax is not None:
+            axes[0].set_xlim(-3 * eps, xmax - 1 + 3 * eps)
         axes[0].set_ylim(lowest, highest)
 
         if multiple:
@@ -207,6 +206,7 @@ def save_plots(
     show_title: bool = False,
     singular_legend: bool = False,
     plot_width: int = 11,
+    xmax: None | int = None,
 ):
     if filename is not None:
         filename = filename.removesuffix('.png')
@@ -227,6 +227,7 @@ def save_plots(
         title = title,
         dpi = dpi,
         singular_legend = singular_legend,
+        xmax = xmax,
     )
 
     if singular_legend:

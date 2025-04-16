@@ -81,6 +81,7 @@ def parse_args():
 
     parser.add_argument('--singular-legend', action = 'store_true', help = 'Hide legend in plot, and generate a separate file with all the legends together.')
     parser.add_argument('--plot-width', type = int, default = 11, help = 'Width of the plot')
+    parser.add_argument('--xmax', type = int, help = 'Maximum X value to plot.')
 
     parser.add_argument('--savefig', type = str, help = 'Instead of showing figures, they will be saved to "fig_n.png"')
 
@@ -151,6 +152,7 @@ def main() -> None:
             plot_macknhall = args.plot_macknhall,
             plot_stimuli = args.plot_stimuli,
             dpi = args.dpi,
+            xmax = args.xmax,
         )
         for fig in figures:
             fig.show()
@@ -168,6 +170,7 @@ def main() -> None:
             singular_legend = args.singular_legend,
             dpi = args.dpi,
             plot_width = args.plot_width,
+            xmax = args.xmax,
         )
 
 if __name__ == '__main__':
