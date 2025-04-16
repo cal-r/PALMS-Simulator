@@ -79,6 +79,10 @@ def generate_figures(
     lowest  = min(0, min(min(hist.assoc) for experiments in data for hist in experiments.values())) - eps
     highest = max(0, max(max(hist.assoc) for experiments in data for hist in experiments.values())) + eps
 
+    lowest = 0
+
+    print(lowest, highest)
+
     figures = []
     for phase_num, experiments in enumerate(data, start = 1):
         multiple = False
@@ -133,6 +137,7 @@ def generate_figures(
 
         axes[0].yaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x:.1f}'))
 
+        # axes[0].set_xlim(-0.3, 7.2)
         axes[0].set_ylim(lowest, highest)
 
         if multiple:
