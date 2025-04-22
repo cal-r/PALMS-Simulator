@@ -188,7 +188,7 @@ class Environment:
     # split_cs("AA'A''A'''BC''") = ["A", "A'", "A''", "A'''", "B", "C''"]
     @staticmethod
     def split_cs(cs) -> list[str]:
-        values = sorted(re.findall(r"[a-zA-ZñÑ]'*|\((?:[a-zA-ZñÑ]'*)+\)", cs))
+        values = sorted(re.findall(r"[a-zA-ZñÑ]'*(?:\^[0-9]+)?|\((?:[a-zA-ZñÑ]'*(?:\^[0-9]+)?)+\)", cs))
         if len(''.join(set(values))) != len(cs):
             raise ValueError(f'"{cs}" cannot be split into unique separate CS.')
 

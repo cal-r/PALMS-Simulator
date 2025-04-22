@@ -669,10 +669,12 @@ If you have any questions, contact any of the authors.
 
         for ax in current_figure.get_axes():
             for line in ax.get_lines():
-                line.set_alpha(0 if self.line_hidden[line.get_label()] else 1)
+                label = line.get_label().split(': ')[-1]
+                line.set_alpha(0 if self.line_hidden[label] else 1)
 
             for line in ax.get_legend().get_lines():
-                line.set_alpha(.25 if self.line_hidden[line.get_label()] else 1)
+                label = line.get_label().split(': ')[-1]
+                line.set_alpha(.25 if self.line_hidden[label] else 1)
 
         self.plotCanvas.resize(self.plotCanvas.width() + 1, self.plotCanvas.height() + 1)
         self.plotCanvas.resize(self.plotCanvas.width() - 1, self.plotCanvas.height() - 1)
