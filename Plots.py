@@ -96,6 +96,10 @@ def generate_figures(
             hist = hist[:-1]
 
             stimulus = key.split(' ')[-1]
+            # For partial reinforcement -- remove if in main.
+            if len(stimulus) < 2:
+                continue
+
             if plot_stimuli is not None and stimulus not in plot_stimuli:
                 continue
 
