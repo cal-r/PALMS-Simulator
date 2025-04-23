@@ -42,7 +42,11 @@ def titleify(title: None | str, phases: dict[str, list[Phase]], phase_num: int) 
 
         titles.append('|'.join(group_str))
 
-    return '\n'.join(titles)
+    ret = '\n'.join(titles)
+    if len(ret) <= 100:
+        return ret
+    
+    return ''
 
 def get_css(data: list[dict[str, StimulusHistory]]) -> list[str]:
     css = sorted(set(chain.from_iterable([x.keys() for x in data])), key = lambda x: (len(x), x))
@@ -165,7 +169,9 @@ def generate_figures(
                     legend_line.set_picker(1)
 
         if phases is not None:
-            fig.suptitle(titleify(title, phases, phase_num), fontdict = {'family': 'monospace'}, fontsize = 12)
+            title = titleify(title, phases, phase_num)
+            if title:
+                fig.suptitle(title, fontdict = {'family': 'monospace'}, fontsize = 12)
 
             if len(axes) > 1:
                 fig.subplots_adjust(top = .85)

@@ -82,8 +82,6 @@ def parse_args():
     parser.add_argument('--singular-legend', action = 'store_true', help = 'Hide legend in plot, and generate a separate file with all the legends together.')
     parser.add_argument('--plot-width', type = int, default = 11, help = 'Width of the plot')
 
-    parser.add_argument('--plot-width', type = int, default = 11, help = 'Width of the plot')
-
     parser.add_argument('--savefig', type = str, help = 'Instead of showing figures, they will be saved to "fig_n.png"')
 
     parser.add_argument(
@@ -147,7 +145,7 @@ def main() -> None:
     if args.savefig is None:
         figures = generate_figures(
             groups_strengths,
-            phases = phases
+            phases = phases,
             plot_phase = args.plot_phase,
             plot_alpha = args.plot_alpha,
             plot_macknhall = args.plot_macknhall,
