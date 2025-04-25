@@ -16,8 +16,6 @@ from typing import Any
 
 from Experiment import Phase
 
-import ipdb
-
 def titleify(title: None | str, phases: dict[str, list[Phase]], phase_num: int) -> str:
     titles = []
 
