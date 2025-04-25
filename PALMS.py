@@ -25,8 +25,6 @@ from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib import pyplot
 from PIL import Image
 
-import ipdb
-
 class PavlovianApp(QDialog):
     adaptive_types: list[str]
     current_adaptive_type: str
