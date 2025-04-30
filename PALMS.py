@@ -270,9 +270,13 @@ class PavlovianApp(QDialog):
         self.configuralButton.setStyleSheet(checkedStyle)
         self.configuralButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-        self.setDefaultParamsButton = QPushButton("Restore Default Parameters")
-        self.setDefaultParamsButton.clicked.connect(self.restoreDefaultParameters)
-        self.setDefaultParamsButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        # self.setDefaultParamsButton = QPushButton("Restore Default Parameters")
+        # self.setDefaultParamsButton.clicked.connect(self.restoreDefaultParameters)
+        # self.setDefaultParamsButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        
+        self.exportDataButton = QPushButton("Export Data")
+        self.exportDataButton.clicked.connect(self.exportData)
+        self.exportDataButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.refreshButton = QPushButton("Refresh")
         self.refreshButton.clicked.connect(self.refreshExperiment)
@@ -309,7 +313,7 @@ class PavlovianApp(QDialog):
         fileOptionsLayout = QVBoxLayout()
         fileOptionsLayout.addWidget(self.fileButton)
         fileOptionsLayout.addWidget(self.saveButton)
-        fileOptionsLayout.addWidget(self.setDefaultParamsButton)
+        fileOptionsLayout.addWidget(self.exportDataButton)
         self.fileOptionsGroupBox.setLayout(fileOptionsLayout)
 
     def toggleRand(self):
@@ -350,6 +354,9 @@ If you have any questions, contact any of the authors.
 2024. All rights reserved. Licensed under the LGPL v3. See LICENSE for details.\
         '''
         QMessageBox.information(self, 'About', about)
+    
+    def exportData(self):
+        pass
 
     def saveExperiment(self):
         default_directory = os.path.join(os.getcwd(), 'Experiments')
