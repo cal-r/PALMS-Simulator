@@ -364,11 +364,11 @@ If you have any questions, contact any of the authors.
         strengths, _, args = self.generateResults()
 
         with open(fileName, 'w') as file:
-            fieldnames = ['phase', 'group', 'cs', 'trial', 'assoc']
+            fieldnames = ['Phase', 'Group', 'CS', 'Trial', 'Assoc']
             if not args.should_plot_macknhall:
-                fieldnames += ['alpha']
+                fieldnames += ['Alpha']
             else:
-                fieldnames += ['alpha_mack', 'alpha_hall']
+                fieldnames += ['Alpha Mack', 'Alpha Hall']
 
             writer = DictWriter(file, fieldnames = fieldnames, extrasaction = 'ignore')
             writer.writeheader()
@@ -377,16 +377,16 @@ If you have any questions, contact any of the authors.
                 for group_cs, hist in phase.items():
                     group, cs = group_cs.rsplit(' - ', maxsplit = 1)
                     for trial, stimulus in enumerate(hist, start = 1):
-                        row = dict(
-                            phase = phase_num,
-                            group = group,
-                            cs = cs,
-                            trial = trial,
-                            assoc = stimulus.assoc,
-                            alpha = stimulus.alpha,
-                            alpha_mack = stimulus.alpha_mack,
-                            alpha_hall = stimulus.alpha_hall,
-                        )
+                        row = {
+                            'Phase': phase_num,
+                            'Group': group,
+                            'CS': cs,
+                            'Trial': trial,
+                            'Assoc': stimulus.assoc,
+                            'Alpha': stimulus.alpha,
+                            'Alpha Mack': stimulus.alpha_mack,
+                            'Alpha Hall': stimulus.alpha_hall,
+                        }
                         writer.writerow(row)
 
     def saveExperiment(self):
