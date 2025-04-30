@@ -96,6 +96,8 @@ class RWArgs:
     plot_phase: None | int = None
     plot_experiments: None | list[str] = None
     plot_stimuli: None | list[str] = None
+
+    should_plot_macknhall: bool = False
     plot_alpha: bool = False
     plot_macknhall: bool = False
 

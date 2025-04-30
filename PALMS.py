@@ -9,6 +9,7 @@ import sys
 from argparse import ArgumentParser
 from collections import defaultdict
 from contextlib import nullcontext
+from csv import DictWriter
 from itertools import chain, zip_longest
 from typing import cast
 from PyQt6.QtCore import QTimer, Qt, QSize
@@ -356,7 +357,37 @@ If you have any questions, contact any of the authors.
         QMessageBox.information(self, 'About', about)
     
     def exportData(self):
-        pass
+        fileName, _ = QFileDialog.getSaveFileName(self, "Export Data", "data.csv", "CSV files (*.csv);;All Files (*)")
+        if not fileName:
+            return
+
+        strengths, _, args = self.generateResults()
+
+        with open(fileName, 'w') as file:
+            fieldnames = ['phase', 'group', 'cs', 'trial', 'assoc']
+            if not args.should_plot_macknhall:
+                fieldnames += ['alpha']
+            else:
+                fieldnames += ['alpha_mack', 'alpha_hall']
+
+            writer = DictWriter(file, fieldnames = fieldnames, extrasaction = 'ignore')
+            writer.writeheader()
+
+            for phase_num, phase in enumerate(strengths, start = 1):
+                for group_cs, hist in phase.items():
+                    group, cs = group_cs.rsplit(' - ', maxsplit = 1)
+                    for trial, stimulus in enumerate(hist, start = 1):
+                        row = dict(
+                            phase = phase_num,
+                            group = group,
+                            cs = cs,
+                            trial = trial,
+                            assoc = stimulus.assoc,
+                            alpha = stimulus.alpha,
+                            alpha_mack = stimulus.alpha_mack,
+                            alpha_hall = stimulus.alpha_hall,
+                        )
+                        writer.writerow(row)
 
     def saveExperiment(self):
         default_directory = os.path.join(os.getcwd(), 'Experiments')
@@ -569,6 +600,7 @@ If you have any questions, contact any of the authors.
         return {cs: self.floatOr(pair.box.text(), value) for cs, pair in self.per_cs_param[perc].items()}
 
     def generateResults(self) -> tuple[list[dict[str, StimulusHistory]], dict[str, list[Phase]], RWArgs]:
+        should_plot_macknhall = AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall()
         args = RWArgs(
             adaptive_type = self.current_adaptive_type,
 
@@ -603,8 +635,10 @@ If you have any questions, contact any of the authors.
             window_size = 1,
             num_trials = int(self.params['num_trials'].box.text()),
 
-            plot_alpha = self.plot_alpha and not AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
-            plot_macknhall = self.plot_alpha and AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
+            should_plot_macknhall = should_plot_macknhall,
+
+            plot_alpha = self.plot_alpha and not should_plot_macknhall,
+            plot_macknhall = self.plot_alpha and should_plot_macknhall,
 
             xi_hall = 0.5,
         )
