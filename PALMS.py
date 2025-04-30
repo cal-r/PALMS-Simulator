@@ -147,7 +147,7 @@ class PavlovianApp(QDialog):
         mainLayout.setRowStretch(1, 0)
         mainLayout.setRowStretch(2, 0)
         mainLayout.setRowStretch(3, 0)
-        mainLayout.setRowStretch(4, 4)
+        mainLayout.setRowStretch(4, 0)
         mainLayout.setColumnStretch(0, 0)
         mainLayout.setColumnStretch(1, 0)
         mainLayout.setColumnStretch(2, 0)
