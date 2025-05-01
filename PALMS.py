@@ -5,8 +5,9 @@ if 'DISPLAY' in os.environ:
     os.environ["QT_QPA_PLATFORM"] = "xcb"
 
 import sys
+import Simulator
 
-from argparse import ArgumentParser
+from argparse import ArgumentParser, REMAINDER
 from collections import defaultdict
 from contextlib import nullcontext
 from csv import DictWriter
@@ -798,12 +799,27 @@ If you have any questions, contact any of the authors.
         self.refreshFigure()
 
 def parse_args():
-    args = ArgumentParser('Display a GUI for simulating models.')
-    args.add_argument('--dpi', type = int, default = None, help = 'DPI for shown and outputted figures.')
-    args.add_argument('--screenshot-ready', action = 'store_true', help = 'Hide guide numbers for easier screenshots.')
-    args.add_argument('--debug', action = 'store_true', help = 'Whether to go to a debugging console if there is an exception')
-    args.add_argument('load_file', nargs = '?', help = 'File to load initially')
-    return args.parse_args()
+    if len(sys.argv) > 1 and sys.argv[1] == 'cli':
+        sys.argv[0] = f'{sys.argv[0]} {sys.argv[1]}'
+        sys.argv[1:] = sys.argv[2:]
+        Simulator.main()
+        sys.exit(0)
+
+    if len(sys.argv) > 1 and sys.argv[1] != 'gui':
+        sys.argv.insert(1, 'gui')
+
+    parser = ArgumentParser('PALMS Simulator')
+    subparsers = parser.add_subparsers(dest = 'mode')
+
+    cli_parser = subparsers.add_parser('cli', help = f'Run PALMS command-line interface. {sys.argv[0]} cli --help for mode information.')
+    gui_parser = subparsers.add_parser('gui', help = f'Run PALMS GUI interface. This is the default.')
+
+    gui_parser.add_argument('--dpi', type = int, default = None, help = 'DPI for shown and outputted figures.')
+    gui_parser.add_argument('--screenshot-ready', action = 'store_true', help = 'Hide guide numbers for easier screenshots.')
+    gui_parser.add_argument('--debug', action = 'store_true', help = 'Whether to go to a debugging console if there is an exception')
+    gui_parser.add_argument('load_file', nargs = '?', help = 'File to load initially')
+
+    return parser.parse_args()
 
 def main():
     args = parse_args()
