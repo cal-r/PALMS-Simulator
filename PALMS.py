@@ -160,7 +160,7 @@ class PavlovianApp(QDialog):
         self.setWindowFlags(Qt.WindowType.Window | Qt.WindowType.WindowCloseButtonHint | Qt.WindowType.WindowMaximizeButtonHint)
         self.adaptiveTypeButtons.children()[1].click()
 
-        self.resize(1250, 600)
+        self.resize(1400, 600)
 
         if self.screenshot_ready:
             self.xCoordInfo.setVisible(False)
@@ -812,6 +812,7 @@ def parse_args():
     gui_parser = subparsers.add_parser('gui', help = f'Run PALMS GUI interface. This is the default if no mode is selected.')
 
     gui_parser.add_argument('--dpi', type = int, default = None, help = 'DPI for shown and outputted figures.')
+    gui_parser.add_argument('--fontsize', type = int, default = None, help = 'Fontsize of the GUI; screenshots are taken in fontsize 16.')
     gui_parser.add_argument('--screenshot-ready', action = 'store_true', help = 'Hide guide numbers for easier screenshots.')
     gui_parser.add_argument('--debug', action = 'store_true', help = 'Whether to go to a debugging console if there is an exception')
     gui_parser.add_argument('load_file', nargs = '?', help = 'File to load initially')
@@ -825,6 +826,11 @@ def main():
     args = parse_args()
 
     app = QApplication(sys.argv)
+
+    if args.fontsize is not None:
+        font = QFont()
+        font.setPointSize(args.fontsize)
+        app.setFont(font)
 
     dpi = args.dpi
     if dpi is None:
