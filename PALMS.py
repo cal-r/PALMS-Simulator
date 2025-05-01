@@ -805,21 +805,21 @@ def parse_args():
         Simulator.main()
         sys.exit(0)
 
-    if len(sys.argv) > 1 and sys.argv[1] != 'gui':
-        sys.argv.insert(1, 'gui')
-
     parser = ArgumentParser('PALMS Simulator')
-    subparsers = parser.add_subparsers(dest = 'mode')
+    subparsers = parser.add_subparsers(dest = 'mode', required = False)
 
     cli_parser = subparsers.add_parser('cli', help = f'Run PALMS command-line interface. {sys.argv[0]} cli --help for mode information.')
-    gui_parser = subparsers.add_parser('gui', help = f'Run PALMS GUI interface. This is the default.')
+    gui_parser = subparsers.add_parser('gui', help = f'Run PALMS GUI interface. This is the default if no mode is selected.')
 
     gui_parser.add_argument('--dpi', type = int, default = None, help = 'DPI for shown and outputted figures.')
     gui_parser.add_argument('--screenshot-ready', action = 'store_true', help = 'Hide guide numbers for easier screenshots.')
     gui_parser.add_argument('--debug', action = 'store_true', help = 'Whether to go to a debugging console if there is an exception')
     gui_parser.add_argument('load_file', nargs = '?', help = 'File to load initially')
 
-    return parser.parse_args()
+    if len(sys.argv) > 1 and sys.argv[1] in ['-h', '--help']:
+        print(parser.format_help())
+
+    return gui_parser.parse_args()
 
 def main():
     args = parse_args()
