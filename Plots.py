@@ -12,9 +12,11 @@ from matplotlib.ticker import MaxNLocator, IndexLocator, LinearLocator
 from matplotlib.ticker import FuncFormatter
 from matplotlib.axes import Axes
 from itertools import chain
-from typing import Any
+from typing import Any, TypeAlias
 
 from Experiment import Phase
+
+Color: TypeAlias = tuple[float, float, float]
 
 def titleify(title: None | str, phases: dict[str, list[Phase]], phase_num: int) -> str:
     titles = []
@@ -46,7 +48,7 @@ def titleify(title: None | str, phases: dict[str, list[Phase]], phase_num: int) 
     
     return ''
 
-def get_css(data: list[dict[str, StimulusHistory]]) -> list[str]:
+def get_css(data: list[dict[str, StimulusHistory]]) -> tuple[list[str], dict[str, Color], dict[str, Color], dict[str, str]]:
     css = sorted(set(chain.from_iterable([x.keys() for x in data])), key = lambda x: (len(x), x))
 
     colors = dict(zip(css, seaborn.husl_palette(len(css), s=.9, l=.5)))
@@ -99,7 +101,7 @@ def generate_figures(
             if plot_stimuli is not None and stimulus not in plot_stimuli:
                 continue
 
-            ratio = 0
+            ratio = 0.
             if len(experiments) > 1:
                 ratio = num / (len(experiments.items()) - 1)
 
@@ -110,12 +112,12 @@ def generate_figures(
                 alpha = 1 - .5 * ratio,
                 picker = ticker_threshold,
             )
-            line = axes[0].plot(hist.assoc, label = key, **plot_options)
+            line = axes[0].plot(hist.assoc, label = key, **plot_options) # type: ignore
 
             cs = key.rsplit(' ', 1)[1]
             if multiple:
                 if plot_alpha and not plot_macknhall:
-                    axes[1].plot(hist.alpha, label='α: '+str(key), **plot_options)
+                    axes[1].plot(hist.alpha, label='α: '+str(key), **plot_options) # type: ignore
 
                 if plot_macknhall:
                     axes[1].plot(hist.alpha_mack, label='Mack: ' + str(key), color = colors[key],     marker='$M$', markersize=6, alpha=1, picker = ticker_threshold)
