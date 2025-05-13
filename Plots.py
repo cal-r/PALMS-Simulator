@@ -80,8 +80,8 @@ def generate_figures(
     experiment_css, colors, colors_alt, markers = get_css(data)
 
     eps = 1e-1
-    lowest  = min(0, min(min(hist.assoc) for experiments in data for hist in experiments.values())) - eps
-    highest = max(0, max(max(hist.assoc) for experiments in data for hist in experiments.values())) + eps
+    # lowest  = min(0, min(min(hist.assoc) for experiments in data for hist in experiments.values())) - eps
+    # highest = max(0, max(max(hist.assoc) for experiments in data for hist in experiments.values())) + eps
 
     figures = []
     for phase_num, experiments in enumerate(data, start = 1):
@@ -137,7 +137,7 @@ def generate_figures(
 
         axes[0].yaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x:.1f}'))
 
-        axes[0].set_ylim(lowest, highest)
+        # axes[0].set_ylim(lowest, highest)
 
         if multiple:
             axes[0].set_title(f'Associative Strengths')
@@ -152,7 +152,7 @@ def generate_figures(
             axes[1].xaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x + 1:.0f}'))
             axes[1].xaxis.set_major_locator(MaxNLocator(integer = True, min_n_ticks = 1))
             axes[1].yaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x:.1f}'))
-            axes[1].set_ylim(lowest, highest)
+            # axes[1].set_ylim(lowest, highest)
 
         if not singular_legend:
             properties: dict[str, Any]
