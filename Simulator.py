@@ -161,7 +161,7 @@ def main() -> None:
             plot_stimuli = args.plot_stimuli,
             singular_legend = args.singular_legend,
             dpi = args.dpi,
-            plot_width = args.plot_width,
+            plot_width = args.output_width,
         )
 
 if __name__ == '__main__':

@@ -194,10 +194,12 @@ class LePelley(AdaptiveType):
         VXe = rp.sigmaE - s.Ve
         VXi = rp.sigmaI - s.Vi
 
+        betap = rp.beta if rp.sign else self.betap
+
         DVe = 0.
         DVi = 0.
         if rho >= 0:
-            DVe = s.alpha * self.betap * (1 - s.Ve + s.Vi) * abs(rho)
+            DVe = s.alpha * betap * (1 - s.Ve + s.Vi) * abs(rho)
 
             if rho > 0:
                 s.alpha += -self.thetaE * (abs(rp.lamda - s.Ve + s.Vi) - abs(rp.lamda - VXe + VXi))
@@ -231,10 +233,12 @@ class LePelleyHybrid(AdaptiveType):
         VXe = rp.sigmaE - s.Ve
         VXi = rp.sigmaI - s.Vi
 
+        betap = rp.beta if rp.sign else self.betap
+
         DVe = 0.
         DVi = 0.
         if rho >= 0:
-            DVe = s.alpha_mack * self.betap * s.alpha_hall * (1 - s.Ve + s.Vi) * abs(rho)
+            DVe = s.alpha_mack * betap * s.alpha_hall * (1 - s.Ve + s.Vi) * abs(rho)
 
             if rho > 0:
                 s.alpha_mack += -self.thetaE * s.alpha_hall * (abs(rp.lamda - s.Ve + s.Vi) - abs(rp.lamda - VXe + VXi))
