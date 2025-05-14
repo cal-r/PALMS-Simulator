@@ -57,6 +57,8 @@ def get_css(data: list[dict[str, StimulusHistory]]) -> tuple[list[str], dict[str
     # markers = ['*', 'X', 'D', 's', 'o', 'd', 'p', 'h', '^', 'v', '<', '>']
     markers = ['o', 's', 'D', '^', 'v', '<', '>', 'p', '*', 'h', 'X', 'd']
     marker_dict = dict(zip(css, [markers[i % len(markers)] for i in range(len(css))]))
+
+    colors['Real-world Group - X'], colors['Real-world Group - Y'] = seaborn.husl_palette(2)
     return css, colors, colors_alt, marker_dict
 
 def generate_figures(
@@ -154,7 +156,7 @@ def generate_figures(
             axes[1].xaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x + 1:.0f}'))
             axes[1].xaxis.set_major_locator(MaxNLocator(integer = True, min_n_ticks = 1))
             axes[1].yaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x:.1f}'))
-            # axes[1].set_ylim(lowest, highest)
+            axes[1].set_ylim(lowest, highest)
 
         if not singular_legend:
             properties: dict[str, Any]
@@ -239,7 +241,7 @@ def save_plots(
 
     for phase_num, fig in enumerate(figures, start = plot_phase or 1):
         dep = 1.3
-        if phase_num > 1:
+        if plot_phase is None and phase_num > 1:
             fig.axes[0].set_title('')
             fig.axes[0].set_ylabel('')
             fig.axes[0].set_yticklabels([])
