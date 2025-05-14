@@ -799,7 +799,7 @@ If you have any questions, contact any of the authors.
         self.refreshFigure()
 
 def parse_args():
-    if len(sys.argv) > 1 and sys.argv[1] == 'cli':
+    if len(sys.argv) > 1 and sys.argv[1].lower() == 'cli':
         sys.argv[0] = f'{sys.argv[0]} {sys.argv[1]}'
         sys.argv[1:] = sys.argv[2:]
         Simulator.main()
