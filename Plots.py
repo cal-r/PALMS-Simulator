@@ -80,8 +80,10 @@ def generate_figures(
     experiment_css, colors, colors_alt, markers = get_css(data)
 
     eps = 1e-1
-    # lowest  = min(0, min(min(hist.assoc) for experiments in data for hist in experiments.values())) - eps
-    # highest = max(0, max(max(hist.assoc) for experiments in data for hist in experiments.values())) + eps
+    lowest  = min(0, min(min(hist.assoc) for experiments in data for hist in experiments.values())) - eps
+    highest = max(0, max(max(hist.assoc) for experiments in data for hist in experiments.values())) + eps
+
+    print(lowest, highest)
 
     figures = []
     for phase_num, experiments in enumerate(data, start = 1):
@@ -137,7 +139,7 @@ def generate_figures(
 
         axes[0].yaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x:.1f}'))
 
-        # axes[0].set_ylim(lowest, highest)
+        axes[0].set_ylim(lowest, highest)
 
         if multiple:
             axes[0].set_title(f'Associative Strengths')
@@ -235,15 +237,14 @@ def save_plots(
         legend_fig.set_size_inches(plot_width, .1)
         legend_fig.savefig(f'{filename}_legend.png', dpi = dpi or 150, bbox_inches = 'tight', pad_inches = 0)
 
-    for phase_num, fig in enumerate(figures, start = 1):
+    for phase_num, fig in enumerate(figures, start = plot_phase or 1):
         dep = 1.3
         if phase_num > 1:
             fig.axes[0].set_title('')
-            fig.axes[1].set_title('')
-
-        if phase_num < len(figures) - 1:
-            fig.axes[0].set_xlabel('')
-            fig.axes[1].set_xlabel('')
+            fig.axes[0].set_ylabel('')
+            fig.axes[0].set_yticklabels([])
 
         fig.set_size_inches(plot_width / dep, 2 / dep)
+        # widths = {1: 5, 2: 2, 3: 5}
+        # fig.set_size_inches(widths[phase_num] / dep, 2 / dep)
         fig.savefig(f'{filename}_{phase_num}.png', dpi = dpi or 150, bbox_inches = 'tight')
