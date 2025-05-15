@@ -85,8 +85,6 @@ def generate_figures(
     lowest  = min(0, min(min(hist.assoc) for experiments in data for hist in experiments.values())) - eps
     highest = max(0, max(max(hist.assoc) for experiments in data for hist in experiments.values())) + eps
 
-    print(lowest, highest)
-
     figures = []
     for phase_num, experiments in enumerate(data, start = 1):
         multiple = False
