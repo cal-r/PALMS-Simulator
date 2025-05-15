@@ -3,31 +3,30 @@
 \usepackage{amssymb}
 
 \begin{document}
-Extended Mackintosh model equations:
+\newcommand{\eks}{\textsf{x}}
+\newcommand{\longlambda}{\rlap{$\,\lambda$}\phantom{\big| \rho \big|}}
+\newcommand{\longI}{\rlap{$I$}\phantom{E}}
 
-\begin{align}
-\Delta V_S^{n+1} = \alpha_S^n \beta^+ \cdot \left( 1 - \partial V^n_S \right) \cdot \left| R^n \right| \\
-\overline{\Delta V_S^{n+1}} = \alpha_S^n \beta^- \cdot \left( 1 + \partial V^n_S \right) \cdot \left| R^n \right| \\
-\partial V^n_S = V^n_S - \overline{V^n_S} \\
-\alpha_S^{n+1} = \alpha_S^n + \Delta \alpha^{n+1}_S \,\,\,\text{when}\,\,\, R_S^n > 0 \\
-\alpha_S^{n+1} = \alpha_S^n + \overline{\Delta \alpha^{n+1}_S} \,\,\,\text{when}\,\,\, R_S^n < 0 \\
-\Delta \alpha_S^{n+1} = - \theta^+ \cdot \left( \Lambda^+ - \Lambda^- \right) \\
-\overline{\Delta \alpha_S^{n+1}} = - \theta^- \cdot \left( \mathcal{R^+} - \mathcal{R^-} \right) \\
-\Lambda^+ = \big| \lambda^n - V_S^n + \overline{V^n_S} \big| \\
-\Lambda^- = \big|\lambda^n - \sum_{i\neq A} \left( V_i^n + \overline{V_i^n} \right) \big| \\
-\mathcal{R^+} = \left| \left| R^n \right| + V_S^n - \overline{V^n_S} \right| \\
-\mathcal{R^-} = \left| \left| R^n \right| + \sum_{i\neq A} \big( V_i^n - \overline{V_i^n} \big) \right| \\
-\end{align}
+\begin{center}
+	\huge
+	\sffamily
+	Mackintosh Extended
+\end{center}
 
-
-\begin{description}
-	\item[$\alpha_i^{n}$] = associability of the CS $i$ on trial $n$.
-        \item[$\beta$] = Learning rate parameter for the US, where $\beta^+$ (excitatory) > $\beta^-$ (inhibitory)
-	\item[$\lambda_i^n$] = intensity of the US with stimuli i at trial n.
-	\item[$V_{i,j}^{n + 1}$] = associative strength of the CS $i$ on trial $n + 1$.
-        \item[$\overline{V_{i,j}^{n+1}}$] = inhibitory associative strength of the CS $i$ on trial $n + 1$.
-	\item[$\theta$] = learning-rate parameters for changes in $\alpha$ on excitatory and inhibitory trials. $\theta^E$ (excitatory) > $\theta^I$ (inhibitory)
-    \item[$R$] = Reinforcing value (excitatory/inhibitory)
-\end{description} \vspace{10pt}
+\begin{gather*}
+	\begin{aligned}
+		\rho &= \lambda - \left( \textstyle\sum_i V_i^n - \textstyle\sum_i \overline{V_i^n} \right) \\
+		\Delta V_\eks^{n + 1} &= \alpha_\eks^n \cdot \beta^+ \cdot (1 - V_\eks^n + \overline{V_\eks^n}) \cdot \left| \rho \right| & \text{if } \rho \geq 0 \\
+		 \Delta \overline{V_\eks^{n + 1}} &= \alpha_\eks^n \cdot \beta^- \cdot (1 - \overline{V_\eks^n} + V_\eks^n) \cdot \left| \rho \right| & \text{if } \rho < 0
+	\end{aligned} \\[1em]
+	\begin{gathered}
+		\alpha_\eks^{n + 1} =
+			\begin{cases}
+				\alpha^n_\eks -\theta^E \cdot \left( \big| \longlambda - V_\eks^n \big| - \big| \longlambda - \textstyle\sum_i^{i \neq \eks} \left( V_\eks^n - \overline{V_\eks^n} \right) \big| \right) & \text{if } \rho > 0 \\[1ex]
+				 \alpha^n_\eks -\theta^{\longI} \cdot \left( \big| \big| \rho \big| - V_\eks^n \big| - \big| \big| \rho \big| - \textstyle\sum_i^{i \neq \eks} \left( V_i^n - \overline{V_i^n} \right) \big| \right) & \text{if } \rho < 0
+			\end{cases} \\[1ex]
+			V_\eks^{n + 1} = \Delta V_\eks^{n + 1} - \Delta \overline{V_\eks^{n + 1}}
+	\end{gathered}
+\end{gather*}
 
 \end{document}
