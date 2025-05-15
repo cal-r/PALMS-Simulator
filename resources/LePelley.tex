@@ -3,23 +3,35 @@
 \usepackage{amssymb}
 
 \begin{document}
-Le Pelley model equations:
+\newcommand{\eks}{\textsf{x}}
+\newcommand{\longlambda}{\rlap{$\,\lambda$}\phantom{\big| \rho \big|}}
+\newcommand{\longI}{\rlap{$I$}\phantom{E}}
 
-\begin{align}
-\Delta V_S^{n+1} = \sigma \alpha_S^n \beta^+ \cdot \left( 1 - \partial V^n_S \right) \cdot \left| R^n \right| \\
-\overline{\Delta V_S^{n+1}} = \sigma \alpha_S^n \beta^- \cdot \left( 1 + \partial V^n_S \right) \cdot \left| R^n \right|
-\end{align}
+\begin{center}
+	\huge
+	\sffamily
+	Le~Pelley
+\end{center}
 
-
-\begin{description}
-	\item[$\alpha_i^{n}$] = associability of the CS $i$ on trial $n$.
-        \item[$\beta$] = Learning rate parameter for the US, where $\beta^+$ (excitatory) > $\beta^-$ (inhibitory)
-	\item[$\lambda_i^n$] = intensity of the US with stimuli i at trial n.
-	\item[$V_{i,j}^{n}$] = associative strength of the CS $i$ on trial $n$.
-        \item[$\overline{V_{i,j}^{n+1}}$] = inhibitory associative strength of the CS $i$ on trial $n + 1$.
-	\item[$\sigma$] = salience associability multiplicative factor
-    \item[$R$] = Reinforcing value (excitatory/inhibitory)
-    \item[$\partial V^n_S$] = $V_S$ - $\overline{V_S}$ Difference between the excitatory and inhibitory CS-US association.
-\end{description} \vspace{10pt}
+\begin{gather*}
+	\begin{gathered}
+		\rho = \lambda - \textstyle\sum_i \left( V_i - \overline{V_i} \right) \\
+		\begin{aligned}
+			\Delta V_\eks^{n + 1} &= {\alpha^M_\eks}^n \cdot {\alpha^H_\eks}^n \cdot \beta^+ \cdot (1 - V_\eks^n + \overline{V_\eks^n}) \cdot \left| \rho \right| & \text{if } \rho \geq 0 \\
+			 \Delta \overline{V_\eks^{n + 1}} &= {\alpha^M_\eks}^n \cdot {\alpha^H_\eks}^n \cdot \beta^- \cdot (1 - \overline{V_\eks^n} + V_\eks^n) \cdot \left| \rho \right| & \text{if } \rho < 0
+		\end{aligned}
+	\end{gathered} \\[1em]
+	\begin{gathered}
+		{\alpha^M_\eks}^{n + 1} =
+			\begin{cases}
+				{\alpha^M_\eks}^n - \theta^E \cdot {\alpha^H_\eks}^n \cdot \left( \big| \longlambda - V_\eks^n \big| - \big| \longlambda - \textstyle\sum_i^{i \neq \eks} \left( V_\eks^n - \overline{V_\eks^n} \right) \big| \right) & \text{if } \rho > 0 \\[1ex]
+				 {\alpha^M_\eks}^n -\theta^{\longI} \cdot {\alpha^H_\eks}^n \cdot \left( \big| \big| \rho \big| - V_\eks^n \big| - \big| \big| \rho \big| - \textstyle\sum_i^{i \neq \eks} \left( V_i^n - \overline{V_i^n} \right) \big| \right) & \text{if } \rho < 0
+			\end{cases} \\[1ex]
+			\begin{aligned}
+				{\alpha^H_\eks}^{n + 1} &= \gamma \cdot \left| \rho \right| + \left( 1 - \gamma \right) \cdot {\alpha^H_\eks}^{n} \\
+				V_\eks^{n + 1} &= \Delta V_\eks^{n + 1} - \Delta \overline{V_\eks^{n + 1}}
+			\end{aligned}
+	\end{gathered}
+\end{gather*}
 
 \end{document}
