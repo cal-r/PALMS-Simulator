@@ -496,6 +496,7 @@ If you have any questions, contact any of the authors.
             num_trials = "Number of random trials per experiment.",
         )
         params = QFormLayout()
+        params.setSpacing(10)
         for key, val in AdaptiveType.initial_defaults().items():
             label = self.DualLabel(short_names[key], self, str(val), hoverText = descriptions[key]).addRow(params)
             self.params[key] = label
@@ -512,7 +513,7 @@ If you have any questions, contact any of the authors.
         for perc in self.per_cs_param.keys():
             boxLayout = QFormLayout()
             boxLayout.setContentsMargins(0, 0, 0, 0)
-            boxLayout.setSpacing(5)
+            boxLayout.setSpacing(10)
 
             self.per_cs_box[perc] = QWidget()
             self.per_cs_box[perc].setLayout(boxLayout)
