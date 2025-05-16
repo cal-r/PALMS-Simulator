@@ -60,7 +60,13 @@ class PavlovianApp(QDialog):
 
         self.params = {}
 
-        percs = ['alpha', 'alpha_mack', 'alpha_hall', 'salience', 'habituation']
+        percs = [
+            'alpha',
+            'alpha_mack',
+            'alpha_hall',
+            'salience',
+            # 'habituation',
+        ]
         self.per_cs_box = {}
         self.per_cs_param = {x: {} for x in percs}
         self.enabled_params = set()
@@ -548,7 +554,13 @@ If you have any questions, contact any of the authors.
                 self.per_cs_box[key].setVisible(True)
 
     def refreshAlphasGroupBox(self, css: set[str]):
-        shortnames = {'alpha': 'α', 'alpha_mack': 'αᴹ', 'alpha_hall': 'αᴴ', 'salience': 'S', 'habituation': 'h'}
+        shortnames = {
+            'alpha': 'α',
+            'alpha_mack': 'αᴹ',
+            'alpha_hall': 'αᴴ',
+            'salience': 'S',
+            'habituation': 'h',
+        }
         for perc, form in self.per_cs_param.items():
             val = self.params[perc].box.text()
             layout = cast(QFormLayout, self.per_cs_box[perc].layout())
@@ -617,9 +629,6 @@ If you have any questions, contact any of the authors.
             thetaI = self.floatOr(self.params['thetaI'].box.text(), 0),
 
             salience = self.floatOr(self.params['salience'].box.text(), 0),
-            habituation = self.floatOr(self.params['habituation'].box.text(), 0),
-
-            kay = self.floatOr(self.params['kay'].box.text(), 0),
 
             configural_cues = self.configural_cues,
 
@@ -628,10 +637,18 @@ If you have any questions, contact any of the authors.
             alpha_halls = self.csPercDict('alpha_hall'),
 
             saliences = self.csPercDict('salience'),
-            habituations = self.csPercDict('habituation'),
 
-            rho = self.floatOr(self.params['rho'].box.text(), 0),
-            nu = self.floatOr(self.params['nu'].box.text(), 0),
+            # Data for MLAB Hybrid.
+            habituations = defaultdict(lambda: None),
+            habituation = None,
+            rho = None,
+            nu = None,
+            kay = None,
+            # habituations = self.csPercDict('habituation'),
+            # rho = self.floatOr(self.params['rho'].box.text(), 0),
+            # nu = self.floatOr(self.params['nu'].box.text(), 0),
+            # habituation = self.floatOr(self.params['habituation'].box.text(), 0),
+            # kay = self.floatOr(self.params['kay'].box.text(), 0),
 
             window_size = 1,
             num_trials = int(self.params['num_trials'].box.text()),
