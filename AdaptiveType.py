@@ -47,8 +47,7 @@ class AdaptiveType:
             'Pearce Kaye Hall': PearceKayeHall,
             'Mackintosh Extended': LePelley,
             'LePelley': LePelleyHybrid,
-            'MLAB Hybrid': MlabHybrid,
-
+            # 'MLAB Hybrid': MlabHybrid,
         }
 
     @classmethod
@@ -68,10 +67,10 @@ class AdaptiveType:
             'thetaE',
             'thetaI',
             'salience',
-            'habituation',
-            'rho',
-            'nu',
-            'kay',
+            # 'habituation',
+            # 'rho',
+            # 'nu',
+            # 'kay',
         ]
 
     @classmethod
@@ -80,7 +79,7 @@ class AdaptiveType:
 
     @classmethod
     def initial_defaults(cls) -> dict[str, float]:
-        return dict(
+        inits = dict(
             alpha = 0.1,
             alpha_mack = 0.1,
             alpha_hall = 0.1,
@@ -97,6 +96,8 @@ class AdaptiveType:
             kay = 2,
             num_trials = 100,
         )
+
+        return {k: v for k, v in inits.items() if k in {'num_trials'} | set(cls.parameters())}
 
     @classmethod
     def defaults(cls) -> dict[str, float]:
