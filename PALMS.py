@@ -435,7 +435,7 @@ If you have any questions, contact any of the authors.
             self.params[key].box.setText(str(default))
             if key in self.per_cs_param:
                 for pair in self.per_cs_param[key].values():
-                    pair.box.setText(str(default))
+                    pair.box.setText(str(default ** len(key.strip('()'))))
 
         self.refreshExperiment()
 
@@ -528,7 +528,9 @@ If you have any questions, contact any of the authors.
 
             for perc, form in self.per_cs_param.items():
                 for cs, pair in form.items():
-                    pair.box.setText(self.params[perc].box.text())
+                    global_val = float(self.params[perc].box.text())
+                    local_val = global_val ** len(cs.strip('()'))
+                    pair.box.setText(f'{local_val:.2g}')
         else:
             self.alphasBox.setVisible(False)
             self.refreshExperiment()
@@ -563,7 +565,7 @@ If you have any questions, contact any of the authors.
             'habituation': 'h',
         }
         for perc, form in self.per_cs_param.items():
-            val = self.params[perc].box.text()
+            global_val = float(self.params[perc].box.text())
             layout = cast(QFormLayout, self.per_cs_box[perc].layout())
 
             to_remove = []
@@ -578,10 +580,12 @@ If you have any questions, contact any of the authors.
             for cs in sorted(css):
                 if cs not in form:
                     hoverText = self.params[perc].hoverText.replace('of the stimuli', f' for stimulus {cs}')
+                    local_val = global_val ** len(cs.strip('()'))
+
                     form[cs] = self.DualLabel(
                         f'{shortnames[perc]}<sub>{cs}</sub>',
                         self,
-                        val,
+                        f'{local_val:.2g}',
                         hoverText = hoverText,
                     ).addRow(layout)
 

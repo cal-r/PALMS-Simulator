@@ -20,7 +20,9 @@ class Group:
             return vals
 
         for k in cs:
-            vals[k] = prod(vals.get(x, default) for x in k.strip('()'))
+            if k not in vals:
+                vals[k] = prod(vals.get(x, default) for x in k.strip('()'))
+
         return vals
 
     def __init__(
