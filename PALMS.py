@@ -21,7 +21,6 @@ from Environment import StimulusHistory, Stimulus
 from AdaptiveType import AdaptiveType
 from CoolTable import CoolTable
 
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib import pyplot
 
 from Util import *
@@ -89,27 +88,15 @@ class PavlovianApp(QDialog):
         parametersGroupBox = ParametersGroupBox(self)
 
         self.alphasBox = AlphasBox(self)
-
-        self.plotCanvas = FigureCanvasQTAgg()
-
-        self.phaseBox = PhaseBox(self, screenshot_ready = self.screenshot_ready)
-
         aboutButton = AboutButton(self)
-
         adaptiveTypeButtons = AdaptiveTypeButtons(self)
 
         iconLabel = QLabel(self)
         iconLabel.setPixmap(self.getPixmap('palms.png'))
         iconLabel.setToolTip('Pavlovian\N{bellhop bell} \N{dog face} Associative\N{handshake} Learning\N{brain} Models\N{bar chart} Simulator\N{desktop computer}.')
 
-        plotBox = QGroupBox('Plot')
-
-        plotBoxLayout = QVBoxLayout()
-        plotBoxLayout.addWidget(self.plotCanvas)
-        plotBoxLayout.addWidget(self.phaseBox)
-        plotBoxLayout.setStretch(0, 1)
-        plotBoxLayout.setStretch(1, 0)
-        plotBox.setLayout(plotBoxLayout)
+        self.plotBox = PlotBox(self)
+        self.plotCanvas = self.plotBox.plotCanvas
 
         actionButtons = ActionButtons(self)
 
@@ -119,19 +106,19 @@ class PavlovianApp(QDialog):
         mainLayout.addWidget(adaptiveTypeButtons, 1, 0, 4, 1)
         mainLayout.addWidget(parametersGroupBox, 1, 1, 4, 1)
         mainLayout.addWidget(self.alphasBox, 1, 2, 4, 1)
-        mainLayout.addWidget(plotBox, 1, 3, 4, 1)
+        mainLayout.addWidget(self.plotBox, 1, 3, 4, 1)
         mainLayout.addWidget(actionButtons, 1, 4, 3, 1)
         mainLayout.addWidget(aboutButton, 4, 4, 1, 1)
-        # mainLayout.setRowStretch(0, 0)
-        # mainLayout.setRowStretch(1, 0)
-        # mainLayout.setRowStretch(2, 0)
-        # mainLayout.setRowStretch(3, 0)
-        # mainLayout.setRowStretch(4, 0)
-        # mainLayout.setColumnStretch(0, 0)
-        # mainLayout.setColumnStretch(1, 0)
-        # mainLayout.setColumnStretch(2, 0)
-        # mainLayout.setColumnStretch(3, 1)
-        # mainLayout.setColumnStretch(4, 0)
+        mainLayout.setRowStretch(0, 0)
+        mainLayout.setRowStretch(1, 0)
+        mainLayout.setRowStretch(2, 0)
+        mainLayout.setRowStretch(3, 0)
+        mainLayout.setRowStretch(4, 0)
+        mainLayout.setColumnStretch(0, 0)
+        mainLayout.setColumnStretch(1, 0)
+        mainLayout.setColumnStretch(2, 0)
+        mainLayout.setColumnStretch(3, 1)
+        mainLayout.setColumnStretch(4, 0)
         self.setLayout(mainLayout)
 
         self.setWindowTitle("PALMS Simulator")
@@ -183,11 +170,6 @@ class PavlovianApp(QDialog):
                 widget.setDisabled(False)
             else:
                 self.per_cs_box[key].setVisible(True)
-
-    def restoreDefaultParameters(self):
-        defaults = AdaptiveType.initial_defaults()
-        for key, value in defaults.items():
-            self.params[key].setText(str(value))
 
     # Convenience function: convert a string to a float, or return None if empty.
     @classmethod
@@ -343,7 +325,7 @@ class PavlovianApp(QDialog):
 
         self.tableWidget.selectColumn(self.phaseNum - 1)
 
-        self.phaseBox.setInfo(self.phaseNum, self.numPhases)
+        self.plotBox.phaseBox.setInfo(self.phaseNum, self.numPhases)
 
         any_rand = any(p[self.phaseNum - 1].rand for p in self.phases.values())
         self.params['num_trials'].box.setDisabled(not any_rand)
@@ -372,7 +354,7 @@ class PavlovianApp(QDialog):
         else:
             ylabel = 'Y'
 
-        self.phaseBox.setCoordInfo(max(1 + event.xdata, 1), ylabel, event.ydata)
+        self.plotBox.phaseBox.setCoordInfo(max(1 + event.xdata, 1), ylabel, event.ydata)
 
     def updateWidgets(self):
         self.tableWidget.update()
