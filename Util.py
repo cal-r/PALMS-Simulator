@@ -1,8 +1,12 @@
-from PyQt6.QtCore import QTimer, Qt, QSize
+from PyQt6.QtCore import QTimer, Qt, QSize, QObject
 from PyQt6.QtWidgets import *
 
-class PhaseBox:
-    def __init__(self, screenshot_ready = False):
+import os
+
+class PhaseBox(QGroupBox):
+    def __init__(self, parent = None, screenshot_ready = False):
+        super().__init__(parent)
+
         self.leftPhaseButton = QPushButton('<')
         self.leftPhaseButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
@@ -29,11 +33,7 @@ class PhaseBox:
             self.xCoordInfo.setVisible(False)
             self.yCoordInfo.setVisible(False)
 
-        self.phaseBox = QGroupBox()
-        self.phaseBox.setLayout(phaseBoxLayout)
-
-    def widget(self):
-        return self.phaseBox
+        self.setLayout(phaseBoxLayout)
 
     def setInfo(self, phaseNum, numPhases):
         self.phaseInfo.setText(f'Phase {self.phaseNum}/{self.numPhases}')
@@ -42,8 +42,10 @@ class PhaseBox:
         self.xCoordInfo.setText(f'Trial: {trial:.0f}')
         self.yCoordInfo.setText(f'{ylabel}: {ydata:.2f}')
 
-class AboutButton:
-    def __init__(self):
+class AboutButton(QPushButton):
+    def __init__(self, parent = None):
+        super().__init__(parent)
+
         self.aboutButton = QPushButton('About')
         self.aboutButton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.aboutButton.clicked.connect(self.aboutPALMS)
@@ -65,4 +67,245 @@ If you have any questions, contact any of the authors.
 2024. All rights reserved. Licensed under the LGPL v3. See LICENSE for details.\
         '''
         QMessageBox.information(self, 'About', about)
-    
+
+class ActionButtons(QWidget):
+    def __init__(self, parent):
+        super().__init__(parent)
+
+        self.parent = parent
+
+        checkedStyle = "QPushButton:checked { background-color: lightblue; font-weight: bold; border: 2px solid #0057D8; }"
+
+        fileButton = QPushButton('Load file')
+        fileButton.clicked.connect(self.openFileDialog)
+        fileButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
+        saveButton = QPushButton("Save Experiment")
+        saveButton.clicked.connect(self.saveExperiment)
+        saveButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
+        plotAlphaButton = QPushButton('Plot α')
+        plotAlphaButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        plotAlphaButton.setStyleSheet(checkedStyle)
+        plotAlphaButton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        plotAlphaButton.clicked.connect(self.togglePlotAlpha)
+        plotAlphaButton.setCheckable(True)
+        self.parent.plot_alpha = False
+
+        toggleRandButton = QPushButton('Toggle Rand')
+        toggleRandButton.clicked.connect(self.toggleRand)
+        toggleRandButton.setCheckable(True)
+        toggleRandButton.setStyleSheet(checkedStyle)
+        toggleRandButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
+        phaseLambdaButton = QPushButton('Per-Phase λ')
+        phaseLambdaButton.clicked.connect(self.togglePhaseLambda)
+        phaseLambdaButton.setCheckable(True)
+        phaseLambdaButton.setStyleSheet(checkedStyle)
+        phaseLambdaButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
+        toggleAlphasButton = QPushButton('Per-CS Parameters')
+        toggleAlphasButton.clicked.connect(self.toggleAlphasBox)
+        toggleAlphasButton.setCheckable(True)
+        toggleAlphasButton.setStyleSheet(checkedStyle)
+        toggleAlphasButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
+        configuralButton = QPushButton('Configural Cues')
+        configuralButton.clicked.connect(self.toggleConfiguralCues)
+        configuralButton.setCheckable(True)
+        configuralButton.setStyleSheet(checkedStyle)
+        configuralButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
+        exportDataButton = QPushButton("Export Data")
+        exportDataButton.clicked.connect(self.exportData)
+        exportDataButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
+        refreshButton = QPushButton("Refresh")
+        refreshButton.clicked.connect(parent.refreshExperiment)
+        refreshButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
+        printButton = QPushButton("Plot")
+        printButton.clicked.connect(self.plotExperiment)
+        printButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
+        hideButton = QPushButton("Toggle Visibility")
+        hideButton.clicked.connect(self.hideExperiment)
+        hideButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
+        modelInfoButton = QPushButton('Model Info')
+        modelInfoButton.clicked.connect(self.showModelInfo)
+        modelInfoButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
+        phaseOptionsLayout = QVBoxLayout()
+        phaseOptionsLayout.addWidget(toggleRandButton)
+        phaseOptionsLayout.addWidget(phaseLambdaButton)
+        phaseOptionsLayout.addWidget(toggleAlphasButton)
+        phaseOptionsLayout.addWidget(configuralButton)
+        phaseOptionsGroupBox = QGroupBox('Phase Options')
+        phaseOptionsGroupBox.setLayout(phaseOptionsLayout)
+
+        plotOptionsLayout = QVBoxLayout()
+        plotOptionsLayout.addWidget(plotAlphaButton)
+        plotOptionsLayout.addWidget(refreshButton)
+        plotOptionsLayout.addWidget(printButton)
+        plotOptionsLayout.addWidget(hideButton)
+        plotOptionsLayout.addWidget(modelInfoButton)
+        plotOptionsGroupBox = QGroupBox("Plot Options")
+        plotOptionsGroupBox.setLayout(plotOptionsLayout)
+
+        fileOptionsLayout = QVBoxLayout()
+        fileOptionsLayout.addWidget(fileButton)
+        fileOptionsLayout.addWidget(saveButton)
+        fileOptionsLayout.addWidget(exportDataButton)
+        fileOptionsGroupBox = QGroupBox("File Options")
+        fileOptionsGroupBox.setLayout(fileOptionsLayout)
+
+        layout = QVBoxLayout()
+        layout.addWidget(phaseOptionsGroupBox)
+        layout.addWidget(plotOptionsGroupBox)
+        layout.addWidget(fileOptionsGroupBox)
+        self.setLayout(layout)
+
+    def openFileDialog(self):
+        file, _ = QFileDialog.getOpenFileName(self, 'Open File', './Experiments')
+        if file == '':
+            return
+
+        self.parent.loadFile(file)
+        self.parent.refreshExperiment()
+
+    def saveExperiment(self):
+        default_directory = os.path.join(os.getcwd(), 'Experiments')
+        os.makedirs(default_directory, exist_ok = True)
+        default_file_name = os.path.join(default_directory, "experiment.rw")
+
+        fileName, _ = QFileDialog.getSaveFileName(self, "Save Experiment", default_file_name, "RW Files (*.rw);;All Files (*)")
+        if not fileName:
+            return
+
+        if not fileName.endswith(".rw"):
+            fileName += ".rw"
+
+        rowCount = self.parent.tableWidget.rowCount()
+        columnCount = self.parent.tableWidget.columnCount()
+        while columnCount > 0 and not any(self.parent.tableWidget.getText(row, columnCount - 1) for row in range(rowCount)):
+            columnCount -= 1
+
+        lines = []
+        for row in range(rowCount):
+            name = self.parent.tableWidget.table.verticalHeaderItem(row).text()
+            phase_strs = [self.parent.tableWidget.getText(row, column) for column in range(columnCount)]
+            if not any(phase_strs):
+                continue
+
+            lines.append(name + '|' + '|'.join(phase_strs))
+
+        with open(fileName, 'w') as file:
+            for line in lines:
+                file.write(line + '\n')
+
+    def togglePlotAlpha(self):
+        if self.parent.plot_alpha:
+            self.parent.plot_alpha = False
+            self.parent.resize(self.parent.width() - self.parent.plotCanvas.width() // 2, self.parent.height())
+        else:
+            self.parent.plot_alpha = True
+            self.parent.resize(self.parent.width() + self.parent.plotCanvas.width(), self.parent.height())
+
+        self.parent.refreshExperiment()
+
+    def toggleRand(self):
+        set_rand = any(p[self.parent.phaseNum - 1].rand for p in self.parent.phases.values())
+        self.parent.tableWidget.setRandInSelection(not set_rand)
+        self.parent.refreshExperiment()
+
+    def togglePhaseLambda(self):
+        set_lambda = any(p[self.parent.phaseNum - 1].lamda is not None for p in self.parent.phases.values())
+        self.parent.tableWidget.setLambdaInSelection(self.parent.floatOr(self.parent.params['lamda'].box.text(), 0) if not set_lambda else None)
+        self.parent.refreshExperiment()
+
+    def toggleAlphasBox(self):
+        if not self.parent.alphasBox.isVisible():
+            self.parent.alphasBox.setVisible(True)
+
+            for perc, form in self.parent.per_cs_param.items():
+                for cs, pair in form.items():
+                    global_val = float(self.parent.params[perc].box.text())
+                    local_val = global_val ** len(cs.strip('()'))
+                    pair.box.setText(f'{local_val:.2g}')
+        else:
+            self.parent.alphasBox.setVisible(False)
+            self.parent.refreshExperiment()
+
+        self.parent.enableParams()
+
+    def toggleConfiguralCues(self):
+        self.parent.configural_cues = not self.parent.configural_cues
+        self.parent.refreshExperiment()
+
+    def exportData(self):
+        fileName, _ = QFileDialog.getSaveFileName(self, "Export Data", "data.csv", "CSV files (*.csv);;All Files (*)")
+        if not fileName:
+            return
+
+        strengths, _, args = self.parent.generateResults()
+
+        with open(fileName, 'w') as file:
+            fieldnames = ['Phase', 'Group', 'CS', 'Trial', 'Assoc']
+            if not args.should_plot_macknhall:
+                fieldnames += ['Alpha']
+            else:
+                fieldnames += ['Alpha Mack', 'Alpha Hall']
+
+            writer = DictWriter(file, fieldnames = fieldnames, extrasaction = 'ignore')
+            writer.writeheader()
+
+            for phase_num, phase in enumerate(strengths, start = 1):
+                for group_cs, hist in phase.items():
+                    group, cs = group_cs.rsplit(' - ', maxsplit = 1)
+                    for trial, stimulus in enumerate(hist, start = 1):
+                        row = {
+                            'Phase': phase_num,
+                            'Group': group,
+                            'CS': cs,
+                            'Trial': trial,
+                            'Assoc': stimulus.assoc,
+                            'Alpha': stimulus.alpha,
+                            'Alpha Mack': stimulus.alpha_mack,
+                            'Alpha Hall': stimulus.alpha_hall,
+                        }
+                        writer.writerow(row)
+
+    def plotExperiment(self):
+        strengths, phases, args = self.parent.generateResults()
+        if len(phases) == 0:
+            return
+
+        figures = generate_figures(
+            strengths,
+            phases = phases,
+            plot_alpha = args.plot_alpha and not AdaptiveType.types()[self.parent.current_adaptive_type].should_plot_macknhall(),
+            plot_macknhall = args.plot_macknhall and AdaptiveType.types()[self.parent.current_adaptive_type].should_plot_macknhall(),
+            dpi = self.parent.dpi,
+            ticker_threshold = True,
+        )
+
+        for fig in figures:
+            fig.canvas.mpl_connect('pick_event', self.parent.pickLine)
+            fig.show()
+        return strengths
+
+    def hideExperiment(self):
+        value = not all(self.parent.line_hidden.values())
+        self.parent.line_hidden = {k: value for k in self.parent.line_hidden.keys()}
+        self.parent.refreshFigure()
+
+    def showModelInfo(self):
+        root = getattr(sys, '_MEIPASS', '.')
+        image_filename = AdaptiveType.types()[self.parent.current_adaptive_type].image_filename
+        image_path = os.path.join(root, 'resources', image_filename)
+        try:
+            image = Image.open(image_path)
+            image.show()
+        except (FileNotFoundError, IsADirectoryError):
+             QMessageBox.warning(self, '', 'Rendered formula file not found')

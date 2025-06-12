@@ -87,14 +87,15 @@ class PavlovianApp(QDialog):
         self.tableWidget.table.setMaximumHeight(120)
         self.tableWidget.onCellChange(self.refreshExperiment)
 
-        self.addActionsButtons()
         self.createParametersGroupBox()
         self.createAlphasBox()
         self.plotCanvas = FigureCanvasQTAgg()
-        self.phaseBox = PhaseBox(self.prevPhase, self.nextPhase, screenshot_ready = self.screenshot_ready)
-        self.phaseBox.leftPhaseButton.clicked.connect(left_callback)
-        self.phaseBox.rightPhaseButton.clicked.connect(right_callback)
-        aboutButton = AboutButton()
+
+        self.phaseBox = PhaseBox(self, screenshot_ready = self.screenshot_ready)
+        self.phaseBox.leftPhaseButton.clicked.connect(self.prevPhase)
+        self.phaseBox.rightPhaseButton.clicked.connect(self.nextPhase)
+
+        aboutButton = AboutButton(self)
 
         adaptiveTypeButtons = self.addAdaptiveTypeButtons()
 
@@ -106,13 +107,14 @@ class PavlovianApp(QDialog):
         self.refreshAlphasGroupBox(set())
         plotBox = QGroupBox('Plot')
 
-
         plotBoxLayout = QVBoxLayout()
         plotBoxLayout.addWidget(self.plotCanvas)
-        plotBoxLayout.addWidget(self.phaseBox.widget())
+        plotBoxLayout.addWidget(self.phaseBox)
         plotBoxLayout.setStretch(0, 1)
         plotBoxLayout.setStretch(1, 0)
         plotBox.setLayout(plotBoxLayout)
+
+        actionButtons = ActionButtons(self)
 
         mainLayout = QGridLayout()
         mainLayout.addWidget(self.tableWidget, 0, 0, 1, 4)
@@ -121,10 +123,8 @@ class PavlovianApp(QDialog):
         mainLayout.addWidget(self.parametersGroupBox, 1, 1, 4, 1)
         mainLayout.addWidget(self.alphasBox, 1, 2, 4, 1)
         mainLayout.addWidget(plotBox, 1, 3, 4, 1)
-        mainLayout.addWidget(self.phaseOptionsGroupBox, 1, 4, 1, 1)
-        mainLayout.addWidget(self.plotOptionsGroupBox, 2, 4, 1, 1)
-        mainLayout.addWidget(self.fileOptionsGroupBox, 3, 4, 1, 1)
-        mainLayout.addWidget(aboutButton.widget(), 4, 4, 1, 1)
+        mainLayout.addWidget(actionButtons, 1, 4, 3, 1)
+        mainLayout.addWidget(aboutButton, 4, 4, 1, 1)
         # mainLayout.setRowStretch(0, 0)
         # mainLayout.setRowStretch(1, 0)
         # mainLayout.setRowStretch(2, 0)
@@ -142,16 +142,6 @@ class PavlovianApp(QDialog):
         adaptiveTypeButtons.children()[1].click()
 
         self.resize(1400, 600)
-
-    def showModelInfo(self):
-        root = getattr(sys, '_MEIPASS', '.')
-        image_filename = AdaptiveType.types()[self.current_adaptive_type].image_filename
-        image_path = os.path.join(root, 'resources', image_filename)
-        try:
-            image = Image.open(image_path)
-            image.show()
-        except (FileNotFoundError, IsADirectoryError):
-             QMessageBox.warning(self, '', 'Rendered formula file not found')
 
     def addAdaptiveTypeButtons(self):
         buttons = QGroupBox('Adaptive Type')
@@ -191,192 +181,8 @@ class PavlovianApp(QDialog):
         pixmap = QPixmap(os.path.join(root, 'resources', filename), flags = Qt.ImageConversionFlag.NoFormatConversion)
         return pixmap.scaled(150, 150, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
 
-    def openFileDialog(self):
-        file, _ = QFileDialog.getOpenFileName(self, 'Open File', './Experiments')
-        if file == '':
-            return
-
-        self.loadFile(file)
-        self.refreshExperiment()
-
     def addActionsButtons(self):
-        self.phaseOptionsGroupBox = QGroupBox('Phase Options')
-        self.plotOptionsGroupBox = QGroupBox("Plot Options")
-        self.fileOptionsGroupBox = QGroupBox("File Options")
-
-        self.fileButton = QPushButton('Load file')
-        self.fileButton.clicked.connect(self.openFileDialog)
-        self.fileButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-
-        self.saveButton = QPushButton("Save Experiment")
-        self.saveButton.clicked.connect(self.saveExperiment)
-        self.saveButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-
-        self.expand_canvas = False
-
-        self.plotAlphaButton = QPushButton('Plot α')
-        self.plotAlphaButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        checkedStyle = "QPushButton:checked { background-color: lightblue; font-weight: bold; border: 2px solid #0057D8; }"
-        self.plotAlphaButton.setStyleSheet(checkedStyle)
-        # self.plotAlphaButton.setFixedHeight(50)
-        self.plotAlphaButton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-        self.plotAlphaButton.clicked.connect(self.togglePlotAlpha)
-        self.plotAlphaButton.setCheckable(True)
-        self.plot_alpha = False
-
-        self.toggleRandButton = QPushButton('Toggle Rand')
-        self.toggleRandButton.clicked.connect(self.toggleRand)
-        self.toggleRandButton.setCheckable(True)
-        self.toggleRandButton.setStyleSheet(checkedStyle)
-        self.toggleRandButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-
-        self.phaseLambdaButton = QPushButton('Per-Phase λ')
-        self.phaseLambdaButton.clicked.connect(self.togglePhaseLambda)
-        self.phaseLambdaButton.setCheckable(True)
-        self.phaseLambdaButton.setStyleSheet(checkedStyle)
-        self.phaseLambdaButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-
-        self.toggleAlphasButton = QPushButton('Per-CS Parameters')
-        self.toggleAlphasButton.clicked.connect(self.toggleAlphasBox)
-        self.toggleAlphasButton.setCheckable(True)
-        self.toggleAlphasButton.setStyleSheet(checkedStyle)
-        self.toggleAlphasButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-
-        self.configuralButton = QPushButton('Configural Cues')
-        self.configuralButton.clicked.connect(self.toggleConfiguralCues)
-        self.configuralButton.setCheckable(True)
-        self.configuralButton.setStyleSheet(checkedStyle)
-        self.configuralButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-
-        self.exportDataButton = QPushButton("Export Data")
-        self.exportDataButton.clicked.connect(self.exportData)
-        self.exportDataButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-
-        self.refreshButton = QPushButton("Refresh")
-        self.refreshButton.clicked.connect(self.refreshExperiment)
-        self.refreshButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-
-        self.printButton = QPushButton("Plot")
-        self.printButton.clicked.connect(self.plotExperiment)
-        self.printButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-
-        self.hideButton = QPushButton("Toggle Visibility")
-        self.hideButton.clicked.connect(self.hideExperiment)
-        self.hideButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-
-        self.modelInfoButton = QPushButton('Model Info')
-        self.modelInfoButton.clicked.connect(self.showModelInfo)
-        self.modelInfoButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-
-        phaseOptionsLayout = QVBoxLayout()
-        phaseOptionsLayout.addWidget(self.toggleRandButton)
-        phaseOptionsLayout.addWidget(self.phaseLambdaButton)
-        phaseOptionsLayout.addWidget(self.toggleAlphasButton)
-        phaseOptionsLayout.addWidget(self.configuralButton)
-        self.phaseOptionsGroupBox.setLayout(phaseOptionsLayout)
-
-        plotOptionsLayout = QVBoxLayout()
-        plotOptionsLayout.addWidget(self.plotAlphaButton)
-        plotOptionsLayout.addWidget(self.refreshButton)
-        plotOptionsLayout.addWidget(self.printButton)
-        plotOptionsLayout.addWidget(self.hideButton)
-        plotOptionsLayout.addWidget(self.modelInfoButton)
-        self.plotOptionsGroupBox.setLayout(plotOptionsLayout)
-
-
-        fileOptionsLayout = QVBoxLayout()
-        fileOptionsLayout.addWidget(self.fileButton)
-        fileOptionsLayout.addWidget(self.saveButton)
-        fileOptionsLayout.addWidget(self.exportDataButton)
-        self.fileOptionsGroupBox.setLayout(fileOptionsLayout)
-
-    def toggleRand(self):
-        set_rand = any(p[self.phaseNum - 1].rand for p in self.phases.values())
-        self.tableWidget.setRandInSelection(not set_rand)
-        self.refreshExperiment()
-
-    def hideExperiment(self):
-        value = not all(self.line_hidden.values())
-        self.line_hidden = {k: value for k in self.line_hidden.keys()}
-        self.refreshFigure()
-
-    def togglePhaseLambda(self):
-        set_lambda = any(p[self.phaseNum - 1].lamda is not None for p in self.phases.values())
-        self.tableWidget.setLambdaInSelection(self.floatOr(self.params['lamda'].box.text(), 0) if not set_lambda else None)
-        self.refreshExperiment()
-
-    def togglePlotAlpha(self):
-        if self.plot_alpha:
-            self.plot_alpha = False
-            self.resize(self.width() - self.plotCanvas.width() // 2, self.height())
-        else:
-            self.plot_alpha = True
-            self.resize(self.width() + self.plotCanvas.width(), self.height())
-
-        self.refreshExperiment()
-
-    def exportData(self):
-        fileName, _ = QFileDialog.getSaveFileName(self, "Export Data", "data.csv", "CSV files (*.csv);;All Files (*)")
-        if not fileName:
-            return
-
-        strengths, _, args = self.generateResults()
-
-        with open(fileName, 'w') as file:
-            fieldnames = ['Phase', 'Group', 'CS', 'Trial', 'Assoc']
-            if not args.should_plot_macknhall:
-                fieldnames += ['Alpha']
-            else:
-                fieldnames += ['Alpha Mack', 'Alpha Hall']
-
-            writer = DictWriter(file, fieldnames = fieldnames, extrasaction = 'ignore')
-            writer.writeheader()
-
-            for phase_num, phase in enumerate(strengths, start = 1):
-                for group_cs, hist in phase.items():
-                    group, cs = group_cs.rsplit(' - ', maxsplit = 1)
-                    for trial, stimulus in enumerate(hist, start = 1):
-                        row = {
-                            'Phase': phase_num,
-                            'Group': group,
-                            'CS': cs,
-                            'Trial': trial,
-                            'Assoc': stimulus.assoc,
-                            'Alpha': stimulus.alpha,
-                            'Alpha Mack': stimulus.alpha_mack,
-                            'Alpha Hall': stimulus.alpha_hall,
-                        }
-                        writer.writerow(row)
-
-    def saveExperiment(self):
-        default_directory = os.path.join(os.getcwd(), 'Experiments')
-        os.makedirs(default_directory, exist_ok = True)
-        default_file_name = os.path.join(default_directory, "experiment.rw")
-
-        fileName, _ = QFileDialog.getSaveFileName(self, "Save Experiment", default_file_name, "RW Files (*.rw);;All Files (*)")
-        if not fileName:
-            return
-
-        if not fileName.endswith(".rw"):
-            fileName += ".rw"
-
-        rowCount = self.tableWidget.rowCount()
-        columnCount = self.tableWidget.columnCount()
-        while columnCount > 0 and not any(self.tableWidget.getText(row, columnCount - 1) for row in range(rowCount)):
-            columnCount -= 1
-
-        lines = []
-        for row in range(rowCount):
-            name = self.tableWidget.table.verticalHeaderItem(row).text()
-            phase_strs = [self.tableWidget.getText(row, column) for column in range(columnCount)]
-            if not any(phase_strs):
-                continue
-
-            lines.append(name + '|' + '|'.join(phase_strs))
-
-        with open(fileName, 'w') as file:
-            for line in lines:
-                file.write(line + '\n')
+        return ActionButtons()
 
     def changeAdaptiveType(self, button):
         self.current_adaptive_type = button.adaptive_type
@@ -473,25 +279,6 @@ class PavlovianApp(QDialog):
 
         self.alphasBox = QGroupBox('Per-CS')
         self.alphasBox.setLayout(layout)
-
-    def toggleAlphasBox(self):
-        if not self.alphasBox.isVisible():
-            self.alphasBox.setVisible(True)
-
-            for perc, form in self.per_cs_param.items():
-                for cs, pair in form.items():
-                    global_val = float(self.params[perc].box.text())
-                    local_val = global_val ** len(cs.strip('()'))
-                    pair.box.setText(f'{local_val:.2g}')
-        else:
-            self.alphasBox.setVisible(False)
-            self.refreshExperiment()
-
-        self.enableParams()
-
-    def toggleConfiguralCues(self):
-        self.configural_cues = not self.configural_cues
-        self.refreshExperiment()
 
     def enableParams(self):
         for key in AdaptiveType.parameters():
@@ -730,25 +517,6 @@ class PavlovianApp(QDialog):
             ylabel = 'Y'
 
         self.phaseBox.setCoordInfo(max(1 + event.xdata, 1), ylabel, event.ydata)
-
-    def plotExperiment(self):
-        strengths, phases, args = self.generateResults()
-        if len(phases) == 0:
-            return
-
-        figures = generate_figures(
-            strengths,
-            phases = phases,
-            plot_alpha = args.plot_alpha and not AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
-            plot_macknhall = args.plot_macknhall and AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
-            dpi = self.dpi,
-            ticker_threshold = True,
-        )
-
-        for fig in figures:
-            fig.canvas.mpl_connect('pick_event', self.pickLine)
-            fig.show()
-        return strengths
 
     def updateWidgets(self):
         self.tableWidget.update()
