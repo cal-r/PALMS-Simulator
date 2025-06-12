@@ -2,10 +2,9 @@ from PyQt6.QtCore import QTimer, Qt, QSize
 from PyQt6.QtWidgets import *
 
 class PhaseBox:
-    def __init__(self, left_callback, right_callback, screenshot_ready = False):
-        leftPhaseButton = QPushButton('<')
-        leftPhaseButton.clicked.connect(left_callback)
-        leftPhaseButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+    def __init__(self, screenshot_ready = False):
+        self.leftPhaseButton = QPushButton('<')
+        self.leftPhaseButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         self.phaseInfo = QLabel('')
         self.phaseInfo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
@@ -15,16 +14,15 @@ class PhaseBox:
         self.yCoordInfo = QLabel('')
         self.yCoordInfo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
-        rightPhaseButton = QPushButton('>')
-        rightPhaseButton.clicked.connect(right_callback)
-        rightPhaseButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.rightPhaseButton = QPushButton('>')
+        self.rightPhaseButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         phaseBoxLayout = QHBoxLayout()
-        phaseBoxLayout.addWidget(leftPhaseButton)
+        phaseBoxLayout.addWidget(self.leftPhaseButton)
         phaseBoxLayout.addWidget(self.xCoordInfo, stretch = 1, alignment = Qt.AlignmentFlag.AlignLeft)
         phaseBoxLayout.addWidget(self.phaseInfo, stretch = 1, alignment = Qt.AlignmentFlag.AlignCenter)
         phaseBoxLayout.addWidget(self.yCoordInfo, stretch = 1, alignment = Qt.AlignmentFlag.AlignRight)
-        phaseBoxLayout.addWidget(rightPhaseButton)
+        phaseBoxLayout.addWidget(self.rightPhaseButton)
         phaseBoxLayout.setSpacing(50)
 
         if screenshot_ready:
