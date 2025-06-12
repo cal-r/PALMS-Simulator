@@ -125,7 +125,7 @@ class PavlovianApp(QDialog):
         self.setWindowFlags(Qt.WindowType.Window | Qt.WindowType.WindowCloseButtonHint | Qt.WindowType.WindowMaximizeButtonHint)
         adaptiveTypeButtons.children()[1].click()
 
-        self.resize(1400, 600)
+        # self.resize(1400, 600)
 
     def loadFile(self, filename):
         lines = [x.strip() for x in open(filename)]
