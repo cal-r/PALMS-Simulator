@@ -1,4 +1,5 @@
 from __future__ import annotations
+import ipdb
 
 import os
 if 'DISPLAY' in os.environ:
@@ -12,7 +13,6 @@ from collections import defaultdict
 from contextlib import nullcontext
 from csv import DictWriter
 from itertools import chain, zip_longest
-from typing import cast
 from PyQt6.QtCore import QTimer, Qt, QSize
 from PyQt6.QtGui import QFont, QPixmap
 from PyQt6.QtWidgets import *
@@ -87,8 +87,10 @@ class PavlovianApp(QDialog):
         self.tableWidget.table.setMaximumHeight(120)
         self.tableWidget.onCellChange(self.refreshExperiment)
 
-        self.parametersGroupBox = ParametersGroupBox(self)
-        self.createAlphasBox()
+        parametersGroupBox = ParametersGroupBox(self)
+
+        self.alphasBox = AlphasBox(self)
+
         self.plotCanvas = FigureCanvasQTAgg()
 
         self.phaseBox = PhaseBox(self, screenshot_ready = self.screenshot_ready)
@@ -103,8 +105,6 @@ class PavlovianApp(QDialog):
         iconLabel.setPixmap(self.getPixmap('palms.png'))
         iconLabel.setToolTip('Pavlovian\N{bellhop bell} \N{dog face} Associative\N{handshake} Learning\N{brain} Models\N{bar chart} Simulator\N{desktop computer}.')
 
-        self.alphasBox.setVisible(False)
-        self.refreshAlphasGroupBox(set())
         plotBox = QGroupBox('Plot')
 
         plotBoxLayout = QVBoxLayout()
@@ -120,7 +120,7 @@ class PavlovianApp(QDialog):
         mainLayout.addWidget(self.tableWidget, 0, 0, 1, 4)
         mainLayout.addWidget(iconLabel, 0, 4, 1, 1, alignment = Qt.AlignmentFlag.AlignCenter)
         mainLayout.addWidget(adaptiveTypeButtons, 1, 0, 4, 1)
-        mainLayout.addWidget(self.parametersGroupBox, 1, 1, 4, 1)
+        mainLayout.addWidget(parametersGroupBox, 1, 1, 4, 1)
         mainLayout.addWidget(self.alphasBox, 1, 2, 4, 1)
         mainLayout.addWidget(plotBox, 1, 3, 4, 1)
         mainLayout.addWidget(actionButtons, 1, 4, 3, 1)
@@ -192,8 +192,9 @@ class PavlovianApp(QDialog):
         for key, default in AdaptiveType.types()[self.current_adaptive_type].defaults().items():
             self.params[key].box.setText(str(default))
             if key in self.per_cs_param:
-                for pair in self.per_cs_param[key].values():
-                    pair.box.setText(str(default ** len(key.strip('()'))))
+                for cs, pair in self.per_cs_param[key].items():
+                    val = default ** len(cs.strip('()'))
+                    pair.box.setText(str(val))
 
         self.refreshExperiment()
 
@@ -214,20 +215,6 @@ class PavlovianApp(QDialog):
             layout.addRow(self.label, self.box)
             return self
 
-    def createAlphasBox(self):
-        layout = QHBoxLayout()
-        for perc in self.per_cs_param.keys():
-            boxLayout = QFormLayout()
-            boxLayout.setContentsMargins(0, 0, 0, 0)
-            boxLayout.setSpacing(10)
-
-            self.per_cs_box[perc] = QWidget()
-            self.per_cs_box[perc].setLayout(boxLayout)
-            layout.addWidget(self.per_cs_box[perc])
-
-        self.alphasBox = QGroupBox('Per-CS')
-        self.alphasBox.setLayout(layout)
-
     def enableParams(self):
         for key in AdaptiveType.parameters():
             widget = self.params[key].box
@@ -242,39 +229,6 @@ class PavlovianApp(QDialog):
                 widget.setDisabled(False)
             else:
                 self.per_cs_box[key].setVisible(True)
-
-    def refreshAlphasGroupBox(self, css: set[str]):
-        shortnames = {
-            'alpha': 'α',
-            'alpha_mack': 'αᴹ',
-            'alpha_hall': 'αᴴ',
-            'salience': 'S',
-            'habituation': 'h',
-        }
-        for perc, form in self.per_cs_param.items():
-            global_val = float(self.params[perc].box.text())
-            layout = cast(QFormLayout, self.per_cs_box[perc].layout())
-
-            to_remove = []
-            for e, (cs, pair) in enumerate(form.items()):
-                if cs not in css:
-                    to_remove.append((e, cs))
-
-            for (rowNum, cs) in to_remove[::-1]:
-                layout.removeRow(rowNum)
-                del form[cs]
-
-            for cs in sorted(css):
-                if cs not in form:
-                    hoverText = self.params[perc].hoverText.replace('of the stimuli', f' for stimulus {cs}')
-                    local_val = global_val ** len(cs.strip('()'))
-
-                    form[cs] = self.DualLabel(
-                        f'{shortnames[perc]}<sub>{cs}</sub>',
-                        self,
-                        f'{local_val:.2g}',
-                        hoverText = hoverText,
-                    ).addRow(layout)
 
     def restoreDefaultParameters(self):
         defaults = AdaptiveType.initial_defaults()
@@ -387,11 +341,11 @@ class PavlovianApp(QDialog):
 
         strengths, phases, args = self.generateResults()
         if len(phases) == 0:
-            self.refreshAlphasGroupBox(set())
+            self.alphasBox.clear()
             return
 
         css = set.union(*[phase.cs() for group in phases.values() for phase in group])
-        self.refreshAlphasGroupBox(css)
+        self.alphasBox.refresh(css)
 
         self.numPhases = max(len(v) for v in phases.values())
         self.phaseNum = min(self.phaseNum, self.numPhases)
