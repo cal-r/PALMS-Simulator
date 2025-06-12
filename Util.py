@@ -1,6 +1,8 @@
 from PyQt6.QtCore import QTimer, Qt, QSize, QObject
 from PyQt6.QtWidgets import *
 
+from typing import cast
+
 from AdaptiveType import AdaptiveType
 
 import os
@@ -359,3 +361,61 @@ class ParametersGroupBox(QGroupBox):
         params.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
         self.setLayout(params)
         self.setMaximumWidth(90)
+
+
+class AlphasBox(QGroupBox):
+    def __init__(self, parent):
+        super().__init__('Per-CS', parent = parent)
+        self.parent = parent
+
+        layout = QHBoxLayout()
+        for perc in parent.per_cs_param.keys():
+            boxLayout = QFormLayout()
+            boxLayout.setContentsMargins(0, 0, 0, 0)
+            boxLayout.setSpacing(10)
+
+            parent.per_cs_box[perc] = QWidget()
+            parent.per_cs_box[perc].setLayout(boxLayout)
+            layout.addWidget(parent.per_cs_box[perc])
+
+        self.setLayout(layout)
+        self.setVisible(False)
+        self.clear()
+
+    def clear(self):
+        self.refresh(set())
+
+    def refresh(self, css: set[str]):
+        parent = self.parent
+
+        shortnames = {
+            'alpha': 'α',
+            'alpha_mack': 'αᴹ',
+            'alpha_hall': 'αᴴ',
+            'salience': 'S',
+            'habituation': 'h',
+        }
+        for perc, form in parent.per_cs_param.items():
+            global_val = float(parent.params[perc].box.text())
+            layout = cast(QFormLayout, parent.per_cs_box[perc].layout())
+
+            to_remove = []
+            for e, (cs, pair) in enumerate(form.items()):
+                if cs not in css:
+                    to_remove.append((e, cs))
+
+            for (rowNum, cs) in to_remove[::-1]:
+                layout.removeRow(rowNum)
+                del form[cs]
+
+            for cs in sorted(css):
+                if cs not in form:
+                    hoverText = parent.params[perc].hoverText.replace('of the stimuli', f' for stimulus {cs}')
+                    local_val = global_val ** len(cs.strip('()'))
+
+                    form[cs] = parent.DualLabel(
+                        f'{shortnames[perc]}<sub>{cs}</sub>',
+                        parent,
+                        f'{local_val:.2g}',
+                        hoverText = hoverText,
+                    ).addRow(layout)
