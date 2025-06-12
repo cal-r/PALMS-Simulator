@@ -1,5 +1,4 @@
 from __future__ import annotations
-import ipdb
 
 import os
 if 'DISPLAY' in os.environ:
@@ -8,12 +7,10 @@ if 'DISPLAY' in os.environ:
 import sys
 import Simulator
 
-from argparse import ArgumentParser, REMAINDER
+from argparse import ArgumentParser
 from collections import defaultdict
-from contextlib import nullcontext
-from csv import DictWriter
-from itertools import chain, zip_longest
-from PyQt6.QtCore import QTimer, Qt, QSize
+from itertools import zip_longest
+from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtGui import QFont, QPixmap
 from PyQt6.QtWidgets import *
 
@@ -47,8 +44,10 @@ class PavlovianApp(QDialog):
     configural_cues: bool
 
     line_hidden: dict[str, bool]
+    plot_alpha: bool
 
     dpi: int
+
     def __init__(self, dpi = 200, screenshot_ready = False, parent=None):
         super(PavlovianApp, self).__init__(parent)
 
@@ -240,11 +239,11 @@ class PavlovianApp(QDialog):
             saliences = self.csPercDict('salience'),
 
             # Data for MLAB Hybrid.
-            habituations = defaultdict(lambda: None),
-            habituation = None,
-            rho = None,
-            nu = None,
-            kay = None,
+            habituations = defaultdict(lambda: 0),
+            habituation = 0,
+            rho = 0,
+            nu = 0,
+            kay = 0,
             # habituations = self.csPercDict('habituation'),
             # rho = self.floatOr(self.params['rho'].box.text(), 0),
             # nu = self.floatOr(self.params['nu'].box.text(), 0),

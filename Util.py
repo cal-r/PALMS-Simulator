@@ -1,11 +1,11 @@
-from PyQt6.QtCore import QTimer, Qt, QSize, QObject
-from PyQt6.QtWidgets import *
-
+import os
+from csv import DictWriter
 from typing import cast
 
-from AdaptiveType import AdaptiveType
+from PyQt6.QtCore import QTimer, Qt
+from PyQt6.QtWidgets import *
 
-import os
+from AdaptiveType import AdaptiveType
 
 class PhaseBox(QGroupBox):
     def __init__(self, parent = None, screenshot_ready = False):

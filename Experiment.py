@@ -83,7 +83,6 @@ class RWArgs:
 
     habituations: dict[str, float]
     habituation: float
-
     rho: float
     nu: float
     kay: float
