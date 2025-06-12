@@ -94,12 +94,10 @@ class PavlovianApp(QDialog):
         self.plotCanvas = FigureCanvasQTAgg()
 
         self.phaseBox = PhaseBox(self, screenshot_ready = self.screenshot_ready)
-        self.phaseBox.leftPhaseButton.clicked.connect(self.prevPhase)
-        self.phaseBox.rightPhaseButton.clicked.connect(self.nextPhase)
 
         aboutButton = AboutButton(self)
 
-        adaptiveTypeButtons = self.addAdaptiveTypeButtons()
+        adaptiveTypeButtons = AdaptiveTypeButtons(self)
 
         iconLabel = QLabel(self)
         iconLabel.setPixmap(self.getPixmap('palms.png'))
@@ -143,35 +141,6 @@ class PavlovianApp(QDialog):
 
         self.resize(1400, 600)
 
-    def addAdaptiveTypeButtons(self):
-        buttons = QGroupBox('Adaptive Type')
-        layout = QVBoxLayout()
-        layout.setSpacing(0)
-        layout.setContentsMargins(0, 0, 0, 0)
-
-        buttonGroup = QButtonGroup(self)
-        buttonGroup.setExclusive(True)
-
-        for i, adaptive_type in enumerate(self.adaptive_types):
-            button = QPushButton(adaptive_type)
-            button.adaptive_type = adaptive_type
-            button.setCheckable(True)
-            button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-
-            noMarginStyle = ""
-            checkedStyle = "QPushButton:checked { background-color: lightblue; font-weight: bold; border: 2px solid #0057D8; }"
-            button.setStyleSheet(noMarginStyle + checkedStyle)
-            button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-
-            buttonGroup.addButton(button, i)
-            layout.addWidget(button)
-
-            button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-
-        buttonGroup.buttonClicked.connect(self.changeAdaptiveType)
-        buttons.setLayout(layout)
-        return buttons
-
     def loadFile(self, filename):
         lines = [x.strip() for x in open(filename)]
         self.tableWidget.loadFile(lines)
@@ -183,20 +152,6 @@ class PavlovianApp(QDialog):
 
     def addActionsButtons(self):
         return ActionButtons()
-
-    def changeAdaptiveType(self, button):
-        self.current_adaptive_type = button.adaptive_type
-        self.enabled_params = set(AdaptiveType.types()[self.current_adaptive_type].parameters())
-        self.enableParams()
-
-        for key, default in AdaptiveType.types()[self.current_adaptive_type].defaults().items():
-            self.params[key].box.setText(str(default))
-            if key in self.per_cs_param:
-                for cs, pair in self.per_cs_param[key].items():
-                    val = default ** len(cs.strip('()'))
-                    pair.box.setText(str(val))
-
-        self.refreshExperiment()
 
     class DualLabel:
         def __init__(self, text, parent, default, font = 'Monospace', hoverText = None):
@@ -426,20 +381,6 @@ class PavlovianApp(QDialog):
         self.tableWidget.updateSizes()
         self.update()
         self.repaint()
-
-    def prevPhase(self):
-        if self.phaseNum == 1:
-            return
-
-        self.phaseNum -= 1
-        self.refreshFigure()
-
-    def nextPhase(self):
-        if self.phaseNum >= self.numPhases:
-            return
-
-        self.phaseNum += 1
-        self.refreshFigure()
 
 def parse_args():
     if len(sys.argv) > 1 and sys.argv[1].lower() == 'cli':
