@@ -113,7 +113,7 @@ class ActionButtons(QWidget):
         plotAlphaButton = QPushButton('Plot α')
         plotAlphaButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         plotAlphaButton.setStyleSheet(checkedStyle)
-        plotAlphaButton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+        plotAlphaButton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         plotAlphaButton.clicked.connect(self.togglePlotAlpha)
         plotAlphaButton.setCheckable(True)
         self.parent.plot_alpha = False
