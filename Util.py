@@ -1,6 +1,8 @@
 from PyQt6.QtCore import QTimer, Qt, QSize, QObject
 from PyQt6.QtWidgets import *
 
+from AdaptiveType import AdaptiveType
+
 import os
 
 class PhaseBox(QGroupBox):
@@ -36,7 +38,7 @@ class PhaseBox(QGroupBox):
         self.setLayout(phaseBoxLayout)
 
     def setInfo(self, phaseNum, numPhases):
-        self.phaseInfo.setText(f'Phase {self.phaseNum}/{self.numPhases}')
+        self.phaseInfo.setText(f'Phase {phaseNum}/{numPhases}')
 
     def setCoordInfo(self, trial, ylabel, ydata):
         self.xCoordInfo.setText(f'Trial: {trial:.0f}')
@@ -44,15 +46,11 @@ class PhaseBox(QGroupBox):
 
 class AboutButton(QPushButton):
     def __init__(self, parent = None):
-        super().__init__(parent)
+        super().__init__('About', parent = parent)
 
-        self.aboutButton = QPushButton('About')
-        self.aboutButton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        self.aboutButton.clicked.connect(self.aboutPALMS)
-        self.aboutButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-
-    def widget(self):
-        return self.aboutButton
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.clicked.connect(self.aboutPALMS)
+        self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
     def aboutPALMS(self):
         about = '''\
@@ -309,3 +307,55 @@ class ActionButtons(QWidget):
             image.show()
         except (FileNotFoundError, IsADirectoryError):
              QMessageBox.warning(self, '', 'Rendered formula file not found')
+
+class ParametersGroupBox(QGroupBox):
+    def __init__(self, parent):
+        super().__init__('Parameters')
+
+        short_names = dict(
+            alpha = "α ",
+            alpha_mack = "αᴹ",
+            alpha_hall = "αᴴ",
+            salience = "S ",
+            habituation = "h ",
+            kay = "Κ ",
+            lamda = "λ ",
+            beta = "β⁺",
+            betan = "β⁻",
+            gamma = "γ ",
+            thetaE = "θᴱ",
+            thetaI = "θᴵ",
+            rho = "ρ ",
+            nu = "ν ",
+            num_trials = "Nº",
+        )
+
+        descriptions = dict(
+            alpha = "Initial learning rate of the stimuli. α ∈ [0, 1].",
+            alpha_mack = "Initial learning rate of the stimuli based on Mackintosh's model, which controls how much of an stumulus is remembered between steps. αᴹ ∈ [0, 1].",
+            alpha_hall = "Initial learning rate of the stimuli based on Hall's model, which controls how much a new stimulus affects the association. αᴴ ∈ [0, 1].",
+            salience = "Initial salience of the stimuli.",
+            habituation = "Initial habituation of the stimuli.",
+            kay = "Constant for hybrid model.",
+            lamda = "Asymptote of learning with positive stimuli. λ ∈ (0, 1].",
+            rho = "Parameter for MLAB hybrid formulation.",
+            nu = "Parameter for MLAB hybrid formulation.",
+            beta = "Associativity of positive US.",
+            betan = "Associativity of negative US.",
+            gamma = "Weight parameter for past trials.",
+            thetaE = "Excitory theta based on LePelley's model.",
+            thetaI = "Inhibitory theta based on LePelley's model.",
+            num_trials = "Number of random trials per experiment.",
+        )
+        params = QFormLayout()
+        params.setSpacing(10)
+        for key, val in AdaptiveType.initial_defaults().items():
+            label = parent.DualLabel(short_names[key], parent, str(val), hoverText = descriptions[key]).addRow(params)
+            parent.params[key] = label
+
+        parent.params['num_trials'].box.setGeometry(100, 120, 120, 60)
+        parent.params['num_trials'].box.setDisabled(True)
+
+        params.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
+        self.setLayout(params)
+        self.setMaximumWidth(90)
