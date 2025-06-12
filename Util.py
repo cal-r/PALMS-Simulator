@@ -3,6 +3,8 @@ import sys
 from csv import DictWriter
 from typing import cast
 
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+
 from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtWidgets import *
 
@@ -490,3 +492,17 @@ class AdaptiveTypeButtons(QGroupBox):
 
         parent.refreshExperiment()
 
+class PlotBox(QGroupBox):
+    def __init__(self, parent):
+        super().__init__('Plot', parent = parent)
+        self.parent = parent
+
+        self.plotCanvas = FigureCanvasQTAgg()
+        self.phaseBox = PhaseBox(parent, screenshot_ready = False)
+
+        layout = QVBoxLayout()
+        layout.addWidget(self.plotCanvas)
+        layout.addWidget(self.phaseBox)
+        layout.setStretch(0, 1)
+        layout.setStretch(1, 0)
+        self.setLayout(layout)
