@@ -92,6 +92,10 @@ class PavlovianApp(QDialog):
         self.createAlphasBox()
         self.plotCanvas = FigureCanvasQTAgg()
         self.phaseBox = PhaseBox(self.prevPhase, self.nextPhase, screenshot_ready = self.screenshot_ready)
+        self.phaseBox.leftPhaseButton.clicked.connect(left_callback)
+        self.phaseBox.rightPhaseButton.clicked.connect(right_callback)
+        aboutButton = AboutButton()
+
         adaptiveTypeButtons = self.addAdaptiveTypeButtons()
 
         iconLabel = QLabel(self)
@@ -109,8 +113,6 @@ class PavlovianApp(QDialog):
         plotBoxLayout.setStretch(0, 1)
         plotBoxLayout.setStretch(1, 0)
         plotBox.setLayout(plotBoxLayout)
-
-        aboutButton = AboutButton()
 
         mainLayout = QGridLayout()
         mainLayout.addWidget(self.tableWidget, 0, 0, 1, 4)
