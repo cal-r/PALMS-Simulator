@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import sys
 if 'DISPLAY' in os.environ:
     os.environ["QT_QPA_PLATFORM"] = "xcb"
 
@@ -22,7 +23,6 @@ from CoolTable import CoolTable
 
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib import pyplot
-from PIL import Image
 
 from Util import *
 
