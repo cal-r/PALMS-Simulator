@@ -87,7 +87,7 @@ class PavlovianApp(QDialog):
         self.tableWidget.table.setMaximumHeight(120)
         self.tableWidget.onCellChange(self.refreshExperiment)
 
-        self.createParametersGroupBox()
+        self.parametersGroupBox = ParametersGroupBox(self)
         self.createAlphasBox()
         self.plotCanvas = FigureCanvasQTAgg()
 
@@ -213,58 +213,6 @@ class PavlovianApp(QDialog):
         def addRow(self, layout):
             layout.addRow(self.label, self.box)
             return self
-
-    def createParametersGroupBox(self):
-        self.parametersGroupBox = QGroupBox("Parameters")
-        self.parametersGroupBox.setMaximumWidth(90)
-
-        short_names = dict(
-            alpha = "α ",
-            alpha_mack = "αᴹ",
-            alpha_hall = "αᴴ",
-            salience = "S ",
-            habituation = "h ",
-            kay = "Κ ",
-            lamda = "λ ",
-            beta = "β⁺",
-            betan = "β⁻",
-            gamma = "γ ",
-            thetaE = "θᴱ",
-            thetaI = "θᴵ",
-            rho = "ρ ",
-            nu = "ν ",
-            num_trials = "Nº",
-        )
-
-        descriptions = dict(
-            alpha = "Initial learning rate of the stimuli. α ∈ [0, 1].",
-            alpha_mack = "Initial learning rate of the stimuli based on Mackintosh's model, which controls how much of an stumulus is remembered between steps. αᴹ ∈ [0, 1].",
-            alpha_hall = "Initial learning rate of the stimuli based on Hall's model, which controls how much a new stimulus affects the association. αᴴ ∈ [0, 1].",
-            salience = "Initial salience of the stimuli.",
-            habituation = "Initial habituation of the stimuli.",
-            kay = "Constant for hybrid model.",
-            lamda = "Asymptote of learning with positive stimuli. λ ∈ (0, 1].",
-            rho = "Parameter for MLAB hybrid formulation.",
-            nu = "Parameter for MLAB hybrid formulation.",
-            beta = "Associativity of positive US.",
-            betan = "Associativity of negative US.",
-            gamma = "Weight parameter for past trials.",
-            thetaE = "Excitory theta based on LePelley's model.",
-            thetaI = "Inhibitory theta based on LePelley's model.",
-            num_trials = "Number of random trials per experiment.",
-        )
-        params = QFormLayout()
-        params.setSpacing(10)
-        for key, val in AdaptiveType.initial_defaults().items():
-            label = self.DualLabel(short_names[key], self, str(val), hoverText = descriptions[key]).addRow(params)
-            self.params[key] = label
-            # setattr(self, key, label)
-
-        self.params['num_trials'].box.setGeometry(100, 120, 120, 60)
-        self.params['num_trials'].box.setDisabled(True)
-
-        params.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
-        self.parametersGroupBox.setLayout(params)
 
     def createAlphasBox(self):
         layout = QHBoxLayout()
@@ -491,10 +439,10 @@ class PavlovianApp(QDialog):
 
         any_rand = any(p[self.phaseNum - 1].rand for p in self.phases.values())
         self.params['num_trials'].box.setDisabled(not any_rand)
-        self.toggleRandButton.setChecked(any_rand)
+        # self.actionButtons.toggleRandButton.setChecked(any_rand)
 
         any_lambda = any(p[self.phaseNum - 1].lamda is not None for p in self.phases.values())
-        self.phaseLambdaButton.setChecked(any_lambda)
+        # self.phaseLambdaButton.setChecked(any_lambda)
 
     def pickLine(self, event):
         label = event.artist.get_label()
