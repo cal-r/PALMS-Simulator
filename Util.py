@@ -1,9 +1,14 @@
 import os
+import sys
 from csv import DictWriter
 from typing import cast
 
 from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtWidgets import *
+
+from Plots import generate_figures
+
+from PIL import Image
 
 from AdaptiveType import AdaptiveType
 
