@@ -10,9 +10,15 @@ import os
 class PhaseBox(QGroupBox):
     def __init__(self, parent = None, screenshot_ready = False):
         super().__init__(parent)
+        self.parent = parent
 
-        self.leftPhaseButton = QPushButton('<')
-        self.leftPhaseButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        leftPhaseButton = QPushButton('<')
+        leftPhaseButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        leftPhaseButton.clicked.connect(self.prevPhase)
+
+        rightPhaseButton = QPushButton('>')
+        rightPhaseButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        rightPhaseButton.clicked.connect(self.nextPhase)
 
         self.phaseInfo = QLabel('')
         self.phaseInfo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
@@ -22,15 +28,12 @@ class PhaseBox(QGroupBox):
         self.yCoordInfo = QLabel('')
         self.yCoordInfo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
-        self.rightPhaseButton = QPushButton('>')
-        self.rightPhaseButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-
         phaseBoxLayout = QHBoxLayout()
-        phaseBoxLayout.addWidget(self.leftPhaseButton)
+        phaseBoxLayout.addWidget(leftPhaseButton)
         phaseBoxLayout.addWidget(self.xCoordInfo, stretch = 1, alignment = Qt.AlignmentFlag.AlignLeft)
         phaseBoxLayout.addWidget(self.phaseInfo, stretch = 1, alignment = Qt.AlignmentFlag.AlignCenter)
         phaseBoxLayout.addWidget(self.yCoordInfo, stretch = 1, alignment = Qt.AlignmentFlag.AlignRight)
-        phaseBoxLayout.addWidget(self.rightPhaseButton)
+        phaseBoxLayout.addWidget(rightPhaseButton)
         phaseBoxLayout.setSpacing(50)
 
         if screenshot_ready:
@@ -45,6 +48,22 @@ class PhaseBox(QGroupBox):
     def setCoordInfo(self, trial, ylabel, ydata):
         self.xCoordInfo.setText(f'Trial: {trial:.0f}')
         self.yCoordInfo.setText(f'{ylabel}: {ydata:.2f}')
+
+    def prevPhase(self):
+        parent = self.parent
+        if parent.phaseNum == 1:
+            return
+
+        parent.phaseNum -= 1
+        parent.refreshFigure()
+
+    def nextPhase(self):
+        parent = self.parent
+        if parent.phaseNum >= parent.numPhases:
+            return
+
+        parent.phaseNum += 1
+        parent.refreshFigure()
 
 class AboutButton(QPushButton):
     def __init__(self, parent = None):
@@ -419,3 +438,50 @@ class AlphasBox(QGroupBox):
                         f'{local_val:.2g}',
                         hoverText = hoverText,
                     ).addRow(layout)
+
+class AdaptiveTypeButtons(QGroupBox):
+    def __init__(self, parent):
+        super().__init__('Adaptive Type', parent = parent)
+        self.parent = parent
+
+        layout = QVBoxLayout()
+        layout.setSpacing(0)
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        buttonGroup = QButtonGroup(parent)
+        buttonGroup.setExclusive(True)
+
+        for i, adaptive_type in enumerate(parent.adaptive_types):
+            button = QPushButton(adaptive_type)
+            button.adaptive_type = adaptive_type
+            button.setCheckable(True)
+            button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
+            noMarginStyle = ""
+            checkedStyle = "QPushButton:checked { background-color: lightblue; font-weight: bold; border: 2px solid #0057D8; }"
+            button.setStyleSheet(noMarginStyle + checkedStyle)
+            button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+
+            buttonGroup.addButton(button, i)
+            layout.addWidget(button)
+
+            button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
+        buttonGroup.buttonClicked.connect(self.changeAdaptiveType)
+        self.setLayout(layout)
+
+    def changeAdaptiveType(self, button):
+        parent = self.parent
+        parent.current_adaptive_type = button.adaptive_type
+        parent.enabled_params = set(AdaptiveType.types()[parent.current_adaptive_type].parameters())
+        parent.enableParams()
+
+        for key, default in AdaptiveType.types()[parent.current_adaptive_type].defaults().items():
+            parent.params[key].box.setText(str(default))
+            if key in parent.per_cs_param:
+                for cs, pair in parent.per_cs_param[key].items():
+                    val = default ** len(cs.strip('()'))
+                    pair.box.setText(str(val))
+
+        parent.refreshExperiment()
+
