@@ -27,6 +27,8 @@ from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib import pyplot
 from PIL import Image
 
+from Util import *
+
 class PavlovianApp(QDialog):
     adaptive_types: list[str]
     current_adaptive_type: str
@@ -88,7 +90,10 @@ class PavlovianApp(QDialog):
         self.addActionsButtons()
         self.createParametersGroupBox()
         self.createAlphasBox()
+        self.plotCanvas = FigureCanvasQTAgg()
+        self.phaseBox = PhaseBox(self.prevPhase, self.nextPhase, screenshot_ready = self.screenshot_ready)
         adaptiveTypeButtons = self.addAdaptiveTypeButtons()
+
         iconLabel = QLabel(self)
         iconLabel.setPixmap(self.getPixmap('palms.png'))
         iconLabel.setToolTip('Pavlovian\N{bellhop bell} \N{dog face} Associative\N{handshake} Learning\N{brain} Models\N{bar chart} Simulator\N{desktop computer}.')
@@ -97,45 +102,15 @@ class PavlovianApp(QDialog):
         self.refreshAlphasGroupBox(set())
         plotBox = QGroupBox('Plot')
 
-        self.plotCanvas = FigureCanvasQTAgg()
-        phaseBox = QGroupBox()
-
-        leftPhaseButton = QPushButton('<')
-        leftPhaseButton.clicked.connect(self.prevPhase)
-        leftPhaseButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-
-        self.phaseInfo = QLabel('')
-        self.phaseInfo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-
-        self.xCoordInfo = QLabel('')
-        self.xCoordInfo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        self.yCoordInfo = QLabel('')
-        self.yCoordInfo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-
-        rightPhaseButton = QPushButton('>')
-        rightPhaseButton.clicked.connect(self.nextPhase)
-        rightPhaseButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-
-        phaseBoxLayout = QHBoxLayout()
-        phaseBoxLayout.addWidget(leftPhaseButton)
-        phaseBoxLayout.addWidget(self.xCoordInfo, stretch = 1, alignment = Qt.AlignmentFlag.AlignLeft)
-        phaseBoxLayout.addWidget(self.phaseInfo, stretch = 1, alignment = Qt.AlignmentFlag.AlignCenter)
-        phaseBoxLayout.addWidget(self.yCoordInfo, stretch = 1, alignment = Qt.AlignmentFlag.AlignRight)
-        phaseBoxLayout.addWidget(rightPhaseButton)
-        phaseBoxLayout.setSpacing(50)
-        phaseBox.setLayout(phaseBoxLayout)
 
         plotBoxLayout = QVBoxLayout()
         plotBoxLayout.addWidget(self.plotCanvas)
-        plotBoxLayout.addWidget(phaseBox)
+        plotBoxLayout.addWidget(self.phaseBox.widget())
         plotBoxLayout.setStretch(0, 1)
         plotBoxLayout.setStretch(1, 0)
         plotBox.setLayout(plotBoxLayout)
 
-        aboutButton = QPushButton('About')
-        aboutButton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        aboutButton.clicked.connect(self.aboutPALMS)
-        aboutButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        aboutButton = AboutButton()
 
         mainLayout = QGridLayout()
         mainLayout.addWidget(self.tableWidget, 0, 0, 1, 4)
@@ -147,17 +122,17 @@ class PavlovianApp(QDialog):
         mainLayout.addWidget(self.phaseOptionsGroupBox, 1, 4, 1, 1)
         mainLayout.addWidget(self.plotOptionsGroupBox, 2, 4, 1, 1)
         mainLayout.addWidget(self.fileOptionsGroupBox, 3, 4, 1, 1)
-        mainLayout.addWidget(aboutButton, 4, 4, 1, 1)
-        mainLayout.setRowStretch(0, 0)
-        mainLayout.setRowStretch(1, 0)
-        mainLayout.setRowStretch(2, 0)
-        mainLayout.setRowStretch(3, 0)
-        mainLayout.setRowStretch(4, 0)
-        mainLayout.setColumnStretch(0, 0)
-        mainLayout.setColumnStretch(1, 0)
-        mainLayout.setColumnStretch(2, 0)
-        mainLayout.setColumnStretch(3, 1)
-        mainLayout.setColumnStretch(4, 0)
+        mainLayout.addWidget(aboutButton.widget(), 4, 4, 1, 1)
+        # mainLayout.setRowStretch(0, 0)
+        # mainLayout.setRowStretch(1, 0)
+        # mainLayout.setRowStretch(2, 0)
+        # mainLayout.setRowStretch(3, 0)
+        # mainLayout.setRowStretch(4, 0)
+        # mainLayout.setColumnStretch(0, 0)
+        # mainLayout.setColumnStretch(1, 0)
+        # mainLayout.setColumnStretch(2, 0)
+        # mainLayout.setColumnStretch(3, 1)
+        # mainLayout.setColumnStretch(4, 0)
         self.setLayout(mainLayout)
 
         self.setWindowTitle("PALMS Simulator")
@@ -165,11 +140,6 @@ class PavlovianApp(QDialog):
         adaptiveTypeButtons.children()[1].click()
 
         self.resize(1400, 600)
-
-        if self.screenshot_ready:
-            self.xCoordInfo.setVisible(False)
-            self.yCoordInfo.setVisible(False)
-            self.resize(1600, 600)
 
     def showModelInfo(self):
         root = getattr(sys, '_MEIPASS', '.')
@@ -276,10 +246,6 @@ class PavlovianApp(QDialog):
         self.configuralButton.setStyleSheet(checkedStyle)
         self.configuralButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-        # self.setDefaultParamsButton = QPushButton("Restore Default Parameters")
-        # self.setDefaultParamsButton.clicked.connect(self.restoreDefaultParameters)
-        # self.setDefaultParamsButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        
         self.exportDataButton = QPushButton("Export Data")
         self.exportDataButton.clicked.connect(self.exportData)
         self.exportDataButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
@@ -347,20 +313,6 @@ class PavlovianApp(QDialog):
 
         self.refreshExperiment()
 
-    def aboutPALMS(self):
-        about = '''\
-PALMS: Pavlovian Associative Learning Models Simulator
-Version 0.xx
-
-Built by Alessandro Abati, Martin Fixman, Julián Jimenez Nimmo, Sean Lim and Esther Mondragón.
-
-For the MSc in Artificial Intelligence in City St George's, University of London. \
-If you have any questions, contact any of the authors.
-
-2024. All rights reserved. Licensed under the LGPL v3. See LICENSE for details.\
-        '''
-        QMessageBox.information(self, 'About', about)
-    
     def exportData(self):
         fileName, _ = QFileDialog.getSaveFileName(self, "Export Data", "data.csv", "CSV files (*.csv);;All Files (*)")
         if not fileName:
@@ -746,7 +698,7 @@ If you have any questions, contact any of the authors.
 
         self.tableWidget.selectColumn(self.phaseNum - 1)
 
-        self.phaseInfo.setText(f'Phase {self.phaseNum}/{self.numPhases}')
+        self.phaseBox.setInfo(self.phaseNum, self.numPhases)
 
         any_rand = any(p[self.phaseNum - 1].rand for p in self.phases.values())
         self.params['num_trials'].box.setDisabled(not any_rand)
@@ -775,8 +727,7 @@ If you have any questions, contact any of the authors.
         else:
             ylabel = 'Y'
 
-        self.xCoordInfo.setText(f'Trial: {max(1 + event.xdata, 1):.0f}')
-        self.yCoordInfo.setText(f'{ylabel}: {event.ydata:.2f}')
+        self.phaseBox.setCoordInfo(max(1 + event.xdata, 1), ylabel, event.ydata)
 
     def plotExperiment(self):
         strengths, phases, args = self.generateResults()
