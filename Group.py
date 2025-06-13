@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from typing import cast
 from math import prod
 
 from Environment import Environment, StimulusHistory, Stimulus

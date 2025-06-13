@@ -4,13 +4,10 @@ from csv import DictWriter
 from typing import cast
 
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
-
-from PyQt6.QtCore import QTimer, Qt
-from PyQt6.QtWidgets import *
-
-from Plots import generate_figures
-
 from PIL import Image
+
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import *
 
 from AdaptiveType import AdaptiveType
 
@@ -151,7 +148,7 @@ class ActionButtons(QWidget):
         refreshButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         printButton = QPushButton("Plot")
-        printButton.clicked.connect(self.plotExperiment)
+        printButton.clicked.connect(self.parent.plotExperiment)
         printButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         hideButton = QPushButton("Toggle Visibility")
@@ -233,10 +230,10 @@ class ActionButtons(QWidget):
     def togglePlotAlpha(self):
         if self.parent.plot_alpha:
             self.parent.plot_alpha = False
-            self.parent.resize(self.parent.width() - self.parent.plotCanvas.width() // 2, self.parent.height())
+            self.parent.resize(int(self.parent.width() - self.parent.plotCanvas.width() / 0.5), self.parent.height())
         else:
             self.parent.plot_alpha = True
-            self.parent.resize(self.parent.width() + self.parent.plotCanvas.width(), self.parent.height())
+            self.parent.resize(int(self.parent.width() + self.parent.plotCanvas.width() * 0.5), self.parent.height())
 
         self.parent.refreshExperiment()
 
@@ -301,25 +298,6 @@ class ActionButtons(QWidget):
                             'Alpha Hall': stimulus.alpha_hall,
                         }
                         writer.writerow(row)
-
-    def plotExperiment(self):
-        strengths, phases, args = self.parent.generateResults()
-        if len(phases) == 0:
-            return
-
-        figures = generate_figures(
-            strengths,
-            phases = phases,
-            plot_alpha = args.plot_alpha and not AdaptiveType.types()[self.parent.current_adaptive_type].should_plot_macknhall(),
-            plot_macknhall = args.plot_macknhall and AdaptiveType.types()[self.parent.current_adaptive_type].should_plot_macknhall(),
-            dpi = self.parent.dpi,
-            ticker_threshold = True,
-        )
-
-        for fig in figures:
-            fig.canvas.mpl_connect('pick_event', self.parent.pickLine)
-            fig.show()
-        return strengths
 
     def hideExperiment(self):
         value = not all(self.parent.line_hidden.values())
