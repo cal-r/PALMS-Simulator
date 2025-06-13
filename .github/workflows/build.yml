@@ -10,7 +10,15 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+            target: linux
+          - os: windows-latest
+            target: windows
+          - os: macos-13          # macOS Intel
+            target: macos-intel
+          - os: macos-latest      # macOS Apple Silicon
+            target: macos-silicon
 
     steps:
     - uses: actions/checkout@v4
@@ -18,55 +26,59 @@ jobs:
     - uses: actions/setup-python@v4
       with:
         python-version: '3.12.6'
+        cache: 'pip'
 
     - name: Install patchelf for Linux
-      if: matrix.os == 'ubuntu-latest'
+      if: matrix.target == 'linux'
       run: sudo apt-get update && sudo apt-get install -y patchelf
 
-    - name: Install dependencies
+    - name: Install Python deps
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install "nuitka[full]"
 
-    - name: Build executable
+    - name: Build with Nuitka
       shell: bash
       env:
         SRC: PALMS.py
         DATA: resources=resources
       run: |
-        COMMON="--enable-plugin=pyside6 --enable-plugin=matplotlib \
+        COMMON="--enable-plugin=pyside6 \
+                --enable-plugin=matplotlib \
                 --include-data-dir=${DATA} \
                 --output-filename=PALMS \
-                --show-progress \
-                --show-scons"
-        if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
-          python -m nuitka $COMMON --standalone --macos-app-icon=resources/palms.icns --output-dir=build "$SRC"
-        elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
-          python -m nuitka $COMMON --onefile --windows-icon-from-ico=resources/palms.ico --output-dir=build "$SRC"
-        else
-          python -m nuitka $COMMON --onefile --output-dir=build "$SRC"
-        fi
+                --jobs=2 --show-progress --show-scons --clang"
+        case "${{ matrix.target }}" in
+          macos-*)   python -m nuitka $COMMON --standalone --macos-app-icon=resources/palms.icns --output-dir=build "$SRC" ;;
+          windows)   python -m nuitka $COMMON --onefile    --windows-icon-from-ico=resources/palms.ico --output-dir=build "$SRC" ;;
+          linux)     python -m nuitka $COMMON --onefile    --output-dir=build "$SRC" ;;
+        esac
 
-    - name: Prepare release directory
+    - name: Ad-hoc sign macOS bundle
+      if: startsWith(matrix.target, 'macos-')
+      run: |
+        codesign --sign - --deep --force --options runtime build/PALMS.dist
+
+    - name: Prepare release dir
       run: mkdir -p release
 
     - name: Archive Linux binary
-      if: matrix.os == 'ubuntu-latest'
+      if: matrix.target == 'linux'
       run: |
-        chmod +x build/PALMS.bin
-        tar -czf release_linux.tar.gz Experiments -C build PALMS.bin
+        chmod +x build/PALMS
+        tar -czf release_linux.tar.gz Experiments -C build PALMS
 
     - name: Archive Windows binary
-      if: matrix.os == 'windows-latest'
+      if: matrix.target == 'windows'
       run: |
         7z a -tzip release_windows.zip build/PALMS.exe
         7z a -tzip release_windows.zip Experiments
 
     - name: Archive macOS bundle
-      if: matrix.os == 'macos-latest'
+      if: startsWith(matrix.target, 'macos-')
       run: |
-        tar -czf release_macos.tar.gz Experiments -C build PALMS.dist
+        tar -czf release_${{ matrix.target }}.tar.gz Experiments -C build PALMS.dist
 
     - name: Commit latest tag
       if: github.ref == 'refs/heads/release'
@@ -80,18 +92,10 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: ${{ matrix.os }}-release
+        name: ${{ matrix.target }}-release
         path: release_*
 
     - uses: softprops/action-gh-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: latest
-        files: release_*
-
-    - if: failure()
-      uses: softprops/action-gh-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
