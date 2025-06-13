@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 if 'DISPLAY' in os.environ:
     os.environ["QT_QPA_PLATFORM"] = "xcb"
+os.environ['QT_AUTO_SCREEN_SCALE_FACTOR'] = 'TRUE'
 
 import sys
 import Simulator
@@ -417,10 +418,12 @@ def main():
 
     app = QApplication(sys.argv)
 
-    if args.fontsize is not None:
-        font = QFont()
-        font.setPointSize(args.fontsize)
-        app.setFont(font)
+    if args.fontsize is None:
+        args.fontsize = app.primaryScreen().size().height() // 100
+
+    font = QFont()
+    font.setPointSize(args.fontsize)
+    app.setFont(font)
 
     dpi = args.dpi
     if dpi is None:
