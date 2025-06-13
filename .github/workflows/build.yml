@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    name: Build executables (Nuitka)
+    name: Build executables
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -19,7 +19,7 @@ jobs:
       with:
         python-version: '3.12.6'
 
-    - name: Install patchelf (Linux only)
+    - name: Install patchelf for Linux
       if: matrix.os == 'ubuntu-latest'
       run: sudo apt-get update && sudo apt-get install -y patchelf
 
@@ -29,7 +29,7 @@ jobs:
         pip install -r requirements.txt
         pip install "nuitka[full]"
 
-    - name: Build executable with Nuitka
+    - name: Build executable
       shell: bash
       env:
         SRC: PALMS.py
@@ -37,7 +37,9 @@ jobs:
       run: |
         COMMON="--enable-plugin=pyqt6 --enable-plugin=matplotlib \
                 --include-data-dir=${DATA} \
-                --output-filename=PALMS"
+                --output-filename=PALMS \
+                --show-progress \
+                --show-scons"
         if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
           python -m nuitka $COMMON --standalone --macos-app-icon=resources/palms.icns --output-dir=build "$SRC"
         elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
