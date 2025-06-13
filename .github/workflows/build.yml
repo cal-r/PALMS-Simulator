@@ -15,9 +15,9 @@ jobs:
             target: linux
           - os: windows-latest
             target: windows
-          - os: macos-13          # macOS Intel
+          - os: macos-13
             target: macos-intel
-          - os: macos-latest      # macOS Apple Silicon
+          - os: macos-latest
             target: macos-silicon
 
     steps:
@@ -36,7 +36,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install "nuitka[full]"
+        pip install "nuitka[full]" ninja
 
     - name: Build with Nuitka
       shell: bash
@@ -48,11 +48,15 @@ jobs:
                 --enable-plugin=matplotlib \
                 --include-data-dir=${DATA} \
                 --output-filename=PALMS \
-                --jobs=2 --show-progress --show-scons --clang"
+                --jobs=2 \
+                --show-progress \
+                --clang \
+                --lto=no \
+                --backend=ninja"
         case "${{ matrix.target }}" in
           macos-*)   python -m nuitka $COMMON --standalone --macos-app-icon=resources/palms.icns --output-dir=build "$SRC" ;;
-          windows)   python -m nuitka $COMMON --onefile    --windows-icon-from-ico=resources/palms.ico --output-dir=build "$SRC" ;;
-          linux)     python -m nuitka $COMMON --onefile    --output-dir=build "$SRC" ;;
+          windows)   python -m nuitka $COMMON --onefile --assume-yes-for-downloads --windows-icon-from-ico=resources/palms.ico --output-dir=build "$SRC" ;;
+          linux)     python -m nuitka $COMMON --onefile --output-dir=build "$SRC" ;;
         esac
 
     - name: Ad-hoc sign macOS bundle
@@ -67,18 +71,18 @@ jobs:
       if: matrix.target == 'linux'
       run: |
         chmod +x build/PALMS
-        tar -czf release_linux.tar.gz Experiments -C build PALMS
+        tar -czf palms.tar.gz Experiments -C build PALMS
 
     - name: Archive Windows binary
       if: matrix.target == 'windows'
       run: |
-        7z a -tzip release_windows.zip build/PALMS.exe
-        7z a -tzip release_windows.zip Experiments
+        7z a -tzip palms.zip build/PALMS.exe
+        7z a -tzip palms.zip Experiments
 
     - name: Archive macOS bundle
       if: startsWith(matrix.target, 'macos-')
       run: |
-        tar -czf release_${{ matrix.target }}.tar.gz Experiments -C build PALMS.dist
+        tar -czf palms.tar.gz Experiments -C build PALMS.dist
 
     - name: Commit latest tag
       if: github.ref == 'refs/heads/release'
@@ -89,11 +93,6 @@ jobs:
         git config user.email "github-actions[bot]@users.noreply.github.com"
         git tag -f latest
         git push origin latest --force
-
-    - uses: actions/upload-artifact@v4
-      with:
-        name: ${{ matrix.target }}-release
-        path: release_*
 
     - uses: softprops/action-gh-release@v1
       env:
