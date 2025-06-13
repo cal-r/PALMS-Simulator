@@ -377,7 +377,7 @@ class PavlovianApp(QDialog):
         self.plotBox.phaseBox.setCoordInfo(max(1 + event.xdata, 1), ylabel, event.ydata)
 
     def updateWidgets(self):
-        # self.relax_size(self)
+        self.relax_size(self)
         self.tableWidget.update()
         self.tableWidget.repaint()
         self.tableWidget.updateSizes()
