@@ -35,7 +35,7 @@ jobs:
         SRC: PALMS.py
         DATA: resources=resources
       run: |
-        COMMON="--enable-plugin=pyqt6 --enable-plugin=matplotlib \
+        COMMON="--enable-plugin=pyside6 --enable-plugin=matplotlib \
                 --include-data-dir=${DATA} \
                 --output-filename=PALMS \
                 --show-progress \
