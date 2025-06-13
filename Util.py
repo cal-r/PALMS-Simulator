@@ -1,13 +1,15 @@
 import os
+os.environ["QT_API"] = "PySide6"
+
 import sys
 from csv import DictWriter
 from typing import cast
 
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import *
+
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from PIL import Image
-
-from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import *
 
 from AdaptiveType import AdaptiveType
 

@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import os
-if 'DISPLAY' in os.environ:
-    os.environ["QT_QPA_PLATFORM"] = "xcb"
+os.environ["QT_QPA_PLATFORM"] = "xcb"
 os.environ['QT_AUTO_SCREEN_SCALE_FACTOR'] = 'TRUE'
+os.environ["QT_API"] = "PySide6"
 
 import sys
 import Simulator
@@ -11,9 +11,9 @@ import Simulator
 from argparse import ArgumentParser
 from collections import defaultdict
 from itertools import zip_longest
-from PyQt6.QtCore import QTimer, Qt
-from PyQt6.QtGui import QFont, QPixmap
-from PyQt6.QtWidgets import *
+from PySide6.QtCore import QTimer, Qt
+from PySide6.QtGui import QFont, QPixmap
+from PySide6.QtWidgets import *
 
 from Experiment import RWArgs, Experiment, Phase
 from Plots import generate_figures
