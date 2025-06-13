@@ -11,6 +11,7 @@ import Simulator
 from argparse import ArgumentParser
 from collections import defaultdict
 from itertools import zip_longest
+from pathlib import Path
 from PySide6.QtCore import QTimer, Qt
 from PySide6.QtGui import QFont, QPixmap
 from PySide6.QtWidgets import *
@@ -132,8 +133,8 @@ class PavlovianApp(QDialog):
         self.tableWidget.loadFile(lines)
 
     def getPixmap(self, filename):
-        root = getattr(sys, '_MEIPASS', '.')
-        pixmap = QPixmap(os.path.join(root, 'resources', filename), flags = Qt.ImageConversionFlag.NoFormatConversion)
+        here = Path(__file__).resolve().parent
+        pixmap = QPixmap(str(here / "resources" / filename), flags=Qt.ImageConversionFlag.NoFormatConversion)
         return pixmap.scaled(150, 150, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
 
     def addActionsButtons(self):
