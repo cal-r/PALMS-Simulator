@@ -70,18 +70,23 @@ jobs:
       if: matrix.target == 'linux'
       run: |
         chmod +x build/PALMS
-        tar -czf palms.tar.gz Experiments -C build PALMS
+        tar -czf release/palms-linux.tar.gz Experiments -C build PALMS
 
     - name: Archive Windows binary
       if: matrix.target == 'windows'
       run: |
-        7z a -tzip palms.zip build/PALMS.exe
-        7z a -tzip palms.zip Experiments
+        7z a -tzip release/palms-windows.zip build/PALMS.exe
+        7z a -tzip release/palms-windows.zip Experiments
 
-    - name: Archive macOS bundle
-      if: startsWith(matrix.target, 'macos-')
+    - name: Archive macOS Intel bundle
+      if: matrix.target == 'macos-intel'
       run: |
-        tar -czf palms.tar.gz Experiments -C build PALMS.dist
+        tar -czf release/palms-macos-intel.tar.gz Experiments -C build PALMS.dist
+
+    - name: Archive macOS Silicon bundle
+      if: matrix.target == 'macos-silicon'
+      run: |
+        tar -czf release/palms-macos-silicon.tar.gz Experiments -C build PALMS.dist
 
     - name: Commit latest tag
       if: github.ref == 'refs/heads/release'
@@ -98,7 +103,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: latest
-        files: release_*
+        files: release/*
 
     - if: failure()
       uses: softprops/action-gh-release@v1
@@ -106,5 +111,4 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: latest
-        files: release_*
-
+        files: release/*
