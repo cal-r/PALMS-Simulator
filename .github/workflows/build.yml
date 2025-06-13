@@ -36,7 +36,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install "nuitka[full]" ninja
+        pip install "nuitka[full]"
 
     - name: Build with Nuitka
       shell: bash
@@ -51,8 +51,7 @@ jobs:
                 --jobs=2 \
                 --show-progress \
                 --clang \
-                --lto=no \
-                --backend=ninja"
+                --lto=no"
         case "${{ matrix.target }}" in
           macos-*)   python -m nuitka $COMMON --standalone --macos-app-icon=resources/palms.icns --output-dir=build "$SRC" ;;
           windows)   python -m nuitka $COMMON --onefile --assume-yes-for-downloads --windows-icon-from-ico=resources/palms.ico --output-dir=build "$SRC" ;;
