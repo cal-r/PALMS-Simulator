@@ -4,9 +4,7 @@ import argparse
 import random
 import re
 import sys
-from collections import defaultdict
 from Experiment import Experiment, Phase, RWArgs
-from Group import Group
 from Environment import Environment, StimulusHistory
 from Plots import generate_figures, save_plots
 from AdaptiveType import AdaptiveType

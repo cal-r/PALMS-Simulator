@@ -3,7 +3,6 @@ from __future__ import annotations
 import random
 import re
 from dataclasses import dataclass
-from itertools import combinations
 
 from Group import Group
 from Environment import Stimulus, Environment, StimulusHistory
@@ -83,7 +82,6 @@ class RWArgs:
 
     habituations: dict[str, float]
     habituation: float
-
     rho: float
     nu: float
     kay: float

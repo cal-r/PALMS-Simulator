@@ -7,13 +7,10 @@ if 'DISPLAY' in os.environ:
 import sys
 import Simulator
 
-from argparse import ArgumentParser, REMAINDER
+from argparse import ArgumentParser
 from collections import defaultdict
-from contextlib import nullcontext
-from csv import DictWriter
-from itertools import chain, zip_longest
-from typing import cast
-from PyQt6.QtCore import QTimer, Qt, QSize
+from itertools import zip_longest
+from PyQt6.QtCore import QTimer, Qt
 from PyQt6.QtGui import QFont, QPixmap
 from PyQt6.QtWidgets import *
 
@@ -23,9 +20,9 @@ from Environment import StimulusHistory, Stimulus
 from AdaptiveType import AdaptiveType
 from CoolTable import CoolTable
 
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib import pyplot
-from PIL import Image
+
+from Util import *
 
 class PavlovianApp(QDialog):
     adaptive_types: list[str]
@@ -45,8 +42,10 @@ class PavlovianApp(QDialog):
     configural_cues: bool
 
     line_hidden: dict[str, bool]
+    plot_alpha: bool
 
     dpi: int
+
     def __init__(self, dpi = 200, screenshot_ready = False, parent=None):
         super(PavlovianApp, self).__init__(parent)
 
@@ -85,71 +84,30 @@ class PavlovianApp(QDialog):
         self.tableWidget.table.setMaximumHeight(120)
         self.tableWidget.onCellChange(self.refreshExperiment)
 
-        self.addActionsButtons()
-        self.createParametersGroupBox()
-        self.createAlphasBox()
+        parametersGroupBox = ParametersGroupBox(self)
 
-        self.alphasBox.setVisible(False)
-        self.refreshAlphasGroupBox(set())
-        self.plotBox = QGroupBox('Plot')
+        self.alphasBox = AlphasBox(self)
+        aboutButton = AboutButton(self)
+        adaptiveTypeButtons = AdaptiveTypeButtons(self)
 
-        self.plotCanvas = FigureCanvasQTAgg()
-        self.phaseBox = QGroupBox()
+        iconLabel = QLabel(self)
+        iconLabel.setPixmap(self.getPixmap('palms.png'))
+        iconLabel.setToolTip('Pavlovian\N{bellhop bell} \N{dog face} Associative\N{handshake} Learning\N{brain} Models\N{bar chart} Simulator\N{desktop computer}.')
 
-        self.leftPhaseButton = QPushButton('<')
-        self.leftPhaseButton.clicked.connect(self.prevPhase)
-        self.leftPhaseButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.plotBox = PlotBox(self)
+        self.plotCanvas = self.plotBox.plotCanvas
 
-        self.phaseInfo = QLabel('')
-        self.phaseInfo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-
-        self.xCoordInfo = QLabel('')
-        self.xCoordInfo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        self.yCoordInfo = QLabel('')
-        self.yCoordInfo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-
-        self.rightPhaseButton = QPushButton('>')
-        self.rightPhaseButton.clicked.connect(self.nextPhase)
-        self.rightPhaseButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-
-        phaseBoxLayout = QHBoxLayout()
-        phaseBoxLayout.addWidget(self.leftPhaseButton)
-        phaseBoxLayout.addWidget(self.xCoordInfo, stretch = 1, alignment = Qt.AlignmentFlag.AlignLeft)
-        phaseBoxLayout.addWidget(self.phaseInfo, stretch = 1, alignment = Qt.AlignmentFlag.AlignCenter)
-        phaseBoxLayout.addWidget(self.yCoordInfo, stretch = 1, alignment = Qt.AlignmentFlag.AlignRight)
-        phaseBoxLayout.addWidget(self.rightPhaseButton)
-        phaseBoxLayout.setSpacing(50)
-        self.phaseBox.setLayout(phaseBoxLayout)
-
-        plotBoxLayout = QVBoxLayout()
-        plotBoxLayout.addWidget(self.plotCanvas)
-        plotBoxLayout.addWidget(self.phaseBox)
-        plotBoxLayout.setStretch(0, 1)
-        plotBoxLayout.setStretch(1, 0)
-        self.plotBox.setLayout(plotBoxLayout)
-
-        self.adaptiveTypeButtons = self.addAdaptiveTypeButtons()
-
-        self.IconLabel = QLabel(self)
-        self.IconLabel.setPixmap(self.getPixmap('palms.png'))
-        self.IconLabel.setToolTip('Pavlovian\N{bellhop bell} \N{dog face} Associative\N{handshake} Learning\N{brain} Models\N{bar chart} Simulator\N{desktop computer}.')
-
-        self.aboutButton = QPushButton('About')
-        self.aboutButton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        self.aboutButton.clicked.connect(self.aboutPALMS)
-        self.aboutButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        actionButtons = ActionButtons(self)
 
         mainLayout = QGridLayout()
         mainLayout.addWidget(self.tableWidget, 0, 0, 1, 4)
-        mainLayout.addWidget(self.IconLabel, 0, 4, 1, 1, alignment = Qt.AlignmentFlag.AlignCenter)
-        mainLayout.addWidget(self.adaptiveTypeButtons, 1, 0, 4, 1)
-        mainLayout.addWidget(self.parametersGroupBox, 1, 1, 4, 1)
+        mainLayout.addWidget(iconLabel, 0, 4, 1, 1, alignment = Qt.AlignmentFlag.AlignCenter)
+        mainLayout.addWidget(adaptiveTypeButtons, 1, 0, 4, 1)
+        mainLayout.addWidget(parametersGroupBox, 1, 1, 4, 1)
         mainLayout.addWidget(self.alphasBox, 1, 2, 4, 1)
         mainLayout.addWidget(self.plotBox, 1, 3, 4, 1)
-        mainLayout.addWidget(self.phaseOptionsGroupBox, 1, 4, 1, 1)
-        mainLayout.addWidget(self.plotOptionsGroupBox, 2, 4, 1, 1)
-        mainLayout.addWidget(self.fileOptionsGroupBox, 3, 4, 1, 1)
-        mainLayout.addWidget(self.aboutButton, 4, 4, 1, 1)
+        mainLayout.addWidget(actionButtons, 1, 4, 3, 1)
+        mainLayout.addWidget(aboutButton, 4, 4, 1, 1)
         mainLayout.setRowStretch(0, 0)
         mainLayout.setRowStretch(1, 0)
         mainLayout.setRowStretch(2, 0)
@@ -164,53 +122,9 @@ class PavlovianApp(QDialog):
 
         self.setWindowTitle("PALMS Simulator")
         self.setWindowFlags(Qt.WindowType.Window | Qt.WindowType.WindowCloseButtonHint | Qt.WindowType.WindowMaximizeButtonHint)
-        self.adaptiveTypeButtons.children()[1].click()
+        adaptiveTypeButtons.children()[1].click()
 
-        self.resize(1400, 600)
-
-        if self.screenshot_ready:
-            self.xCoordInfo.setVisible(False)
-            self.yCoordInfo.setVisible(False)
-            self.resize(1600, 600)
-
-    def showModelInfo(self):
-        root = getattr(sys, '_MEIPASS', '.')
-        image_filename = AdaptiveType.types()[self.current_adaptive_type].image_filename
-        image_path = os.path.join(root, 'resources', image_filename)
-        try:
-            image = Image.open(image_path)
-            image.show()
-        except (FileNotFoundError, IsADirectoryError):
-             QMessageBox.warning(self, '', 'Rendered formula file not found')
-
-    def addAdaptiveTypeButtons(self):
-        buttons = QGroupBox('Adaptive Type')
-        layout = QVBoxLayout()
-        layout.setSpacing(0)
-        layout.setContentsMargins(0, 0, 0, 0)
-
-        buttonGroup = QButtonGroup(self)
-        buttonGroup.setExclusive(True)
-
-        for i, adaptive_type in enumerate(self.adaptive_types):
-            button = QPushButton(adaptive_type)
-            button.adaptive_type = adaptive_type
-            button.setCheckable(True)
-            button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-
-            noMarginStyle = ""
-            checkedStyle = "QPushButton:checked { background-color: lightblue; font-weight: bold; border: 2px solid #0057D8; }"
-            button.setStyleSheet(noMarginStyle + checkedStyle)
-            button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-
-            buttonGroup.addButton(button, i)
-            layout.addWidget(button)
-
-            button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-
-        buttonGroup.buttonClicked.connect(self.changeAdaptiveType)
-        buttons.setLayout(layout)
-        return buttons
+        # self.resize(1400, 600)
 
     def loadFile(self, filename):
         lines = [x.strip() for x in open(filename)]
@@ -221,223 +135,8 @@ class PavlovianApp(QDialog):
         pixmap = QPixmap(os.path.join(root, 'resources', filename), flags = Qt.ImageConversionFlag.NoFormatConversion)
         return pixmap.scaled(150, 150, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
 
-    def openFileDialog(self):
-        file, _ = QFileDialog.getOpenFileName(self, 'Open File', './Experiments')
-        if file == '':
-            return
-
-        self.loadFile(file)
-        self.refreshExperiment()
-
     def addActionsButtons(self):
-        self.phaseOptionsGroupBox = QGroupBox('Phase Options')
-        self.plotOptionsGroupBox = QGroupBox("Plot Options")
-        self.fileOptionsGroupBox = QGroupBox("File Options")
-
-        self.fileButton = QPushButton('Load file')
-        self.fileButton.clicked.connect(self.openFileDialog)
-        self.fileButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-
-        self.saveButton = QPushButton("Save Experiment")
-        self.saveButton.clicked.connect(self.saveExperiment)
-        self.saveButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-
-        self.expand_canvas = False
-
-        self.plotAlphaButton = QPushButton('Plot α')
-        self.plotAlphaButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        checkedStyle = "QPushButton:checked { background-color: lightblue; font-weight: bold; border: 2px solid #0057D8; }"
-        self.plotAlphaButton.setStyleSheet(checkedStyle)
-        # self.plotAlphaButton.setFixedHeight(50)
-        self.plotAlphaButton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-        self.plotAlphaButton.clicked.connect(self.togglePlotAlpha)
-        self.plotAlphaButton.setCheckable(True)
-        self.plot_alpha = False
-
-        self.toggleRandButton = QPushButton('Toggle Rand')
-        self.toggleRandButton.clicked.connect(self.toggleRand)
-        self.toggleRandButton.setCheckable(True)
-        self.toggleRandButton.setStyleSheet(checkedStyle)
-        self.toggleRandButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-
-        self.phaseLambdaButton = QPushButton('Per-Phase λ')
-        self.phaseLambdaButton.clicked.connect(self.togglePhaseLambda)
-        self.phaseLambdaButton.setCheckable(True)
-        self.phaseLambdaButton.setStyleSheet(checkedStyle)
-        self.phaseLambdaButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-
-        self.toggleAlphasButton = QPushButton('Per-CS Parameters')
-        self.toggleAlphasButton.clicked.connect(self.toggleAlphasBox)
-        self.toggleAlphasButton.setCheckable(True)
-        self.toggleAlphasButton.setStyleSheet(checkedStyle)
-        self.toggleAlphasButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-
-        self.configuralButton = QPushButton('Configural Cues')
-        self.configuralButton.clicked.connect(self.toggleConfiguralCues)
-        self.configuralButton.setCheckable(True)
-        self.configuralButton.setStyleSheet(checkedStyle)
-        self.configuralButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-
-        # self.setDefaultParamsButton = QPushButton("Restore Default Parameters")
-        # self.setDefaultParamsButton.clicked.connect(self.restoreDefaultParameters)
-        # self.setDefaultParamsButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        
-        self.exportDataButton = QPushButton("Export Data")
-        self.exportDataButton.clicked.connect(self.exportData)
-        self.exportDataButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-
-        self.refreshButton = QPushButton("Refresh")
-        self.refreshButton.clicked.connect(self.refreshExperiment)
-        self.refreshButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-
-        self.printButton = QPushButton("Plot")
-        self.printButton.clicked.connect(self.plotExperiment)
-        self.printButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-
-        self.hideButton = QPushButton("Toggle Visibility")
-        self.hideButton.clicked.connect(self.hideExperiment)
-        self.hideButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-
-        self.modelInfoButton = QPushButton('Model Info')
-        self.modelInfoButton.clicked.connect(self.showModelInfo)
-        self.modelInfoButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-
-        phaseOptionsLayout = QVBoxLayout()
-        phaseOptionsLayout.addWidget(self.toggleRandButton)
-        phaseOptionsLayout.addWidget(self.phaseLambdaButton)
-        phaseOptionsLayout.addWidget(self.toggleAlphasButton)
-        phaseOptionsLayout.addWidget(self.configuralButton)
-        self.phaseOptionsGroupBox.setLayout(phaseOptionsLayout)
-
-        plotOptionsLayout = QVBoxLayout()
-        plotOptionsLayout.addWidget(self.plotAlphaButton)
-        plotOptionsLayout.addWidget(self.refreshButton)
-        plotOptionsLayout.addWidget(self.printButton)
-        plotOptionsLayout.addWidget(self.hideButton)
-        plotOptionsLayout.addWidget(self.modelInfoButton)
-        self.plotOptionsGroupBox.setLayout(plotOptionsLayout)
-
-
-        fileOptionsLayout = QVBoxLayout()
-        fileOptionsLayout.addWidget(self.fileButton)
-        fileOptionsLayout.addWidget(self.saveButton)
-        fileOptionsLayout.addWidget(self.exportDataButton)
-        self.fileOptionsGroupBox.setLayout(fileOptionsLayout)
-
-    def toggleRand(self):
-        set_rand = any(p[self.phaseNum - 1].rand for p in self.phases.values())
-        self.tableWidget.setRandInSelection(not set_rand)
-        self.refreshExperiment()
-
-    def hideExperiment(self):
-        value = not all(self.line_hidden.values())
-        self.line_hidden = {k: value for k in self.line_hidden.keys()}
-        self.refreshFigure()
-
-    def togglePhaseLambda(self):
-        set_lambda = any(p[self.phaseNum - 1].lamda is not None for p in self.phases.values())
-        self.tableWidget.setLambdaInSelection(self.floatOr(self.params['lamda'].box.text(), 0) if not set_lambda else None)
-        self.refreshExperiment()
-
-    def togglePlotAlpha(self):
-        if self.plot_alpha:
-            self.plot_alpha = False
-            self.resize(self.width() - self.plotCanvas.width() // 2, self.height())
-        else:
-            self.plot_alpha = True
-            self.resize(self.width() + self.plotCanvas.width(), self.height())
-
-        self.refreshExperiment()
-
-    def aboutPALMS(self):
-        about = '''\
-PALMS: Pavlovian Associative Learning Models Simulator
-Version 0.xx
-
-Built by Alessandro Abati, Martin Fixman, Julián Jimenez Nimmo, Sean Lim and Esther Mondragón.
-
-For the MSc in Artificial Intelligence in City St George's, University of London. \
-If you have any questions, contact any of the authors.
-
-2024. All rights reserved. Licensed under the LGPL v3. See LICENSE for details.\
-        '''
-        QMessageBox.information(self, 'About', about)
-    
-    def exportData(self):
-        fileName, _ = QFileDialog.getSaveFileName(self, "Export Data", "data.csv", "CSV files (*.csv);;All Files (*)")
-        if not fileName:
-            return
-
-        strengths, _, args = self.generateResults()
-
-        with open(fileName, 'w') as file:
-            fieldnames = ['Phase', 'Group', 'CS', 'Trial', 'Assoc']
-            if not args.should_plot_macknhall:
-                fieldnames += ['Alpha']
-            else:
-                fieldnames += ['Alpha Mack', 'Alpha Hall']
-
-            writer = DictWriter(file, fieldnames = fieldnames, extrasaction = 'ignore')
-            writer.writeheader()
-
-            for phase_num, phase in enumerate(strengths, start = 1):
-                for group_cs, hist in phase.items():
-                    group, cs = group_cs.rsplit(' - ', maxsplit = 1)
-                    for trial, stimulus in enumerate(hist, start = 1):
-                        row = {
-                            'Phase': phase_num,
-                            'Group': group,
-                            'CS': cs,
-                            'Trial': trial,
-                            'Assoc': stimulus.assoc,
-                            'Alpha': stimulus.alpha,
-                            'Alpha Mack': stimulus.alpha_mack,
-                            'Alpha Hall': stimulus.alpha_hall,
-                        }
-                        writer.writerow(row)
-
-    def saveExperiment(self):
-        default_directory = os.path.join(os.getcwd(), 'Experiments')
-        os.makedirs(default_directory, exist_ok = True)
-        default_file_name = os.path.join(default_directory, "experiment.rw")
-
-        fileName, _ = QFileDialog.getSaveFileName(self, "Save Experiment", default_file_name, "RW Files (*.rw);;All Files (*)")
-        if not fileName:
-            return
-
-        if not fileName.endswith(".rw"):
-            fileName += ".rw"
-
-        rowCount = self.tableWidget.rowCount()
-        columnCount = self.tableWidget.columnCount()
-        while columnCount > 0 and not any(self.tableWidget.getText(row, columnCount - 1) for row in range(rowCount)):
-            columnCount -= 1
-
-        lines = []
-        for row in range(rowCount):
-            name = self.tableWidget.table.verticalHeaderItem(row).text()
-            phase_strs = [self.tableWidget.getText(row, column) for column in range(columnCount)]
-            if not any(phase_strs):
-                continue
-
-            lines.append(name + '|' + '|'.join(phase_strs))
-
-        with open(fileName, 'w') as file:
-            for line in lines:
-                file.write(line + '\n')
-
-    def changeAdaptiveType(self, button):
-        self.current_adaptive_type = button.adaptive_type
-        self.enabled_params = set(AdaptiveType.types()[self.current_adaptive_type].parameters())
-        self.enableParams()
-
-        for key, default in AdaptiveType.types()[self.current_adaptive_type].defaults().items():
-            self.params[key].box.setText(str(default))
-            if key in self.per_cs_param:
-                for pair in self.per_cs_param[key].values():
-                    pair.box.setText(str(default ** len(key.strip('()'))))
-
-        self.refreshExperiment()
+        return ActionButtons()
 
     class DualLabel:
         def __init__(self, text, parent, default, font = 'Monospace', hoverText = None):
@@ -456,91 +155,6 @@ If you have any questions, contact any of the authors.
             layout.addRow(self.label, self.box)
             return self
 
-    def createParametersGroupBox(self):
-        self.parametersGroupBox = QGroupBox("Parameters")
-        self.parametersGroupBox.setMaximumWidth(90)
-
-        short_names = dict(
-            alpha = "α ",
-            alpha_mack = "αᴹ",
-            alpha_hall = "αᴴ",
-            salience = "S ",
-            habituation = "h ",
-            kay = "Κ ",
-            lamda = "λ ",
-            beta = "β⁺",
-            betan = "β⁻",
-            gamma = "γ ",
-            thetaE = "θᴱ",
-            thetaI = "θᴵ",
-            rho = "ρ ",
-            nu = "ν ",
-            num_trials = "Nº",
-        )
-
-        descriptions = dict(
-            alpha = "Initial learning rate of the stimuli. α ∈ [0, 1].",
-            alpha_mack = "Initial learning rate of the stimuli based on Mackintosh's model, which controls how much of an stumulus is remembered between steps. αᴹ ∈ [0, 1].",
-            alpha_hall = "Initial learning rate of the stimuli based on Hall's model, which controls how much a new stimulus affects the association. αᴴ ∈ [0, 1].",
-            salience = "Initial salience of the stimuli.",
-            habituation = "Initial habituation of the stimuli.",
-            kay = "Constant for hybrid model.",
-            lamda = "Asymptote of learning with positive stimuli. λ ∈ (0, 1].",
-            rho = "Parameter for MLAB hybrid formulation.",
-            nu = "Parameter for MLAB hybrid formulation.",
-            beta = "Associativity of positive US.",
-            betan = "Associativity of negative US.",
-            gamma = "Weight parameter for past trials.",
-            thetaE = "Excitory theta based on LePelley's model.",
-            thetaI = "Inhibitory theta based on LePelley's model.",
-            num_trials = "Number of random trials per experiment.",
-        )
-        params = QFormLayout()
-        params.setSpacing(10)
-        for key, val in AdaptiveType.initial_defaults().items():
-            label = self.DualLabel(short_names[key], self, str(val), hoverText = descriptions[key]).addRow(params)
-            self.params[key] = label
-            # setattr(self, key, label)
-
-        self.params['num_trials'].box.setGeometry(100, 120, 120, 60)
-        self.params['num_trials'].box.setDisabled(True)
-
-        params.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
-        self.parametersGroupBox.setLayout(params)
-
-    def createAlphasBox(self):
-        layout = QHBoxLayout()
-        for perc in self.per_cs_param.keys():
-            boxLayout = QFormLayout()
-            boxLayout.setContentsMargins(0, 0, 0, 0)
-            boxLayout.setSpacing(10)
-
-            self.per_cs_box[perc] = QWidget()
-            self.per_cs_box[perc].setLayout(boxLayout)
-            layout.addWidget(self.per_cs_box[perc])
-
-        self.alphasBox = QGroupBox('Per-CS')
-        self.alphasBox.setLayout(layout)
-
-    def toggleAlphasBox(self):
-        if not self.alphasBox.isVisible():
-            self.alphasBox.setVisible(True)
-
-            for perc, form in self.per_cs_param.items():
-                for cs, pair in form.items():
-                    global_val = float(self.params[perc].box.text())
-                    local_val = global_val ** len(cs.strip('()'))
-                    pair.box.setText(f'{local_val:.2g}')
-        else:
-            self.alphasBox.setVisible(False)
-            self.refreshExperiment()
-
-        self.enableParams()
-
-    def toggleConfiguralCues(self):
-        self.configural_cues = not self.configural_cues
-        self.refreshExperiment()
-
     def enableParams(self):
         for key in AdaptiveType.parameters():
             widget = self.params[key].box
@@ -555,44 +169,6 @@ If you have any questions, contact any of the authors.
                 widget.setDisabled(False)
             else:
                 self.per_cs_box[key].setVisible(True)
-
-    def refreshAlphasGroupBox(self, css: set[str]):
-        shortnames = {
-            'alpha': 'α',
-            'alpha_mack': 'αᴹ',
-            'alpha_hall': 'αᴴ',
-            'salience': 'S',
-            'habituation': 'h',
-        }
-        for perc, form in self.per_cs_param.items():
-            global_val = float(self.params[perc].box.text())
-            layout = cast(QFormLayout, self.per_cs_box[perc].layout())
-
-            to_remove = []
-            for e, (cs, pair) in enumerate(form.items()):
-                if cs not in css:
-                    to_remove.append((e, cs))
-
-            for (rowNum, cs) in to_remove[::-1]:
-                layout.removeRow(rowNum)
-                del form[cs]
-
-            for cs in sorted(css):
-                if cs not in form:
-                    hoverText = self.params[perc].hoverText.replace('of the stimuli', f' for stimulus {cs}')
-                    local_val = global_val ** len(cs.strip('()'))
-
-                    form[cs] = self.DualLabel(
-                        f'{shortnames[perc]}<sub>{cs}</sub>',
-                        self,
-                        f'{local_val:.2g}',
-                        hoverText = hoverText,
-                    ).addRow(layout)
-
-    def restoreDefaultParameters(self):
-        defaults = AdaptiveType.initial_defaults()
-        for key, value in defaults.items():
-            self.params[key].setText(str(value))
 
     # Convenience function: convert a string to a float, or return None if empty.
     @classmethod
@@ -644,11 +220,11 @@ If you have any questions, contact any of the authors.
             saliences = self.csPercDict('salience'),
 
             # Data for MLAB Hybrid.
-            habituations = defaultdict(lambda: None),
-            habituation = None,
-            rho = None,
-            nu = None,
-            kay = None,
+            habituations = defaultdict(lambda: 0),
+            habituation = 0,
+            rho = 0,
+            nu = 0,
+            kay = 0,
             # habituations = self.csPercDict('habituation'),
             # rho = self.floatOr(self.params['rho'].box.text(), 0),
             # nu = self.floatOr(self.params['nu'].box.text(), 0),
@@ -692,6 +268,26 @@ If you have any questions, contact any of the authors.
 
         return strengths, phases, args
 
+    def plotExperiment(self):
+        strengths, phases, args = self.generateResults()
+        if len(phases) == 0:
+            return
+
+        figures = generate_figures(
+            strengths,
+            phases = phases,
+            plot_alpha = args.plot_alpha and not AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
+            plot_macknhall = args.plot_macknhall and AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
+            dpi = self.dpi,
+            ticker_threshold = True,
+        )
+
+        for fig in figures:
+            fig.canvas.mpl_connect('pick_event', self.pickLine)
+            fig.show()
+        return strengths
+
+
     def refreshExperiment(self):
         self.tableWidget.updateSizes()
 
@@ -700,11 +296,11 @@ If you have any questions, contact any of the authors.
 
         strengths, phases, args = self.generateResults()
         if len(phases) == 0:
-            self.refreshAlphasGroupBox(set())
+            self.alphasBox.clear()
             return
 
         css = set.union(*[phase.cs() for group in phases.values() for phase in group])
-        self.refreshAlphasGroupBox(css)
+        self.alphasBox.refresh(css)
 
         self.numPhases = max(len(v) for v in phases.values())
         self.phaseNum = min(self.phaseNum, self.numPhases)
@@ -748,14 +344,14 @@ If you have any questions, contact any of the authors.
 
         self.tableWidget.selectColumn(self.phaseNum - 1)
 
-        self.phaseInfo.setText(f'Phase {self.phaseNum}/{self.numPhases}')
+        self.plotBox.phaseBox.setInfo(self.phaseNum, self.numPhases)
 
         any_rand = any(p[self.phaseNum - 1].rand for p in self.phases.values())
         self.params['num_trials'].box.setDisabled(not any_rand)
-        self.toggleRandButton.setChecked(any_rand)
+        # self.actionButtons.toggleRandButton.setChecked(any_rand)
 
         any_lambda = any(p[self.phaseNum - 1].lamda is not None for p in self.phases.values())
-        self.phaseLambdaButton.setChecked(any_lambda)
+        # self.phaseLambdaButton.setChecked(any_lambda)
 
     def pickLine(self, event):
         label = event.artist.get_label()
@@ -777,48 +373,20 @@ If you have any questions, contact any of the authors.
         else:
             ylabel = 'Y'
 
-        self.xCoordInfo.setText(f'Trial: {max(1 + event.xdata, 1):.0f}')
-        self.yCoordInfo.setText(f'{ylabel}: {event.ydata:.2f}')
-
-    def plotExperiment(self):
-        strengths, phases, args = self.generateResults()
-        if len(phases) == 0:
-            return
-
-        figures = generate_figures(
-            strengths,
-            phases = phases,
-            plot_alpha = args.plot_alpha and not AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
-            plot_macknhall = args.plot_macknhall and AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
-            dpi = self.dpi,
-            ticker_threshold = True,
-        )
-
-        for fig in figures:
-            fig.canvas.mpl_connect('pick_event', self.pickLine)
-            fig.show()
-        return strengths
+        self.plotBox.phaseBox.setCoordInfo(max(1 + event.xdata, 1), ylabel, event.ydata)
 
     def updateWidgets(self):
+        # self.relax_size(self)
         self.tableWidget.update()
         self.tableWidget.repaint()
         self.tableWidget.updateSizes()
         self.update()
         self.repaint()
 
-    def prevPhase(self):
-        if self.phaseNum == 1:
-            return
-
-        self.phaseNum -= 1
-        self.refreshFigure()
-
-    def nextPhase(self):
-        if self.phaseNum >= self.numPhases:
-            return
-
-        self.phaseNum += 1
-        self.refreshFigure()
+    def relax_size(self, elem):
+        elem.setMinimumSize(0, 0)
+        for child in elem.findChildren(QWidget):
+            self.relax_size(child)
 
 def parse_args():
     if len(sys.argv) > 1 and sys.argv[1].lower() == 'cli':
