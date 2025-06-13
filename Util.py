@@ -426,7 +426,7 @@ class AlphasBox(QGroupBox):
 
 class AdaptiveTypeButtons(QGroupBox):
     def __init__(self, parent):
-        super().__init__('Adaptive Type', parent = parent)
+        super().__init__('Models', parent = parent)
         self.parent = parent
 
         layout = QVBoxLayout()
