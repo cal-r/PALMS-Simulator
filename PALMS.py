@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-import sys
 if 'DISPLAY' in os.environ:
     os.environ["QT_QPA_PLATFORM"] = "xcb"
 
@@ -269,6 +268,26 @@ class PavlovianApp(QDialog):
 
         return strengths, phases, args
 
+    def plotExperiment(self):
+        strengths, phases, args = self.generateResults()
+        if len(phases) == 0:
+            return
+
+        figures = generate_figures(
+            strengths,
+            phases = phases,
+            plot_alpha = args.plot_alpha and not AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
+            plot_macknhall = args.plot_macknhall and AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
+            dpi = self.dpi,
+            ticker_threshold = True,
+        )
+
+        for fig in figures:
+            fig.canvas.mpl_connect('pick_event', self.pickLine)
+            fig.show()
+        return strengths
+
+
     def refreshExperiment(self):
         self.tableWidget.updateSizes()
 
@@ -357,11 +376,17 @@ class PavlovianApp(QDialog):
         self.plotBox.phaseBox.setCoordInfo(max(1 + event.xdata, 1), ylabel, event.ydata)
 
     def updateWidgets(self):
+        # self.relax_size(self)
         self.tableWidget.update()
         self.tableWidget.repaint()
         self.tableWidget.updateSizes()
         self.update()
         self.repaint()
+
+    def relax_size(self, elem):
+        elem.setMinimumSize(0, 0)
+        for child in elem.findChildren(QWidget):
+            self.relax_size(child)
 
 def parse_args():
     if len(sys.argv) > 1 and sys.argv[1].lower() == 'cli':

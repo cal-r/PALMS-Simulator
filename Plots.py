@@ -3,7 +3,6 @@ from __future__ import annotations
 import re
 import seaborn
 import matplotlib
-import numpy
 matplotlib.use('QtAgg')
 
 from matplotlib import pyplot

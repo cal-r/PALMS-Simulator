@@ -15,7 +15,7 @@ class CoolTable(QWidget):
         self.table.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
 
         self.table.verticalHeader().sectionDoubleClicked.connect(self.editExperimentNames) # type: ignore
-        self.table.horizontalHeader().setMinimumSectionSize(300) # type: ignore
+        self.table.horizontalHeader().setMinimumSectionSize(150) # type: ignore
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents) # type: ignore
 
         self.rightPlus = QPushButton('+')
