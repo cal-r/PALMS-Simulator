@@ -11,14 +11,14 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-latest
-            target: linux
-          - os: windows-latest
-            target: windows
+          # - os: ubuntu-latest
+            # target: linux
+          # - os: windows-latest
+            # target: windows
           - os: macos-13
             target: macos-intel
-          - os: macos-latest
-            target: macos-silicon
+          # - os: macos-latest
+            # target: macos-silicon
 
     steps:
     - uses: actions/checkout@v4
