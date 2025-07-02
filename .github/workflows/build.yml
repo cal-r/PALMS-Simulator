@@ -61,7 +61,7 @@ jobs:
     - name: Ad-hoc sign macOS bundle
       if: startsWith(matrix.target, 'macos-')
       run: |
-        find build/PALMS.app -type f \( -perm +111 -or -name "*.dylib" -or -name "*.so" \) -exec codesign --force --sign - {} \;
+        find build/PALMS.app -type f -exec codesign --force --sign - {} \;
         codesign --force --options runtime --deep --sign - build/PALMS.app
 
     - name: Prepare release dir
