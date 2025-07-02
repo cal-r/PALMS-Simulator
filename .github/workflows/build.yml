@@ -15,8 +15,10 @@ jobs:
             target: linux
           - os: windows-latest
             target: windows
+          - os: macos-13
+            target: macos-intel
           - os: macos-latest
-            target: macos
+            target: macos-silicon
 
     steps:
     - uses: actions/checkout@v4
@@ -26,51 +28,17 @@ jobs:
         python-version: '3.12.6'
         cache: 'pip'
 
-    - name: Cache pip
-      uses: actions/cache@v4
-      with:
-        path: ~/.cache/pip
-        key: pip-${{ runner.os }}-${{ hashFiles('requirements.txt') }}
-        restore-keys: |
-          pip-${{ runner.os }}-
+    - name: Install build dependencies (Linux)
+      if: matrix.target == 'linux'
+      run: sudo apt-get update && sudo apt-get install -y patchelf
 
     - name: Install Python deps
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install pyinstaller pyside6
+        pip install pyinstaller pyside6 matplotlib seaborn pillow
 
-    - name: Create release dir
-      run: mkdir -p release
-
-    # ---- MacOS build ----
-    - name: Build Mac app bundle
-      if: matrix.target == 'macos'
-      run: |
-        pyinstaller PALMS.py \
-          --noconfirm \
-          --onedir \
-          --windowed \
-          --icon=resources/palms.icns \
-          --add-data "resources:resources" \
-          --strip
-
-    - name: Self-sign Mac app bundle (ad-hoc)
-      if: matrix.target == 'macos'
-      run: |
-        find dist/PALMS.app -type f -exec codesign --force --sign - {} \;
-        codesign --force --options runtime --deep --sign - dist/PALMS.app
-
-    - name: Make Mac app executable
-      if: matrix.target == 'macos'
-      run: chmod +x dist/PALMS.app/Contents/MacOS/PALMS
-
-    - name: Archive macOS app
-      if: matrix.target == 'macos'
-      run: |
-        tar --no-xattrs -czf release/palms-macos.tar.gz Experiments -C dist PALMS.app
-
-    # ---- Linux build ----
+    # Build steps per platform
     - name: Build Linux executable
       if: matrix.target == 'linux'
       run: |
@@ -82,20 +50,57 @@ jobs:
           --add-data "resources:resources" \
           --strip
 
-    - name: Make Linux binary executable
-      if: matrix.target == 'linux'
-      run: chmod +x dist/PALMS
-
-    - name: Archive Linux binary
-      if: matrix.target == 'linux'
-      run: |
-        tar -czf release/palms-linux.tar.gz Experiments -C dist PALMS
-
-    # ---- Windows build ----
     - name: Build Windows executable
       if: matrix.target == 'windows'
       run: |
-        pyinstaller PALMS.py --noconfirm --onefile --windowed --icon=resources/palms.ico --add-data "resources;resources" --strip
+        pyinstaller PALMS.py ^
+          --noconfirm ^
+          --onefile ^
+          --windowed ^
+          --icon=resources/palms.ico ^
+          --add-data "resources;resources" ^
+          --strip
+      shell: cmd
+
+    - name: Build macOS Intel app
+      if: matrix.target == 'macos-intel'
+      run: |
+        pyinstaller PALMS.py \
+          --noconfirm \
+          --onedir \
+          --windowed \
+          --icon=resources/palms.icns \
+          --add-data "resources:resources" \
+          --strip
+
+    - name: Build macOS Silicon app
+      if: matrix.target == 'macos-silicon'
+      run: |
+        pyinstaller PALMS.py \
+          --noconfirm \
+          --onedir \
+          --windowed \
+          --icon=resources/palms.icns \
+          --add-data "resources:resources" \
+          --strip
+
+    # Mac app self-signing (for both mac targets)
+    - name: Ad-hoc self-sign macOS app bundle
+      if: startsWith(matrix.target, 'macos-')
+      run: |
+        chmod +x dist/PALMS.app/Contents/MacOS/PALMS
+        find dist/PALMS.app -type f -exec codesign --force --sign - {} \;
+        codesign --force --options runtime --deep --sign - dist/PALMS.app
+
+    - name: Prepare release dir
+      run: mkdir -p release
+
+    # Archiving steps per platform
+    - name: Archive Linux binary
+      if: matrix.target == 'linux'
+      run: |
+        chmod +x dist/PALMS
+        tar -czf release/palms-linux.tar.gz Experiments -C dist PALMS
 
     - name: Archive Windows binary
       if: matrix.target == 'windows'
@@ -103,7 +108,19 @@ jobs:
         7z a -tzip release/palms-windows.zip dist/PALMS.exe
         7z a -tzip release/palms-windows.zip Experiments
 
-    # ---- Common steps ----
+    - name: Archive macOS Intel app
+      if: matrix.target == 'macos-intel'
+      run: |
+        chmod +x dist/PALMS.app/Contents/MacOS/PALMS
+        tar --no-xattrs -czf release/palms-macos-intel.tar.gz Experiments -C dist PALMS.app
+
+    - name: Archive macOS Silicon app
+      if: matrix.target == 'macos-silicon'
+      run: |
+        chmod +x dist/PALMS.app/Contents/MacOS/PALMS
+        tar --no-xattrs -czf release/palms-macos-silicon.tar.gz Experiments -C dist PALMS.app
+
+    # Tagging and release (runs only once per workflow)
     - name: Commit latest tag
       if: github.ref == 'refs/heads/release'
       env:
@@ -121,10 +138,3 @@ jobs:
         tag_name: latest
         files: release/*
 
-    - if: failure()
-      uses: softprops/action-gh-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: latest
-        files: release/*
