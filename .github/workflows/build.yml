@@ -59,11 +59,11 @@ jobs:
           linux)     python -m nuitka $COMMON --onefile --output-dir=build "$SRC" ;;
         esac
 
-    - name: Ad-hoc sign macOS bundle
-      if: startsWith(matrix.target, 'macos-')
-      run: |
-        find build/PALMS.app -type f -exec codesign --force --sign - {} \;
-        codesign --force --options runtime --deep --sign - build/PALMS.app
+    # - name: Ad-hoc sign macOS bundle
+    #   if: startsWith(matrix.target, 'macos-')
+    #   run: |
+    #     find build/PALMS.app -type f -exec codesign --force --sign - {} \;
+    #     codesign --force --options runtime --deep --sign - build/PALMS.app
 
     - name: Prepare release dir
       run: mkdir -p release
