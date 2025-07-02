@@ -11,14 +11,12 @@ jobs:
     strategy:
       matrix:
         include:
-          # - os: ubuntu-latest
-            # target: linux
-          # - os: windows-latest
-            # target: windows
-          - os: macos-13
-            target: macos-intel
-          # - os: macos-latest
-            # target: macos-silicon
+          - os: ubuntu-latest
+            target: linux
+          - os: windows-latest
+            target: windows
+          - os: macos-latest
+            target: macos
 
     steps:
     - uses: actions/checkout@v4
@@ -28,80 +26,87 @@ jobs:
         python-version: '3.12.6'
         cache: 'pip'
 
-    - name: Install patchelf for Linux
-      if: matrix.target == 'linux'
-      run: sudo apt-get update && sudo apt-get install -y patchelf
-
-    - name: Cache ccache
+    - name: Cache pip
       uses: actions/cache@v4
       with:
-        path: |
-          ~/.cache/ccache
-          ~/Library/Caches/ccache
-          ~/.cache/Nuitka/downloads/ccache
-          ~/Library/Caches/Nuitka/downloads/ccache
-        key: ccache-${{ runner.os }}-${{ hashFiles('**/*.py') }}
+        path: ~/.cache/pip
+        key: pip-${{ runner.os }}-${{ hashFiles('requirements.txt') }}
         restore-keys: |
-          ccache-${{ runner.os }}-
+          pip-${{ runner.os }}-
 
     - name: Install Python deps
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install "nuitka[full]"
+        pip install pyinstaller pyside6
 
-    - name: Build with Nuitka
-      shell: bash
-      env:
-        SRC: PALMS.py
-        DATA: resources=resources
+    # ---- MacOS build ----
+    - name: Build Mac app bundle
+      if: matrix.target == 'macos'
       run: |
-        COMMON="--enable-plugin=pyside6 \
-                --enable-plugin=matplotlib \
-                --include-data-dir=${DATA} \
-                --output-filename=PALMS \
-                --show-progress \
-                --clang \
-                --lto=no \
-                --assume-yes-for-downloads \
-                --jobs=4"
-        case "${{ matrix.target }}" in
-          macos-*)   python -m nuitka $COMMON --macos-create-app-bundle --standalone --macos-app-icon=resources/palms.icns --output-dir=build "$SRC" ;;
-          windows)   python -m nuitka $COMMON --onefile --windows-icon-from-ico=resources/palms.ico --output-dir=build "$SRC" ;;
-          linux)     python -m nuitka $COMMON --onefile --output-dir=build "$SRC" ;;
-        esac
+        pyinstaller PALMS.py \
+          --noconfirm \
+          --onedir \
+          --windowed \
+          --icon=resources/palms.icns \
+          --add-data "resources:resources" \
+          --strip
 
-    # - name: Ad-hoc sign macOS bundle
-    #   if: startsWith(matrix.target, 'macos-')
-    #   run: |
-    #     find build/PALMS.app -type f -exec codesign --force --sign - {} \;
-    #     codesign --force --options runtime --deep --sign - build/PALMS.app
+    - name: Self-sign Mac app bundle (ad-hoc)
+      if: matrix.target == 'macos'
+      run: |
+        find dist/PALMS.app -type f -exec codesign --force --sign - {} \;
+        codesign --force --options runtime --deep --sign - dist/PALMS.app
 
-    - name: Prepare release dir
-      run: mkdir -p release
+    - name: Make Mac app executable
+      if: matrix.target == 'macos'
+      run: chmod +x dist/PALMS.app/Contents/MacOS/PALMS
+
+    - name: Archive macOS app
+      if: matrix.target == 'macos'
+      run: |
+        tar --no-xattrs -czf release/palms-macos.tar.gz Experiments -C dist PALMS.app
+
+    # ---- Linux build ----
+    - name: Build Linux executable
+      if: matrix.target == 'linux'
+      run: |
+        pyinstaller PALMS.py \
+          --noconfirm \
+          --onefile \
+          --windowed \
+          --icon=resources/palms.png \
+          --add-data "resources:resources" \
+          --strip
+
+    - name: Make Linux binary executable
+      if: matrix.target == 'linux'
+      run: chmod +x dist/PALMS
 
     - name: Archive Linux binary
       if: matrix.target == 'linux'
       run: |
-        chmod +x build/PALMS
-        tar -czf release/palms-linux.tar.gz Experiments -C build PALMS
+        tar -czf release/palms-linux.tar.gz Experiments -C dist PALMS
+
+    # ---- Windows build ----
+    - name: Build Windows executable
+      if: matrix.target == 'windows'
+      run: |
+        pyinstaller PALMS.py ^
+          --noconfirm ^
+          --onefile ^
+          --windowed ^
+          --icon=resources/palms.ico ^
+          --add-data "resources;resources" ^
+          --strip
 
     - name: Archive Windows binary
       if: matrix.target == 'windows'
       run: |
-        7z a -tzip release/palms-windows.zip build/PALMS.exe
+        7z a -tzip release/palms-windows.zip dist/PALMS.exe
         7z a -tzip release/palms-windows.zip Experiments
 
-    - name: Archive macOS Intel bundle
-      if: matrix.target == 'macos-intel'
-      run: |
-        tar --no-xattrs -czf release/palms-macos-intel.tar.gz Experiments -C build PALMS.app
-
-    - name: Archive macOS Silicon bundle
-      if: matrix.target == 'macos-silicon'
-      run: |
-        tar --no-xattrs -czf release/palms-macos-silicon.tar.gz Experiments -C build PALMS.app
-
+    # ---- Common steps ----
     - name: Commit latest tag
       if: github.ref == 'refs/heads/release'
       env:
