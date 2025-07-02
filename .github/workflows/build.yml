@@ -51,10 +51,11 @@ jobs:
                 --jobs=2 \
                 --show-progress \
                 --clang \
-                --lto=no"
+                --lto=no \
+                --assume-yes-for-downloads"
         case "${{ matrix.target }}" in
           macos-*)   python -m nuitka $COMMON --macos-create-app-bundle --standalone --macos-app-icon=resources/palms.icns --output-dir=build "$SRC" ;;
-          windows)   python -m nuitka $COMMON --onefile --assume-yes-for-downloads --windows-icon-from-ico=resources/palms.ico --output-dir=build "$SRC" ;;
+          windows)   python -m nuitka $COMMON --onefile --windows-icon-from-ico=resources/palms.ico --output-dir=build "$SRC" ;;
           linux)     python -m nuitka $COMMON --onefile --output-dir=build "$SRC" ;;
         esac
 
