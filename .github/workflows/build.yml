@@ -95,13 +95,7 @@ jobs:
     - name: Build Windows executable
       if: matrix.target == 'windows'
       run: |
-        pyinstaller PALMS.py ^
-          --noconfirm ^
-          --onefile ^
-          --windowed ^
-          --icon=resources/palms.ico ^
-          --add-data "resources;resources" ^
-          --strip
+        pyinstaller PALMS.py --noconfirm --onefile --windowed --icon=resources/palms.ico --add-data "resources;resources" --strip
 
     - name: Archive Windows binary
       if: matrix.target == 'windows'
