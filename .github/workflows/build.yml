@@ -53,7 +53,7 @@ jobs:
                 --clang \
                 --lto=no"
         case "${{ matrix.target }}" in
-          macos-*)   python -m nuitka $COMMON --standalone --macos-app-icon=resources/palms.icns --output-dir=build "$SRC" ;;
+          macos-*)   python -m nuitka $COMMON --macos-create-app-bundle --standalone --macos-app-icon=resources/palms.icns --output-dir=build "$SRC" ;;
           windows)   python -m nuitka $COMMON --onefile --assume-yes-for-downloads --windows-icon-from-ico=resources/palms.ico --output-dir=build "$SRC" ;;
           linux)     python -m nuitka $COMMON --onefile --output-dir=build "$SRC" ;;
         esac
@@ -61,7 +61,7 @@ jobs:
     - name: Ad-hoc sign macOS bundle
       if: startsWith(matrix.target, 'macos-')
       run: |
-        codesign --sign - --deep --force --options runtime build/PALMS.dist
+        codesign --sign - --deep --force --options runtime build/PALMS.app
 
     - name: Prepare release dir
       run: mkdir -p release
@@ -81,12 +81,12 @@ jobs:
     - name: Archive macOS Intel bundle
       if: matrix.target == 'macos-intel'
       run: |
-        tar -czf release/palms-macos-intel.tar.gz Experiments -C build PALMS.dist
+        tar --no-xattrs -czf release/palms-macos-intel.tar.gz Experiments -C build PALMS.app
 
     - name: Archive macOS Silicon bundle
       if: matrix.target == 'macos-silicon'
       run: |
-        tar -czf release/palms-macos-silicon.tar.gz Experiments -C build PALMS.dist
+        tar --no-xattrs -czf release/palms-macos-silicon.tar.gz Experiments -C build PALMS.app
 
     - name: Commit latest tag
       if: github.ref == 'refs/heads/release'
