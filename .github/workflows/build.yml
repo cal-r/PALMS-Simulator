@@ -85,11 +85,11 @@ jobs:
           --strip
 
     # Mac app self-signing (for both mac targets)
-    - name: Ad-hoc self-sign macOS app bundle
-      if: startsWith(matrix.target, 'macos-')
-      run: |
-        chmod +x dist/PALMS.app/Contents/MacOS/PALMS
-        codesign --deep --force --options runtime --deep --sign - dist/PALMS.app
+    # - name: Ad-hoc self-sign macOS app bundle
+    #   if: startsWith(matrix.target, 'macos-')
+    #   run: |
+    #     chmod +x dist/PALMS.app/Contents/MacOS/PALMS
+    #     codesign --deep --force --options runtime --deep --sign - dist/PALMS.app
 
     - name: Prepare release dir
       run: mkdir -p release
