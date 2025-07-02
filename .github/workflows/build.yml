@@ -89,8 +89,7 @@ jobs:
       if: startsWith(matrix.target, 'macos-')
       run: |
         chmod +x dist/PALMS.app/Contents/MacOS/PALMS
-        find dist/PALMS.app -type f -exec codesign --force --sign - {} \;
-        codesign --force --options runtime --deep --sign - dist/PALMS.app
+        codesign --deep --force --options runtime --deep --sign - dist/PALMS.app
 
     - name: Prepare release dir
       run: mkdir -p release
