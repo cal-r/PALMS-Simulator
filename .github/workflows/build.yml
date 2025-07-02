@@ -32,6 +32,18 @@ jobs:
       if: matrix.target == 'linux'
       run: sudo apt-get update && sudo apt-get install -y patchelf
 
+    - name: Cache ccache
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cache/ccache
+          ~/Library/Caches/ccache
+          ~/.cache/Nuitka/downloads/ccache
+          ~/Library/Caches/Nuitka/downloads/ccache
+        key: ccache-${{ runner.os }}-${{ hashFiles('**/*.py') }}
+        restore-keys: |
+          ccache-${{ runner.os }}-
+
     - name: Install Python deps
       run: |
         python -m pip install --upgrade pip
@@ -48,11 +60,11 @@ jobs:
                 --enable-plugin=matplotlib \
                 --include-data-dir=${DATA} \
                 --output-filename=PALMS \
-                --jobs=2 \
                 --show-progress \
                 --clang \
                 --lto=no \
-                --assume-yes-for-downloads"
+                --assume-yes-for-downloads \
+                --jobs=4"
         case "${{ matrix.target }}" in
           macos-*)   python -m nuitka $COMMON --macos-create-app-bundle --standalone --macos-app-icon=resources/palms.icns --output-dir=build "$SRC" ;;
           windows)   python -m nuitka $COMMON --onefile --windows-icon-from-ico=resources/palms.ico --output-dir=build "$SRC" ;;
