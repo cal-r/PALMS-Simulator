@@ -43,25 +43,40 @@ jobs:
       - name: Run app, screenshot, and check for errors
         shell: bash
         run: |
+          set -euxo pipefail
+
           mkdir -p logs screenshots
 
-          # Start the app, capture output
+          # Start the app, capture output in background
           dist/PALMS.app/Contents/MacOS/PALMS > logs/stdout.log 2> logs/stderr.log &
           APP_PID=$!
 
-          sleep 5
+          sleep 10
 
           # Screenshot while app is running
           screencapture -x screenshots/gui.png
 
-          # Check if app is still running
+          # Check if app is still running (optional, but useful)
           if ! ps -p $APP_PID > /dev/null; then
             echo "App is not running as expected" >&2
             exit 1
           fi
 
-          # Kill the app
+          # Kill the app (clean up)
           kill $APP_PID || true
+
+          # Wait for app to finish and capture exit code
+          wait $APP_PID
+          APP_EXIT_CODE=$?
+
+          echo "App exited with code $APP_EXIT_CODE" >> logs/stdout.log
+
+          if [ $APP_EXIT_CODE -ne 0 ]; then
+            echo "App exited with error code $APP_EXIT_CODE"
+            cat logs/stdout.log
+            cat logs/stderr.log
+            exit 1
+          fi
 
           # Check for stderr output
           if [ -s logs/stderr.log ]; then
@@ -72,7 +87,7 @@ jobs:
 
           # Check for crash logs in last 10 minutes
           mkdir -p logs/crash_reports
-          NEW_CRASH=$(find ~/Library/Logs/DiagnosticReports -name "*.crash" -type f -newermt "-10 minutes")
+          NEW_CRASH=$(find ~/Library/Logs/DiagnosticReports -name "*.crash" -type f -newermt "-10 minutes" || true)
           if [ ! -z "$NEW_CRASH" ]; then
             echo "Crash log(s) found!"
             cp $NEW_CRASH logs/crash_reports/
