@@ -5,6 +5,7 @@ import os
 os.environ['QT_AUTO_SCREEN_SCALE_FACTOR'] = 'TRUE'
 os.environ["QT_API"] = "PySide6"
 
+import logging
 import sys
 import Simulator
 
@@ -13,7 +14,7 @@ from collections import defaultdict
 from itertools import zip_longest
 from pathlib import Path
 from PySide6.QtCore import QTimer, Qt
-from PySide6.QtGui import QFont, QPixmap
+from PySide6.QtGui import QFont, QPixmap, QGuiApplication
 from PySide6.QtWidgets import *
 
 from Experiment import RWArgs, Experiment, Phase
@@ -26,7 +27,7 @@ from matplotlib import pyplot
 
 from Util import *
 
-class PavlovianApp(QDialog):
+class PavlovianApp(QMainWindow):
     adaptive_types: list[str]
     current_adaptive_type: str
 
@@ -48,7 +49,7 @@ class PavlovianApp(QDialog):
 
     dpi: int
 
-    def __init__(self, dpi = 200, screenshot_ready = False, parent=None):
+    def __init__(self, dpi = 200, screenshot_ready = False, parent=None, smoke_test = False):
         super(PavlovianApp, self).__init__(parent)
 
         self.adaptive_types = AdaptiveType.types().keys()
@@ -81,7 +82,12 @@ class PavlovianApp(QDialog):
         self.initUI()
         QTimer.singleShot(100, self.updateWidgets)
 
+        if smoke_test:
+            logging.info('Setting single shot smoke test for 5 seconds')
+            QTimer.singleShot(5000, self.closeProgram)
+
     def initUI(self):
+        logging.info(f'Init UI using {QGuiApplication.platformName()}')
         self.tableWidget = CoolTable(2, 1, parent = self)
         self.tableWidget.table.setMaximumHeight(120)
         self.tableWidget.onCellChange(self.refreshExperiment)
@@ -120,13 +126,13 @@ class PavlovianApp(QDialog):
         mainLayout.setColumnStretch(2, 0)
         mainLayout.setColumnStretch(3, 1)
         mainLayout.setColumnStretch(4, 0)
-        self.setLayout(mainLayout)
+        centralWidget = QWidget(self)
+        centralWidget.setLayout(mainLayout)
+        self.setCentralWidget(centralWidget)
 
         self.setWindowTitle("PALMS Simulator")
         self.setWindowFlags(Qt.WindowType.Window | Qt.WindowType.WindowCloseButtonHint | Qt.WindowType.WindowMaximizeButtonHint)
         adaptiveTypeButtons.children()[1].click()
-
-        # self.resize(1400, 600)
 
     def loadFile(self, filename):
         lines = [x.strip() for x in open(filename)]
@@ -390,6 +396,10 @@ class PavlovianApp(QDialog):
         for child in elem.findChildren(QWidget):
             self.relax_size(child)
 
+    def closeProgram(self):
+        logging.info('Closing program')
+        self.close()
+
 def parse_args():
     if len(sys.argv) > 1 and sys.argv[1].lower() == 'cli':
         sys.argv[0] = f'{sys.argv[0]} {sys.argv[1]}'
@@ -407,6 +417,7 @@ def parse_args():
     gui_parser.add_argument('--fontsize', type = int, default = None, help = 'Fontsize of the GUI; screenshots are taken in fontsize 16.')
     gui_parser.add_argument('--screenshot-ready', action = 'store_true', help = 'Hide guide numbers for easier screenshots.')
     gui_parser.add_argument('--debug', action = 'store_true', help = 'Whether to go to a debugging console if there is an exception')
+    gui_parser.add_argument('--smoke-test', action = 'store_true', help = 'Run a smoke test: open the app, log everything, wait 5 seconds, close the app.')
     gui_parser.add_argument('load_file', nargs = '?', help = 'File to load initially')
 
     if len(sys.argv) > 1 and sys.argv[1] in ['-h', '--help']:
@@ -416,6 +427,10 @@ def parse_args():
 
 def main():
     args = parse_args()
+    if args.smoke_test:
+        logging.basicConfig(level=logging.INFO, format='[%(relativeCreated)d] %(message)s')
+
+    logging.info('Starting')
 
     app = QApplication(sys.argv)
 
@@ -430,14 +445,21 @@ def main():
     if dpi is None:
         dpi = 110 * app.primaryScreen().devicePixelRatio()
 
-    gallery = PavlovianApp(dpi = dpi, screenshot_ready = args.screenshot_ready)
+    logging.info('Creating gallery')
+
+    gallery = PavlovianApp(dpi = dpi, screenshot_ready = args.screenshot_ready, smoke_test = args.smoke_test)
     gallery.show()
 
+    logging.info('Loading file')
     if args.load_file:
         gallery.loadFile(args.load_file)
         gallery.refreshExperiment()
 
-    sys.exit(app.exec())
+    logging.info('Executing app')
+    code = app.exec()
+
+    logging.info('Finished!')
+    sys.exit(code)
 
 if __name__ == '__main__':
     main()
