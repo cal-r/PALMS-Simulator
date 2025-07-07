@@ -95,6 +95,6 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: latest
-          files: release_*
+          files: release/release_macos.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
