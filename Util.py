@@ -201,8 +201,9 @@ class ActionButtons(QWidget):
 
     def saveExperiment(self):
         default_directory = os.path.join(os.getcwd(), 'Experiments')
-        os.makedirs(default_directory, exist_ok = True)
-        default_file_name = os.path.join(default_directory, "experiment.rw")
+        default_file_name = "experiment.rw"
+        if os.path.exists(default_directory):
+            default_file_name = os.path.join(default_directory, "experiment.rw")
 
         fileName, _ = QFileDialog.getSaveFileName(self, "Save Experiment", default_file_name, "RW Files (*.rw);;All Files (*)")
         if not fileName:
