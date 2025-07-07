@@ -1,0 +1,64 @@
+name: macOS GUI Test
+
+on:
+  push:
+    branches:
+      - release
+
+jobs:
+  gui-test:
+    name: Run GUI Smoke Test
+    runs-on: macos-latest
+    needs: build  # the job ID, not name
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download macOS app artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-latest-release
+          path: release/
+
+      - name: Extract .tar.gz
+        run: |
+          mkdir -p dist
+          tar -xzf release/release_macos.tar.gz -C dist
+
+      - name: Make app executable
+        run: chmod +x dist/PALMS.app/Contents/MacOS/PALMS
+
+      - name: Run app and capture output
+        run: |
+          mkdir -p logs
+          START=$(gdate +%s%3N || date +%s000)
+          dist/PALMS.app/Contents/MacOS/PALMS > logs/stdout.log 2> logs/stderr.log &
+          APP_PID=$!
+          sleep 5  # allow GUI to render
+          END=$(gdate +%s%3N || date +%s000)
+          echo "GUI launch time (ms): $((END - START))" > logs/launch_time.log
+          kill $APP_PID || true
+
+      - name: Screenshot GUI
+        run: |
+          mkdir -p screenshots
+          screencapture -x screenshots/gui.png || echo "Screenshot failed"
+
+      - name: Log running processes
+        run: |
+          osascript -e 'tell application "System Events" to get name of processes' > logs/process_list.log
+
+      - name: Check crash reports
+        run: |
+          mkdir -p logs/crash_reports
+          find ~/Library/Logs/DiagnosticReports -name "*.crash" -type f -newermt "$(date -v-10M '+%Y-%m-%d %H:%M:%S')" -exec cp {} logs/crash_reports/ \; || echo "No recent crash reports"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-gui-test-artifacts
+          path: |
+            logs
+            screenshots/gui.png
+
