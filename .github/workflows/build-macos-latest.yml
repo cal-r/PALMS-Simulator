@@ -73,15 +73,15 @@ jobs:
 
           if [ $APP_EXIT_CODE -ne 0 ]; then
             echo "App exited with error code $APP_EXIT_CODE"
-            cat logs/stdout.log
-            cat logs/stderr.log
+            cat logs/stdout.log || true
+            cat logs/stderr.log || true
             exit 1
           fi
 
           # Check for stderr output
           if [ -s logs/stderr.log ]; then
             echo "Error: stderr is not empty!"
-            cat logs/stderr.log
+            cat logs/stderr.log || true
             exit 1
           fi
 
@@ -92,6 +92,7 @@ jobs:
             echo "Crash log(s) found!"
             cp $NEW_CRASH logs/crash_reports/
             ls -l $NEW_CRASH
+            cat $NEW_CRASH
             exit 1
           fi
 
@@ -100,6 +101,7 @@ jobs:
         run: osascript -e 'tell application "System Events" to get name of processes' > logs/process_list.log
 
       - name: Upload logs and screenshot
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: macos-gui-test-artifacts
