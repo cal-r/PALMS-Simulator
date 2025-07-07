@@ -43,10 +43,10 @@ class AdaptiveType:
     def types(cls) -> dict[str, Type[AdaptiveType]]:
         return {
             'Rescorla Wagner': RescorlaWagner,
-            'RW with Adaptive Learning': RescorlaWagnerLinear,
+            'RW with Variable Learning Rate': RescorlaWagnerLinear,
             'Pearce Kaye Hall': PearceKayeHall,
             'Mackintosh Extended': LePelley,
-            'LePelley': LePelleyHybrid,
+            'LePelley\'s Hybrid': LePelleyHybrid,
             # 'MLAB Hybrid': MlabHybrid,
         }
 
@@ -140,6 +140,14 @@ class RescorlaWagner(AdaptiveType):
     def parameters(cls) -> list[str]:
         return ['alpha', 'beta', 'betan', 'lamda']
 
+    @classmethod
+    def defaults(cls) -> dict[str, float]:
+        return dict(
+            alpha = .25,
+            beta = .5,
+            betan = .3,
+        )
+
     def step(self, s: Stimulus, rp: RunParameters):
         s.assoc += s.alpha * self.delta_v_factor
 
@@ -160,6 +168,7 @@ class PearceHall(AdaptiveType):
     def parameters(cls) -> list[str]:
         return ['alpha', 'lamda', 'sigma', 'salience']
 
+
     def step(self, s: Stimulus, rp: RunParameters):
         s.alpha = abs(rp.lamda - rp.sigma)
         s.assoc += s.salience * s.alpha * abs(rp.lamda)
@@ -170,6 +179,14 @@ class PearceKayeHall(AdaptiveType):
     @classmethod
     def parameters(cls) -> list[str]:
         return ['alpha', 'beta', 'betan', 'lamda', 'gamma', 'salience']
+
+    @classmethod
+    def defaults(cls) -> dict[str, float]:
+        return dict(
+            salience = .1,
+            alpha = .5,
+            gamma = .15,
+        )
 
     def step(self, s: Stimulus, rp: RunParameters):
         rho = rp.lamda - (rp.sigmaE - rp.sigmaI)
@@ -188,6 +205,13 @@ class LePelley(AdaptiveType):
     @classmethod
     def parameters(cls) -> list[str]:
         return ['alpha', 'beta', 'betan', 'lamda', 'thetaE', 'thetaI']
+
+    @classmethod
+    def defaults(cls) -> dict[str, float]:
+        return dict(
+            thetaE = .1,
+            thetaI = .1,
+        )
 
     def step(self, s: Stimulus, rp: RunParameters):
         rho = rp.lamda - (rp.sigmaE - rp.sigmaI)
