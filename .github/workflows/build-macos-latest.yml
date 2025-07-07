@@ -48,7 +48,10 @@ jobs:
           mkdir -p logs screenshots
 
           # Start the app, capture output in background
-          dist/PALMS.app/Contents/MacOS/PALMS --smoke-test > logs/stdout.log 2> logs/stderr.log &
+          #
+          echo "Start time: $(date '+%Y-%m-%d %H:%M:%S.%3N')"
+          dist/PALMS.app/Contents/MacOS/PALMS --smoke-test > logs/stdout.log 2> logs/stderr.log
+          echo "End time: $(date '+%Y-%m-%d %H:%M:%S.%3N')"
           APP_PID=$!
 
           # # Screenshot while app is running
@@ -68,6 +71,12 @@ jobs:
           APP_EXIT_CODE=$?
 
           echo "App exited with code $APP_EXIT_CODE" >> logs/stdout.log
+
+          echo "Stdout:"
+          cat logs/stdout.log
+
+          echo "Stderr:"
+          cat logs/stderr.log
 
           if [ $APP_EXIT_CODE -ne 0 ]; then
             echo "App exited with error code $APP_EXIT_CODE"
