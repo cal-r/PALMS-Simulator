@@ -46,7 +46,13 @@ jobs:
           set -euxo pipefail
 
           echo "Start time: $(date '+%Y-%m-%d %H:%M:%S.%3N')"
-          dist/PALMS.app/Contents/MacOS/PALMS --smoke-test
+          dist/PALMS.app/Contents/MacOS/PALMS --smoke-test &
+
+          PID=$!
+          sleep 5
+          screencapture -x screenshot.png
+          wait $PID
+
           EXIT_CODE=$?
           echo "End time: $(date '+%Y-%m-%d %H:%M:%S.%3N')"
 
@@ -65,3 +71,12 @@ jobs:
             cat $NEW_CRASH
             exit 1
           fi
+
+      - name: Upload screenshot and logs
+        if: always()  # Ensures upload even if the previous step fails
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-gui-test-artifacts
+          path: |
+            screenshot.png
+            logs
