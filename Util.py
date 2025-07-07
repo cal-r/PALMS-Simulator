@@ -153,7 +153,7 @@ class ActionButtons(QWidget):
         printButton.clicked.connect(self.parent.plotExperiment)
         printButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-        hideButton = QPushButton("Toggle Stimulus Visibility")
+        hideButton = QPushButton("Toggle Visibility")
         hideButton.clicked.connect(self.hideExperiment)
         hideButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
