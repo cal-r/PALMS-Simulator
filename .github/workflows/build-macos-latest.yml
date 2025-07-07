@@ -1,29 +1,10 @@
-name: Build and Test Executables
+name: Build and Test MacOS Executable
 
 on:
   push:
-    branches:
-      - release
+    branches: [release]
 
 jobs:
-  build-linux:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-and-build
-        with:
-          os: ubuntu-latest
-          artifact-name: linux-latest-release
-
-  build-windows:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/setup-and-build
-        with:
-          os: windows-latest
-          artifact-name: windows-latest-release
-
   build-macos:
     runs-on: macos-latest
     steps:
@@ -71,7 +52,7 @@ jobs:
           # Screenshot while app is running
           screencapture -x screenshots/gui.png
 
-          # Check if app is still running (optional)
+          # Check if app is still running
           if ! ps -p $APP_PID > /dev/null; then
             echo "App is not running as expected" >&2
             exit 1

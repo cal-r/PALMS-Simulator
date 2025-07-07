@@ -1,0 +1,15 @@
+name: Build Windows Executable
+
+on:
+  push:
+    branches: [release]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-and-build
+        with:
+          os: windows-latest
+          artifact-name: windows-latest-release
