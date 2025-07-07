@@ -49,7 +49,7 @@ jobs:
           dist/PALMS.app/Contents/MacOS/PALMS --smoke-test &
 
           PID=$!
-          sleep 15
+          sleep 20
           echo "Making screenshot"
           screencapture -x screenshot.png
           wait $PID
