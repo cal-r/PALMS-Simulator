@@ -2,7 +2,9 @@ name: Build and Test MacOS Executable
 
 on:
   push:
-    branches: [release]
+    branches:
+      - release
+      - release-test
 
 jobs:
   build-macos:
