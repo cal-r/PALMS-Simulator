@@ -51,8 +51,8 @@ jobs:
           #
           echo "Start time: $(date '+%Y-%m-%d %H:%M:%S.%3N')"
           dist/PALMS.app/Contents/MacOS/PALMS --smoke-test > logs/stdout.log 2> logs/stderr.log
-          APP_PID=$!
           APP_EXIT_CODE=$?
+          # APP_PID=$!
           echo "End time: $(date '+%Y-%m-%d %H:%M:%S.%3N')"
 
           # # Screenshot while app is running
