@@ -34,8 +34,9 @@ jobs:
           artifact-name: macos-latest-release
 
   test-macos:
-    needs: build-macos
+    name: Test macOS Executable
     runs-on: macos-latest
+    needs: build-macos
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -47,39 +48,60 @@ jobs:
           path: release/
 
       - name: Extract .tar.gz
+        shell: bash
         run: |
           mkdir -p dist
           tar -xzf release/release_macos.tar.gz -C dist
 
       - name: Make app executable
+        shell: bash
         run: chmod +x dist/PALMS.app/Contents/MacOS/PALMS
 
-      - name: Run app and capture output
+      - name: Run app, screenshot, and check for errors
+        shell: bash
         run: |
-          mkdir -p logs
-          START=$(gdate +%s%3N || date +%s000)
+          mkdir -p logs screenshots
+
+          # Start the app, capture output
           dist/PALMS.app/Contents/MacOS/PALMS > logs/stdout.log 2> logs/stderr.log &
           APP_PID=$!
+
           sleep 5
-          END=$(gdate +%s%3N || date +%s000)
-          echo "GUI launch time (ms): $((END - START))" > logs/launch_time.log
+
+          # Screenshot while app is running
+          screencapture -x screenshots/gui.png
+
+          # Check if app is still running (optional)
+          if ! ps -p $APP_PID > /dev/null; then
+            echo "App is not running as expected" >&2
+            exit 1
+          fi
+
+          # Kill the app
           kill $APP_PID || true
 
-      - name: Screenshot GUI
-        run: |
-          mkdir -p screenshots
-          screencapture -x screenshots/gui.png || echo "Screenshot failed"
+          # Check for stderr output
+          if [ -s logs/stderr.log ]; then
+            echo "Error: stderr is not empty!"
+            cat logs/stderr.log
+            exit 1
+          fi
+
+          # Check for crash logs in last 10 minutes
+          mkdir -p logs/crash_reports
+          NEW_CRASH=$(find ~/Library/Logs/DiagnosticReports -name "*.crash" -type f -newermt "-10 minutes")
+          if [ ! -z "$NEW_CRASH" ]; then
+            echo "Crash log(s) found!"
+            cp $NEW_CRASH logs/crash_reports/
+            ls -l $NEW_CRASH
+            exit 1
+          fi
 
       - name: Log running processes
-        run: |
-          osascript -e 'tell application "System Events" to get name of processes' > logs/process_list.log
+        shell: bash
+        run: osascript -e 'tell application "System Events" to get name of processes' > logs/process_list.log
 
-      - name: Capture crash logs
-        run: |
-          mkdir -p logs/crash_reports
-          find ~/Library/Logs/DiagnosticReports -name "*.crash" -type f -newermt "$(date -v-10M '+%Y-%m-%d %H:%M:%S')" -exec cp {} logs/crash_reports/ \; || echo "No recent crash reports"
-
-      - name: Upload logs
+      - name: Upload logs and screenshot
         uses: actions/upload-artifact@v4
         with:
           name: macos-gui-test-artifacts
