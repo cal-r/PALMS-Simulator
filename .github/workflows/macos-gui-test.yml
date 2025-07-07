@@ -1,21 +1,21 @@
-name: macOS GUI Test
+name: Test macOS GUI
 
 on:
-  push:
-    branches:
-      - release
+  workflow_run:
+    workflows: ["Build Executables"]
+    types:
+      - completed
 
 jobs:
-  gui-test:
-    name: Run GUI Smoke Test
+  macos-gui-test:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: macos-latest
-    needs: build  # the job ID, not name
 
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download macOS app artifact
+      - name: Download macOS artifact
         uses: actions/download-artifact@v4
         with:
           name: macos-latest-release
@@ -35,7 +35,7 @@ jobs:
           START=$(gdate +%s%3N || date +%s000)
           dist/PALMS.app/Contents/MacOS/PALMS > logs/stdout.log 2> logs/stderr.log &
           APP_PID=$!
-          sleep 5  # allow GUI to render
+          sleep 5
           END=$(gdate +%s%3N || date +%s000)
           echo "GUI launch time (ms): $((END - START))" > logs/launch_time.log
           kill $APP_PID || true
@@ -49,12 +49,12 @@ jobs:
         run: |
           osascript -e 'tell application "System Events" to get name of processes' > logs/process_list.log
 
-      - name: Check crash reports
+      - name: Capture crash logs
         run: |
           mkdir -p logs/crash_reports
           find ~/Library/Logs/DiagnosticReports -name "*.crash" -type f -newermt "$(date -v-10M '+%Y-%m-%d %H:%M:%S')" -exec cp {} logs/crash_reports/ \; || echo "No recent crash reports"
 
-      - name: Upload artifacts
+      - name: Upload logs
         uses: actions/upload-artifact@v4
         with:
           name: macos-gui-test-artifacts
