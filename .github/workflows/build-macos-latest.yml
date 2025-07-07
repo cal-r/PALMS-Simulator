@@ -94,7 +94,7 @@ jobs:
       - name: Upload artifact to Releases
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ github.ref_name }}
-          files: release_macos.tar.gz
+          tag_name: latest
+          files: release_*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
