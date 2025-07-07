@@ -117,7 +117,7 @@ class ActionButtons(QWidget):
         plotAlphaButton.setCheckable(True)
         self.parent.plot_alpha = False
 
-        toggleRandButton = QPushButton('Toggle Rand')
+        toggleRandButton = QPushButton('Random')
         toggleRandButton.clicked.connect(self.toggleRand)
         toggleRandButton.setCheckable(True)
         toggleRandButton.setStyleSheet(checkedStyle)
@@ -135,7 +135,7 @@ class ActionButtons(QWidget):
         toggleAlphasButton.setStyleSheet(checkedStyle)
         toggleAlphasButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-        configuralButton = QPushButton('Configural Cues')
+        configuralButton = QPushButton('Add Configural Cues')
         configuralButton.clicked.connect(self.toggleConfiguralCues)
         configuralButton.setCheckable(True)
         configuralButton.setStyleSheet(checkedStyle)
@@ -153,7 +153,7 @@ class ActionButtons(QWidget):
         printButton.clicked.connect(self.parent.plotExperiment)
         printButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-        hideButton = QPushButton("Toggle Visibility")
+        hideButton = QPushButton("Toggle Stimulus Visibility")
         hideButton.clicked.connect(self.hideExperiment)
         hideButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
