@@ -168,6 +168,16 @@ class CoolTable(QWidget):
         self.clearEmptyColumns()
         self.updateSizes()
 
+    def clearAll(self):
+        self.table.clearContents()
+        self.clearEmptyCells()
+        self.addRow()
+        for row in range(self.rowCount()):
+            name = f'Group {row + 1}'
+            item = QTableWidgetItem(name)
+            item.name = name
+            self.table.setVerticalHeaderItem(row, item)
+
     def rowCount(self):
         return self.table.rowCount()
 

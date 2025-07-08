@@ -305,6 +305,11 @@ class PavlovianApp(QMainWindow):
         strengths, phases, args = self.generateResults()
         if len(phases) == 0:
             self.alphasBox.clear()
+            self.numPhases = 1
+            self.phaseNum = 1
+            self.figures = [pyplot.Figure()]
+            self.figures[0].set_canvas(self.plotCanvas)
+            self.refreshFigure()
             return
 
         css = set.union(*[phase.cs() for group in phases.values() for phase in group])

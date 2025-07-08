@@ -157,6 +157,10 @@ class ActionButtons(QWidget):
         hideButton.clicked.connect(self.hideExperiment)
         hideButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
+        clearButton = QPushButton("Clear Experiment")
+        clearButton.clicked.connect(self.clearExperiment)
+        clearButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
         modelInfoButton = QPushButton('Model Info')
         modelInfoButton.clicked.connect(self.showModelInfo)
         modelInfoButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
@@ -174,6 +178,7 @@ class ActionButtons(QWidget):
         plotOptionsLayout.addWidget(refreshButton)
         plotOptionsLayout.addWidget(printButton)
         plotOptionsLayout.addWidget(hideButton)
+        plotOptionsLayout.addWidget(clearButton)
         plotOptionsLayout.addWidget(modelInfoButton)
         plotOptionsGroupBox = QGroupBox("Plot Options")
         plotOptionsGroupBox.setLayout(plotOptionsLayout)
@@ -306,6 +311,10 @@ class ActionButtons(QWidget):
         value = not all(self.parent.line_hidden.values())
         self.parent.line_hidden = {k: value for k in self.parent.line_hidden.keys()}
         self.parent.refreshFigure()
+
+    def clearExperiment(self):
+        self.parent.tableWidget.clearAll()
+        self.parent.refreshExperiment()
 
     def showModelInfo(self):
         root = getattr(sys, '_MEIPASS', '.')
