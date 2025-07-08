@@ -145,9 +145,9 @@ class ActionButtons(QWidget):
         exportDataButton.clicked.connect(self.exportData)
         exportDataButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-        refreshButton = QPushButton("Refresh")
-        refreshButton.clicked.connect(parent.refreshExperiment)
-        refreshButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        # refreshButton = QPushButton("Refresh")
+        # refreshButton.clicked.connect(parent.refreshExperiment)
+        # refreshButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         printButton = QPushButton("Plot")
         printButton.clicked.connect(self.parent.plotExperiment)
@@ -175,7 +175,7 @@ class ActionButtons(QWidget):
 
         plotOptionsLayout = QVBoxLayout()
         plotOptionsLayout.addWidget(plotAlphaButton)
-        plotOptionsLayout.addWidget(refreshButton)
+        # plotOptionsLayout.addWidget(refreshButton)
         plotOptionsLayout.addWidget(printButton)
         plotOptionsLayout.addWidget(hideButton)
         plotOptionsLayout.addWidget(clearButton)
