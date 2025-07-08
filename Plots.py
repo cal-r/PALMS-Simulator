@@ -155,7 +155,7 @@ def generate_figures(
             axes[1].yaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x:.1f}'))
             axes[1].set_ylim(lowest, highest)
 
-        if not singular_legend:
+        if not singular_legend and len(experiments) < 50:
             properties: dict[str, Any]
             if len(experiments) >= 6:
                 properties = dict(fontsize = 7, ncol = 2)
