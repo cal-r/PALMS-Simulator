@@ -384,7 +384,17 @@ class AlphasBox(QGroupBox):
         super().__init__('Per-CS', parent = parent)
         self.parent = parent
 
-        layout = QHBoxLayout()
+        content = QWidget()
+        content.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+
+        scrollArea = QScrollArea()
+        scrollArea.setWidgetResizable(True)
+        scrollArea.setWidget(content)
+        scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        scrollArea.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+
+        layout = QHBoxLayout(content)
         for perc in parent.per_cs_param.keys():
             boxLayout = QFormLayout()
             boxLayout.setContentsMargins(0, 0, 0, 0)
@@ -392,9 +402,13 @@ class AlphasBox(QGroupBox):
 
             parent.per_cs_box[perc] = QWidget()
             parent.per_cs_box[perc].setLayout(boxLayout)
+            parent.per_cs_box[perc].setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
             layout.addWidget(parent.per_cs_box[perc])
 
-        self.setLayout(layout)
+        main_layout = QVBoxLayout(self)
+        main_layout.setContentsMargins(0, 0, 0, 0)
+        main_layout.addWidget(scrollArea)
+        self.setLayout(main_layout)
         self.setVisible(False)
         self.clear()
 
