@@ -343,9 +343,10 @@ class PavlovianApp(QMainWindow):
                 label = line.get_label().split(': ')[-1]
                 line.set_alpha(0 if self.line_hidden[label] else 1)
 
-            for line in ax.get_legend().get_lines():
-                label = line.get_label().split(': ')[-1]
-                line.set_alpha(.25 if self.line_hidden[label] else 1)
+            if ax.get_legend() is not None:
+                for line in ax.get_legend().get_lines():
+                    label = line.get_label().split(': ')[-1]
+                    line.set_alpha(.25 if self.line_hidden[label] else 1)
 
         self.plotCanvas.resize(self.plotCanvas.width() + 1, self.plotCanvas.height() + 1)
         self.plotCanvas.resize(self.plotCanvas.width() - 1, self.plotCanvas.height() - 1)

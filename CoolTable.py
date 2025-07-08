@@ -122,7 +122,7 @@ class CoolTable(QWidget):
 
     def updateSizes(self):
         self.setHeaderNames()
-        width = 2 + max(self.table.horizontalHeader().length(), 150) + self.table.verticalHeader().width()
+        width = 2 + min(max(self.table.horizontalHeader().length(), 150), 1000) + self.table.verticalHeader().width()
         height = 2 + self.table.verticalHeader().length() + self.table.horizontalHeader().height()
         
         self.table.setFixedSize(width, height)
