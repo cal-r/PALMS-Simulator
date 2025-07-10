@@ -378,7 +378,6 @@ class ParametersGroupBox(QGroupBox):
         self.setLayout(params)
         self.setMaximumWidth(90)
 
-
 class AlphasBox(QGroupBox):
     def __init__(self, parent):
         super().__init__('Per-CS', parent = parent)
@@ -499,6 +498,7 @@ class AdaptiveTypeButtons(QGroupBox):
 class PlotBox(QGroupBox):
     def __init__(self, parent):
         super().__init__('Plot', parent = parent)
+        self.setContentsMargins(0, 0, 0, 0)
         self.parent = parent
 
         self.plotCanvas = FigureCanvasQTAgg()
@@ -509,4 +509,6 @@ class PlotBox(QGroupBox):
         layout.addWidget(self.phaseBox)
         layout.setStretch(0, 1)
         layout.setStretch(1, 0)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
         self.setLayout(layout)
