@@ -83,7 +83,7 @@ class PavlovianApp(QMainWindow):
         QTimer.singleShot(100, self.updateWidgets)
 
         if smoke_test:
-            def run_smoke_test:
+            def run_smoke_test():
                 logging.info('Setting single shot smoke test for 60 seconds')
                 QTimer.singleShot(60000, self.closeProgram)
 

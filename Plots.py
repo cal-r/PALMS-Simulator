@@ -81,10 +81,6 @@ def generate_figures(
 
     experiment_css, colors, colors_alt, markers = get_css(data)
 
-    eps = 1e-1
-    lowest  = min(0, min(min(hist.assoc) for experiments in data for hist in experiments.values())) - eps
-    highest = max(0, max(max(hist.assoc) for experiments in data for hist in experiments.values())) + eps
-
     figures = []
     for phase_num, experiments in enumerate(data, start = 1):
         multiple = False
@@ -133,7 +129,7 @@ def generate_figures(
         # Instead of fixing the ticks ourselves, we plot in [0, t - 1] and format
         # the ticks to appear as the next number.
         axes[0].set_xlabel('Trial Number', fontsize = 'small', labelpad = 3)
-        axes[0].set_ylim(lowest, highest)
+        # axes[0].set_ylim(lowest, highest)
         axes[0].ticklabel_format(useOffset = False, style = 'plain', axis = 'y')
         axes[0].tick_params(axis = 'both', labelsize = 'x-small', pad = 1)
         axes[0].xaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x + 1:.0f}'))
@@ -151,7 +147,7 @@ def generate_figures(
             axes[1].set_title(f'Learning Rate')
             axes[1].set_xlabel('Trial Number', fontsize = 'small', labelpad = 3)
             axes[1].set_ylabel('Alpha', fontsize = 'small', labelpad = 3)
-            axes[1].set_ylim(lowest, highest)
+            # axes[1].set_ylim(lowest, highest)
             axes[1].tick_params(axis = 'both', labelsize = 'x-small', pad = 1)
             axes[1].tick_params(axis = 'y', which = 'both', right = True, length = 0)
             axes[1].xaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x + 1:.0f}'))
