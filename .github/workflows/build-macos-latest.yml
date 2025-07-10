@@ -73,14 +73,19 @@ jobs:
             exit 1
           fi
 
-      - name: Upload screenshot and logs
+      - name: Upload screenshot
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: macos-gui-test-artifacts
-          path: |
-            screenshot.png
-            logs
+          name: screenshot
+          path: screenshot.png
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs
+          path: logs
 
       - name: Create or update "latest" tag
         run: |
