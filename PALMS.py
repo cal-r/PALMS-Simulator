@@ -25,7 +25,7 @@ from CoolTable import CoolTable
 
 from matplotlib import pyplot
 
-from Util import *
+from GUIUtils import *
 
 class PavlovianApp(QMainWindow):
     adaptive_types: list[str]
