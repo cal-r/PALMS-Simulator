@@ -6,8 +6,9 @@ os.environ['QT_AUTO_SCREEN_SCALE_FACTOR'] = 'TRUE'
 os.environ["QT_API"] = "PySide6"
 
 import logging
+logging.basicConfig(level=logging.INFO, format='[%(relativeCreated)d] %(message)s')
+
 import sys
-import Simulator
 
 from argparse import ArgumentParser
 from collections import defaultdict
@@ -17,11 +18,14 @@ from PySide6.QtCore import QTimer, Qt
 from PySide6.QtGui import QFont, QPixmap, QGuiApplication
 from PySide6.QtWidgets import *
 
+import FastFontManager
+
 from Experiment import RWArgs, Experiment, Phase
 from Plots import generate_figures
 from Environment import StimulusHistory, Stimulus
 from AdaptiveType import AdaptiveType
 from CoolTable import CoolTable
+import Simulator
 
 from matplotlib import pyplot
 
