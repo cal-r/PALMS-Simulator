@@ -83,8 +83,11 @@ class PavlovianApp(QMainWindow):
         QTimer.singleShot(100, self.updateWidgets)
 
         if smoke_test:
-            logging.info('Setting single shot smoke test for 30 seconds')
-            QTimer.singleShot(30000, self.closeProgram)
+            def run_smoke_test:
+                logging.info('Setting single shot smoke test for 60 seconds')
+                QTimer.singleShot(60000, self.closeProgram)
+
+            QTimer.singleShot(0, run_smoke_test)
 
     def initUI(self):
         logging.info(f'Init UI using {QGuiApplication.platformName()}')
