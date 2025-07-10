@@ -19,17 +19,6 @@ from PySide6.QtGui import QFont, QPixmap, QGuiApplication
 from PySide6.QtWidgets import *
 
 import FastFontManager
-from matplotlib import font_manager
-font_manager.FontManager = FastFontManager
-
-def _get_fast_font_manager():
-    logging.info("Custom _get_font_manager called")
-    if font_manager._fontManager is None:
-        logging.info("Creating FastFontManager")
-        font_manager._fontManager = FastFontManager()
-    return font_manager._fontManager
-
-font_manager._get_font_manager = _get_fast_font_manager
 
 from Experiment import RWArgs, Experiment, Phase
 from Plots import generate_figures
