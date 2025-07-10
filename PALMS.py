@@ -286,6 +286,7 @@ class PavlovianApp(QMainWindow):
         figures = generate_figures(
             strengths,
             phases = phases,
+            plot_V = not args.plot_alpha and not args.plot_macknhall,
             plot_alpha = args.plot_alpha and not AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
             plot_macknhall = args.plot_macknhall and AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
             dpi = self.dpi,
@@ -323,6 +324,7 @@ class PavlovianApp(QMainWindow):
 
         self.figures = generate_figures(
             strengths,
+            plot_V = not args.plot_alpha and not args.plot_macknhall,
             plot_alpha = args.plot_alpha and not AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
             plot_macknhall = args.plot_macknhall and AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
             dpi = self.dpi,
