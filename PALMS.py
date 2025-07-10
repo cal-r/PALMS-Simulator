@@ -18,7 +18,7 @@ from PySide6.QtGui import QFont, QPixmap, QGuiApplication
 from PySide6.QtWidgets import *
 
 from Experiment import RWArgs, Experiment, Phase
-from Plots import generate_figures
+from Plots import generate_figures, save_plots
 from Environment import StimulusHistory, Stimulus
 from AdaptiveType import AdaptiveType
 from CoolTable import CoolTable
@@ -301,7 +301,6 @@ class PavlovianApp(QMainWindow):
             fig.show()
         return strengths
 
-
     def refreshExperiment(self):
         self.tableWidget.updateSizes()
 
@@ -412,6 +411,24 @@ class PavlovianApp(QMainWindow):
     def closeProgram(self):
         logging.info('Closing program')
         self.close()
+
+    def savePlots(self, filename, width, height, singular_legend):
+        strengths, phases, args = self.generateResults()
+        if len(phases) == 0:
+            return
+
+        save_plots(
+            strengths,
+            phases = phases,
+            plot_V = not args.plot_alpha and not args.plot_macknhall,
+            plot_alpha = args.plot_alpha and not AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
+            plot_macknhall = args.plot_macknhall and AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
+            dpi = self.dpi,
+            filename = filename,
+            plot_width = width,
+            plot_height = height,
+            singular_legend = singular_legend,
+        )
 
 def parse_args():
     if len(sys.argv) > 1 and sys.argv[1].lower() == 'cli':

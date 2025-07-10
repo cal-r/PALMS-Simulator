@@ -5,7 +5,8 @@ import sys
 from csv import DictWriter
 from typing import cast
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QSize
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import *
 
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
@@ -149,9 +150,13 @@ class ActionButtons(QWidget):
         # refreshButton.clicked.connect(parent.refreshExperiment)
         # refreshButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-        printButton = QPushButton("Plot")
+        printButton = QPushButton("Pop-out Plots")
         printButton.clicked.connect(self.parent.plotExperiment)
         printButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
+        savePlotButton = QPushButton('Save Plots')
+        savePlotButton.clicked.connect(self.savePlots)
+        savePlotButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         hideButton = QPushButton("Clear Figures")
         hideButton.clicked.connect(self.hideExperiment)
@@ -178,6 +183,7 @@ class ActionButtons(QWidget):
         plotOptionsLayout.addWidget(plotAlphaButton)
         # plotOptionsLayout.addWidget(refreshButton)
         plotOptionsLayout.addWidget(printButton)
+        plotOptionsLayout.addWidget(savePlotButton)
         plotOptionsLayout.addWidget(hideButton)
         plotOptionsLayout.addWidget(clearButton)
         plotOptionsLayout.addWidget(modelInfoButton)
@@ -309,6 +315,87 @@ class ActionButtons(QWidget):
                             'Alpha Hall': stimulus.alpha_hall,
                         }
                         writer.writerow(row)
+
+    def savePlots(self):
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Save Plots")
+        layout = QVBoxLayout(dialog)
+
+        # File selection (read-only)
+        file_layout = QHBoxLayout()
+        file_label = QLabel("Save as:")
+        file_edit = QLineEdit('plot.png')
+        file_edit.setReadOnly(True)
+        browse_btn = QPushButton("Browse...")
+
+        # File dialog with filter and suggested extension
+        def choose_file():
+            fname, _ = QFileDialog.getSaveFileName(
+                dialog, "Save Plots", "plot.png",
+                "PNG Files (*.png);;PDF Files (*.pdf);;SVG Files (*.svg);;All Files (*)"
+            )
+            if fname:
+                file_edit.setText(fname)
+        browse_btn.clicked.connect(choose_file)
+        file_layout.addWidget(file_label)
+        file_layout.addWidget(file_edit)
+        file_layout.addWidget(browse_btn)
+        layout.addLayout(file_layout)
+
+        width = QLineEdit('11')
+        width.setAlignment(Qt.AlignmentFlag.AlignRight)
+        width.setMaximumWidth(40)
+
+        height = QLineEdit('2')
+        height.setAlignment(Qt.AlignmentFlag.AlignRight)
+        height.setMaximumWidth(40)
+
+        wh_layout = QHBoxLayout()
+        wh_layout.addWidget(QLabel('Dimensions'))
+        wh_layout.addWidget(width)
+        wh_layout.addWidget(QLabel('×'))
+        wh_layout.addWidget(height)
+
+        legend_checkbox = QCheckBox("Separate legend")
+        wh_layout.addWidget(legend_checkbox)
+
+        layout.addLayout(wh_layout)
+
+        info = QToolButton()
+        info.setIcon(QIcon.fromTheme("dialog-question"))
+        info.setIconSize(QSize(20, 20))
+        info.setText('Info')
+        info.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        info_text = '''\
+The filenames are generated dynamically, one per phase, with the phase number besides the name.\n
+For example, if the selected filename is "plot.png", then generate files will be namednamed "plot_1.png", "plot_2.png", ..., "plot_N.png".\n
+Selecting "separate legend" removes the legend from these plots, and creates a new files called "plot_legend.png" with the legend\
+        '''
+        info.clicked.connect(lambda: QMessageBox.information(info, "Saving plots", info_text))
+
+        btn_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
+        btn_box.accepted.connect(dialog.accept)
+        btn_box.rejected.connect(dialog.reject)
+
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(info)
+        button_layout.addWidget(btn_box)
+
+        layout.addLayout(button_layout)
+
+        if dialog.exec() == QDialog.Accepted:
+            file_path = file_edit.text()
+            if not file_path:
+                QMessageBox.warning(self, "No file selected", "Please select a file to save.")
+                return
+            try:
+                width = int(width.text())
+                height = int(height.text())
+            except ValueError:
+                QMessageBox.warning(self, "Invalid input", "Width and Height must be integers.")
+                return
+            separate_legend = legend_checkbox.isChecked()
+            self.parent.savePlots(file_path, width, height, separate_legend)
 
     def hideExperiment(self):
         value = not all(self.parent.line_hidden.values())
