@@ -205,12 +205,14 @@ def save_plots(
     filename: None | str = None,
     plot_phase: None | int = None,
     plot_stimuli: None | list[str] = None,
+    plot_V: bool = True,
     plot_alpha: bool = False,
     plot_macknhall: bool = False,
     dpi: int = 200,
     show_title: bool = False,
     singular_legend: bool = False,
     plot_width: int = 11,
+    plot_height: int = 2,
 ):
     if filename is not None:
         filename = filename.removesuffix('.png')
@@ -245,7 +247,7 @@ def save_plots(
             fig.axes[0].set_ylabel('')
             fig.axes[0].set_yticklabels([])
 
-        fig.set_size_inches(plot_width / dep, 2 / dep)
+        fig.set_size_inches(plot_width / dep, plot_height / dep)
         # widths = {1: 5, 2: 2, 3: 5}
         # fig.set_size_inches(widths[phase_num] / dep, 2 / dep)
         fig.savefig(f'{filename}_{phase_num}.png', dpi = dpi or 150, bbox_inches = 'tight')
