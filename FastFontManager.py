@@ -1,12 +1,18 @@
-import importlib
+import json
 import logging
+import matplotlib
+import os
 import threading
 
-# Patch out matplotlib.font_manager._rebuild BEFORE importing matplotlib
-fm_mod = importlib.import_module("matplotlib.font_manager")
-fm_mod._rebuild = lambda *args, **kwargs: None
+cachedir = matplotlib.get_cachedir()
+version = matplotlib.__version__.replace(".", "")
+fontcache = os.path.join(cachedir, f"fontlist-v{version}.json")
 
-import matplotlib
+if not os.path.exists(fontcache):
+    with open(fontcache, "w") as f:
+        # You might want a real cache, but even a dummy dict is enough to bypass the warning
+        json.dump({"version": version, "cache": []}, f)
+
 from matplotlib import cbook, font_manager
 from matplotlib.font_manager import findSystemFonts
 
@@ -18,6 +24,8 @@ class FastFontManager(font_manager.FontManager):
             _log.warning("matplotlib.font_manager._fontManager already instantiated! FastFontManager patch too late.")
         else:
             _log.info("Using fast font manager")
+
+        print('Hello')
 
         self._version = self.__version__
         self.__default_weight = weight
