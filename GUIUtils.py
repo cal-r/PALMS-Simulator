@@ -238,10 +238,10 @@ class ActionButtons(QWidget):
     def togglePlotAlpha(self):
         if self.parent.plot_alpha:
             self.parent.plot_alpha = False
-            self.parent.resize(int(self.parent.width() - self.parent.plotCanvas.width() / 0.5), self.parent.height())
+            # self.parent.resize(int(self.parent.width() - self.parent.plotCanvas.width() / 0.5), self.parent.height())
         else:
             self.parent.plot_alpha = True
-            self.parent.resize(int(self.parent.width() + self.parent.plotCanvas.width() * 0.5), self.parent.height())
+            # self.parent.resize(int(self.parent.width() + self.parent.plotCanvas.width() * 0.5), self.parent.height())
 
         self.parent.refreshExperiment()
 

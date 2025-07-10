@@ -66,6 +66,7 @@ def generate_figures(
         phases: None | dict[str, list[Phase]] = None,
         title: None | str = None,
         plot_phase: None | int = None,
+        plot_V: bool = True,
         plot_alpha: bool = False,
         plot_macknhall: bool = False,
         plot_stimuli: None | list[str] = None,
@@ -87,7 +88,7 @@ def generate_figures(
     figures = []
     for phase_num, experiments in enumerate(data, start = 1):
         multiple = False
-        if not plot_alpha and not plot_macknhall:
+        if not plot_V or not plot_alpha and not plot_macknhall:
             fig, axes_ = pyplot.subplots(1, 1, figsize = (8, 6), dpi = dpi)
             axes = [axes_]
         else:
@@ -113,47 +114,52 @@ def generate_figures(
                 alpha = 1 - .5 * ratio,
                 picker = ticker_threshold,
             )
-            line = axes[0].plot(hist.assoc, label = key, **plot_options) # type: ignore
+
+            ax = axes[0]
+            if plot_V:
+                line = ax.plot(hist.assoc, label = key, **plot_options) # type: ignore
+                if multiple:
+                    ax = axes[1]
 
             cs = key.rsplit(' ', 1)[1]
-            if multiple:
-                if plot_alpha and not plot_macknhall:
-                    axes[1].plot(hist.alpha, label='α: '+str(key), **plot_options) # type: ignore
+            if plot_alpha and not plot_macknhall:
+                ax.plot(hist.alpha, label='α: '+str(key), **plot_options) # type: ignore
 
-                if plot_macknhall:
-                    axes[1].plot(hist.alpha_mack, label='Mack: ' + str(key), color = colors[key],     marker='$M$', markersize=6, alpha=1, picker = ticker_threshold)
-                    axes[1].plot(hist.alpha_hall, label='Hall: ' + str(key), color = colors_alt[key], marker='$H$', markersize=6, alpha=1, picker = ticker_threshold)
-
-        axes[0].set_xlabel('Trial Number', fontsize = 'small', labelpad = 3)
-        axes[0].set_ylabel('Associative Strength', fontsize = 'small', labelpad = 3)
-
-        axes[0].tick_params(axis = 'both', labelsize = 'x-small', pad = 1)
-        axes[0].ticklabel_format(useOffset = False, style = 'plain', axis = 'y')
+            if plot_macknhall:
+                ax.plot(hist.alpha_mack, label='Mack: ' + str(key), color = colors[key],     marker='$M$', markersize=6, alpha=1, picker = ticker_threshold)
+                ax.plot(hist.alpha_hall, label='Hall: ' + str(key), color = colors_alt[key], marker='$H$', markersize=6, alpha=1, picker = ticker_threshold)
 
         # Matplotlib makes it hard to start a plot with xticks = [1, t].
         # Instead of fixing the ticks ourselves, we plot in [0, t - 1] and format
         # the ticks to appear as the next number.
+        axes[0].set_xlabel('Trial Number', fontsize = 'small', labelpad = 3)
+        axes[0].set_ylim(lowest, highest)
+        axes[0].ticklabel_format(useOffset = False, style = 'plain', axis = 'y')
+        axes[0].tick_params(axis = 'both', labelsize = 'x-small', pad = 1)
         axes[0].xaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x + 1:.0f}'))
         axes[0].xaxis.set_major_locator(MaxNLocator(integer = True, min_n_ticks = 1))
-
         axes[0].yaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x:.1f}'))
 
-        axes[0].set_ylim(lowest, highest)
+        if plot_V:
+            axes[0].set_ylabel('Associative Strength', fontsize = 'small', labelpad = 3)
+        else:
+            axes[0].set_ylabel('Alpha', fontsize = 'small', labelpad = 3)
 
         if multiple:
             axes[0].set_title(f'Associative Strengths')
+
+            axes[1].set_title(f'Learning Rate')
             axes[1].set_xlabel('Trial Number', fontsize = 'small', labelpad = 3)
             axes[1].set_ylabel('Alpha', fontsize = 'small', labelpad = 3)
-            axes[1].set_title(f'Learning Rate')
-            axes[1].xaxis.set_major_locator(MaxNLocator(integer = True))
-            axes[1].yaxis.tick_right()
+            axes[1].set_ylim(lowest, highest)
             axes[1].tick_params(axis = 'both', labelsize = 'x-small', pad = 1)
             axes[1].tick_params(axis = 'y', which = 'both', right = True, length = 0)
-            axes[1].yaxis.set_label_position('right')
             axes[1].xaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x + 1:.0f}'))
+            axes[1].xaxis.set_major_locator(MaxNLocator(integer = True))
             axes[1].xaxis.set_major_locator(MaxNLocator(integer = True, min_n_ticks = 1))
+            axes[1].yaxis.set_label_position('right')
             axes[1].yaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x:.1f}'))
-            axes[1].set_ylim(lowest, highest)
+            axes[1].yaxis.tick_right()
 
         if not singular_legend and len(experiments) < 50:
             properties: dict[str, Any]
