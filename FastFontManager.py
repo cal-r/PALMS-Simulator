@@ -12,7 +12,7 @@ _log = logging.getLogger(__name__)
 class FastFontManager(font_manager.FontManager):
     def __init__(self, size=None, weight='normal'):
         if font_manager._fontManager is not None:
-            _log.warning("matplotlib.font_manager._fontManager already instantiated! "
+            logging.warn("matplotlib.font_manager._fontManager already instantiated! "
                          "FastFontManager patch too late.")
         else:
             logging.info('Using fast font manager')
@@ -34,7 +34,7 @@ class FastFontManager(font_manager.FontManager):
         self.ttflist = []
 
         # Delay the warning by 5s.
-        timer = threading.Timer(5, lambda: _log.warning('Matplotlib is building the font cache; this may take a moment.'))
+        timer = threading.Timer(5, lambda: _log.warning('Getting hardcoded fonts.'))
         timer.start()
         try:
             for fontext in ["afm", "ttf"]:
@@ -49,13 +49,3 @@ class FastFontManager(font_manager.FontManager):
         finally:
             timer.cancel()
 
-font_manager.FontManager = FastFontManager
-
-def _get_fast_font_manager():
-    logging.info("Custom _get_font_manager called")
-    if font_manager._fontManager is None:
-        logging.info("Creating FastFontManager")
-        font_manager._fontManager = FastFontManager()
-    return font_manager._fontManager
-
-font_manager._get_font_manager = _get_fast_font_manager
