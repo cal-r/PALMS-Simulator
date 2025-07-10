@@ -119,7 +119,7 @@ class PavlovianApp(QMainWindow):
         mainLayout.addWidget(actionButtons, 1, 4, 3, 1)
         mainLayout.addWidget(aboutButton, 4, 4, 1, 1)
         mainLayout.setRowStretch(0, 0)
-        mainLayout.setRowStretch(1, 0)
+        mainLayout.setRowStretch(1, 1)
         mainLayout.setRowStretch(2, 0)
         mainLayout.setRowStretch(3, 0)
         mainLayout.setRowStretch(4, 0)
