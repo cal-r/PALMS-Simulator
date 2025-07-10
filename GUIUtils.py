@@ -170,6 +170,7 @@ class ActionButtons(QWidget):
         phaseOptionsLayout.addWidget(phaseLambdaButton)
         phaseOptionsLayout.addWidget(toggleAlphasButton)
         phaseOptionsLayout.addWidget(configuralButton)
+        phaseOptionsLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
         phaseOptionsGroupBox = QGroupBox('Phase Options')
         phaseOptionsGroupBox.setLayout(phaseOptionsLayout)
 
@@ -180,6 +181,7 @@ class ActionButtons(QWidget):
         plotOptionsLayout.addWidget(hideButton)
         plotOptionsLayout.addWidget(clearButton)
         plotOptionsLayout.addWidget(modelInfoButton)
+        plotOptionsLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
         plotOptionsGroupBox = QGroupBox("Plot Options")
         plotOptionsGroupBox.setLayout(plotOptionsLayout)
 
@@ -187,6 +189,7 @@ class ActionButtons(QWidget):
         fileOptionsLayout.addWidget(fileButton)
         fileOptionsLayout.addWidget(saveButton)
         fileOptionsLayout.addWidget(exportDataButton)
+        fileOptionsLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
         fileOptionsGroupBox = QGroupBox("File Options")
         fileOptionsGroupBox.setLayout(fileOptionsLayout)
 
