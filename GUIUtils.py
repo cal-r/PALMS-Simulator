@@ -118,17 +118,17 @@ class ActionButtons(QWidget):
         plotAlphaButton.setCheckable(True)
         self.parent.plot_alpha = False
 
-        toggleRandButton = QPushButton('Random')
-        toggleRandButton.clicked.connect(self.toggleRand)
-        toggleRandButton.setCheckable(True)
-        toggleRandButton.setStyleSheet(checkedStyle)
-        toggleRandButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.toggleRandButton = QPushButton('Random')
+        self.toggleRandButton.clicked.connect(self.toggleRand)
+        self.toggleRandButton.setCheckable(True)
+        self.toggleRandButton.setStyleSheet(checkedStyle)
+        self.toggleRandButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-        phaseLambdaButton = QPushButton('Per-Phase λ')
-        phaseLambdaButton.clicked.connect(self.togglePhaseLambda)
-        phaseLambdaButton.setCheckable(True)
-        phaseLambdaButton.setStyleSheet(checkedStyle)
-        phaseLambdaButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.phaseLambdaButton = QPushButton('Per-Phase λ')
+        self.phaseLambdaButton.clicked.connect(self.togglePhaseLambda)
+        self.phaseLambdaButton.setCheckable(True)
+        self.phaseLambdaButton.setStyleSheet(checkedStyle)
+        self.phaseLambdaButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         toggleAlphasButton = QPushButton('Per-CS Parameters')
         toggleAlphasButton.clicked.connect(self.toggleAlphasBox)
@@ -171,8 +171,8 @@ class ActionButtons(QWidget):
         modelInfoButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         phaseOptionsLayout = QVBoxLayout()
-        phaseOptionsLayout.addWidget(toggleRandButton)
-        phaseOptionsLayout.addWidget(phaseLambdaButton)
+        phaseOptionsLayout.addWidget(self.toggleRandButton)
+        phaseOptionsLayout.addWidget(self.phaseLambdaButton)
         phaseOptionsLayout.addWidget(toggleAlphasButton)
         phaseOptionsLayout.addWidget(configuralButton)
         phaseOptionsLayout.setAlignment(Qt.AlignmentFlag.AlignTop)

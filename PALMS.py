@@ -108,7 +108,7 @@ class PavlovianApp(QMainWindow):
         self.plotBox = PlotBox(self)
         self.plotCanvas = self.plotBox.plotCanvas
 
-        actionButtons = ActionButtons(self)
+        self.actionButtons = ActionButtons(self)
 
         mainLayout = QGridLayout()
         mainLayout.setContentsMargins(0, 0, 0, 0)
@@ -119,7 +119,7 @@ class PavlovianApp(QMainWindow):
         mainLayout.addWidget(parametersGroupBox, 1, 1, 4, 1)
         mainLayout.addWidget(self.alphasBox, 1, 2, 4, 1)
         mainLayout.addWidget(self.plotBox, 1, 3, 4, 1)
-        mainLayout.addWidget(actionButtons, 1, 4, 3, 1)
+        mainLayout.addWidget(self.actionButtons, 1, 4, 3, 1)
         mainLayout.addWidget(aboutButton, 4, 4, 1, 1)
         mainLayout.setRowStretch(0, 0)
         mainLayout.setRowStretch(1, 1)
@@ -147,9 +147,6 @@ class PavlovianApp(QMainWindow):
         here = Path(__file__).resolve().parent
         pixmap = QPixmap(str(here / "resources" / filename), flags=Qt.ImageConversionFlag.NoFormatConversion)
         return pixmap.scaled(150, 150, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
-
-    def addActionsButtons(self):
-        return ActionButtons()
 
     class DualLabel:
         def __init__(self, text, parent, default, font = 'Monospace', hoverText = None):
@@ -368,10 +365,10 @@ class PavlovianApp(QMainWindow):
 
         any_rand = any(p[self.phaseNum - 1].rand for p in self.phases.values())
         self.params['num_trials'].box.setDisabled(not any_rand)
-        # self.actionButtons.toggleRandButton.setChecked(any_rand)
+        self.actionButtons.toggleRandButton.setChecked(any_rand)
 
         any_lambda = any(p[self.phaseNum - 1].lamda is not None for p in self.phases.values())
-        # self.phaseLambdaButton.setChecked(any_lambda)
+        self.actionButtons.phaseLambdaButton.setChecked(any_lambda)
 
     def pickLine(self, event):
         label = event.artist.get_label()
