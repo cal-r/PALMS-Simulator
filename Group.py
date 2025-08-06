@@ -139,9 +139,6 @@ class Group:
                     self.s[cs].window.append(self.s[cs].assoc)
                     window_avg = sum(self.s[cs].window) / len(self.s[cs].window)
 
-                    # delta_ma_hall is modified using the previous associated value.
-                    self.s[cs].delta_ma_hall = window_avg - hist[cs].assoc[-1]
-
                 hist[cs].add(self.s[cs])
 
         return Environment.fromHistories(hist)
