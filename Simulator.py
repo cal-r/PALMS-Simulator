@@ -65,7 +65,6 @@ def parse_args():
     experiment.add_argument("--gamma", metavar = 'γ', type = float, default = .15, help = "Weighting how much you rely on past experinces on DualV adaptive type.")
     experiment.add_argument("--thetaE", metavar = 'θᴱ', type = float, default = .3, help = "Theta for excitatory phenomena in LePelley blocking")
     experiment.add_argument("--thetaI", metavar = 'θᴵ', type = float, default = .1, help = "Theta for inhibitory phenomena in LePelley blocking")
-    experiment.add_argument("--window-size", type = int, default = None, help = 'Size of sliding window for adaptive learning')
     experiment.add_argument("--salience", metavar = 'S', type = float, default = .5, help = 'Salience for all parameters without an individually defined salience. This is used in the Pearce & Hall model.')
     experiment.add_argument("--habituation", metavar = 'h', type = float, default = .99, help = 'Habituation delay for all parameters in the hybrid model.')
     experiment.add_argument("--xi-hall", metavar = 'ξ', type = float, default = 0.2, help = 'Xi parameter for Hall alpha calculation')
@@ -95,12 +94,6 @@ def parse_args():
         raise KeyError(f"Arguments not recognised: {' '.join(rest)}.")
 
     args.use_adaptive = args.adaptive_type is not None
-
-    if args.window_size is None:
-        if args.adaptive_type.endswith('hall'):
-            args.window_size = 3
-        else:
-            args.window_size = 1
 
     if args.plot_alphas:
         args.plot_alpha = True

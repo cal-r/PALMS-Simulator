@@ -11,7 +11,6 @@ class Group:
     s: Environment
 
     adaptive_type: AdaptiveType
-    window_size: None | int
 
     @staticmethod
     def set_vals(cs: set[str], vals: dict[str, float], default: None | float) -> dict[str, float]:
@@ -50,7 +49,6 @@ class Group:
         thetaI: float,
         cs: set[str] = set(),
         adaptive_type: None | str = None,
-        window_size: None | int = None,
         xi_hall: None | float = None,
     ):
         cs = cs | alphas.keys() | saliences.keys() | habituations.keys() | alpha_macks.keys() | alpha_halls.keys()
@@ -90,7 +88,6 @@ class Group:
             thetaI = thetaI,
             kay = kay,
         )
-        self.window_size = window_size
 
     # runPhase runs a single trial of a phase, in order, and returns a list of the Strength values
     # of its CS at every step.
@@ -131,13 +128,6 @@ class Group:
                 # This is always either the maximum V_i, or the second maximum when i = cs.
                 rp.maxAssocRest = maxAssoc if cs != argmaxAssoc else secondMaxAssoc
                 self.adaptive_type.run_step(self.s[cs], rp)
-
-                if self.window_size is not None:
-                    if len(self.s[cs].window) >= self.window_size:
-                        self.s[cs].window.popleft()
-
-                    self.s[cs].window.append(self.s[cs].assoc)
-                    window_avg = sum(self.s[cs].window) / len(self.s[cs].window)
 
                 hist[cs].add(self.s[cs])
 
