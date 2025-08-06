@@ -73,7 +73,6 @@ class RWArgs:
     thetaE: float
     thetaI: float
 
-    window_size: int
     xi_hall: float
     num_trials: int
 
@@ -161,7 +160,6 @@ class Experiment:
             thetaI = args.thetaI,
             cs = stimuli,
             adaptive_type = args.adaptive_type,
-            window_size = args.window_size,
             xi_hall = args.xi_hall,
         )
 

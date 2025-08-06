@@ -24,8 +24,6 @@ class Stimulus:
     rho: float
     nu: float
 
-    window: deque[float]
-
     alpha_mack_0: float
     alpha_hall_0: float
 
@@ -38,7 +36,6 @@ class Stimulus:
             rho, nu,
             assoc = 0.,
             Ve = 0., Vi = 0.,
-            window: None | deque = None,
             alpha_mack_0 = None, alpha_hall_0 = None,
         ):
         self.name = name
@@ -60,11 +57,6 @@ class Stimulus:
 
         self.alpha_mack_0 = alpha_mack_0 or self.alpha_mack
         self.alpha_hall_0 = alpha_hall_0 or self.alpha_hall
-
-        if window is None:
-            window = deque([])
-
-        self.window = window.copy()
 
     def fullName(self) -> str:
         if re.fullmatch(r'\(.*\)', self.name):

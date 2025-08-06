@@ -241,7 +241,6 @@ class PavlovianApp(QMainWindow):
             # habituation = self.floatOr(self.params['habituation'].box.text(), 0),
             # kay = self.floatOr(self.params['kay'].box.text(), 0),
 
-            window_size = 1,
             num_trials = int(self.params['num_trials'].box.text()),
 
             should_plot_macknhall = should_plot_macknhall,
