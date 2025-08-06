@@ -25,7 +25,6 @@ class Stimulus:
     nu: float
 
     window: deque[float]
-    delta_ma_hall: float
 
     alpha_mack_0: float
     alpha_hall_0: float
@@ -39,7 +38,6 @@ class Stimulus:
             rho, nu,
             assoc = 0.,
             Ve = 0., Vi = 0.,
-            delta_ma_hall = .2,
             window: None | deque = None,
             alpha_mack_0 = None, alpha_hall_0 = None,
         ):
@@ -67,7 +65,6 @@ class Stimulus:
             window = deque([])
 
         self.window = window.copy()
-        self.delta_ma_hall = delta_ma_hall
 
     def fullName(self) -> str:
         if re.fullmatch(r'\(.*\)', self.name):

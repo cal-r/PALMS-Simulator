@@ -109,10 +109,7 @@ class AdaptiveType:
     def get_alpha_hall(self, s: Stimulus, sigma: float, lamda: float) -> float:
         assert self.xi_hall is not None
 
-        delta_ma_hall = s.delta_ma_hall or 0
-
         surprise = abs(lamda - sigma)
-        window_term =  1 - self.xi_hall * math.exp(-delta_ma_hall**2 / 2)
         gamma = 0.99
         kayes = gamma*surprise +  (1-gamma)*s.alpha_hall
 
@@ -320,25 +317,6 @@ class Macknhall(AdaptiveType):
         s.alpha_hall = self.get_alpha_hall(s, rp.sigma, rp.lamda)
         s.alpha = (1 - abs(rp.lamda - rp.sigma)) * s.alpha_mack + s.alpha_hall
         s.assoc += s.alpha * self.delta_v_factor
-
-class NewDualV(AdaptiveType):
-    @classmethod
-    def parameters(cls) -> list[str]:
-        return ['alpha', 'beta', 'betan', 'lamda']
-
-    def step(self, s: Stimulus, rp: RunParameters):
-        rho = rp.lamda - (rp.sigmaE - rp.sigmaI)
-
-        delta_ma_hall = s.delta_ma_hall or 0
-        self.gamma = 1 - math.exp(-delta_ma_hall**2)
-
-        if rho >= 0:
-            s.Ve += self.betap * s.alpha * rp.lamda
-        else:
-            s.Vi += self.betan * s.alpha * abs(rho)
-
-        s.alpha = self.gamma * abs(rho) + (1 - self.gamma) * s.alpha
-        s.assoc = s.Ve - s.Vi
 
 class Dualmack(AdaptiveType):
     @classmethod
