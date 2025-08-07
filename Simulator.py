@@ -41,6 +41,7 @@ def parse_args():
     output = parser.add_argument_group('Output parameters')
     output.add_argument('--savefig', metavar = 'filename', type = str, help = 'Instead of showing figures, one image per phase will be saved with the name "filename_1.png" ... "filename_n.png".')
     output.add_argument('--savedata', metavar = 'filename', type = str, help = 'Instead of showing the plot, save the data to a file.')
+    output.add_argument('--printdata', action = 'store_true', help = 'Instead of showing the plot, print the resulting data to stdout.')
     output.add_argument('--singular-legend', action = 'store_true', help = 'Hide legend in output, and generate a separate image with just the legend. If run with --savefig, save it under "filename_legend.png".')
     output.add_argument('--show-title', action = 'store_true', help = 'Show title and phases to saved output.')
     output.add_argument('--dpi', type = int, default = 200, help = 'Dots per inch.')
@@ -128,7 +129,7 @@ def main() -> None:
 
     assert(groups_strengths is not None)
 
-    if args.savefig is None and args.savedata is None:
+    if args.savefig is None and args.savedata is None and not args.printdata:
         figures = generate_figures(
             groups_strengths,
             phases = phases,
@@ -164,6 +165,13 @@ def main() -> None:
                     file = file,
                     should_plot_macknhall = args.plot_macknhall,
                 )
+
+        if args.printdata:
+            StimulusHistory.exportData(
+                groups_strengths,
+                file = sys.stdout,
+                should_plot_macknhall = args.plot_macknhall,
+            )
 
 if __name__ == '__main__':
     main()
