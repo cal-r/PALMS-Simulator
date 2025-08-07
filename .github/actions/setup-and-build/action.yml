@@ -35,7 +35,7 @@ runs:
           --exclude-module PySide6.Qt6.Qt6Network \
           --collect-data PySide6.Qt6.plugins
         "
-        COMMON_OPTIONS="--windowed --noconfirm --clean --splash resources/splash.png"
+        COMMON_OPTIONS="--windowed --noconfirm --clean"
 
         if [[ "${{ inputs.os }}" == "macos-latest" ]]
         then
@@ -45,7 +45,7 @@ runs:
           mv release_macos.tar.gz release/
         elif [[ "${{ inputs.os }}" == "windows-latest" ]]
         then
-          pyinstaller ${EXCLUDED_MODULE_OPTIONS} ${COMMON_OPTIONS} --add-data "resources;resources" --onefile --icon resources/palms.ico PALMS.py
+          pyinstaller ${EXCLUDED_MODULE_OPTIONS} ${COMMON_OPTIONS} --add-data "resources;resources" --onefile --icon resources/palms.ico  --splash resources/splash.png PALMS.py
           mkdir -p release
           cd dist
           7z a -tzip ../release_windows.zip PALMS.exe
@@ -53,7 +53,7 @@ runs:
           7z a -tzip release_windows.zip Experiments
           mv release_windows.zip release/
         else
-          pyinstaller ${EXCLUDED_MODULE_OPTIONS} ${COMMON_OPTIONS} --add-data "resources:resources" --onefile --icon resources/palms.png PALMS.py
+          pyinstaller ${EXCLUDED_MODULE_OPTIONS} ${COMMON_OPTIONS} --add-data "resources:resources" --onefile --icon resources/palms.png --splash resources/splash.png PALMS.py
           mkdir -p release
           chmod +x dist/PALMS
           tar -czf release_linux.tar.gz Experiments -C dist PALMS
