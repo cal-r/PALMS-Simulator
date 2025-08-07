@@ -33,7 +33,7 @@ class Phase:
     # self.compound_cs() ⊇ self.cs()
     def compound_cs(self) -> list[str]:
         compound = {cs for cs, _ in self.elems}
-        return sorted(self.cs() | compound, key = lambda x: (len(x.strip("'()")), x))
+        return sorted(compound, key = lambda x: (len(x.strip("'()")), x))
 
     def __init__(self, phase_str: str):
         self.phase_str = phase_str
@@ -198,8 +198,8 @@ class Experiment:
         group_strengths = [StimulusHistory.emptydict() for _ in results]
         for phase_num, strength_hist in enumerate(results):
             for strengths in strength_hist:
-                for cs in strengths.filter_keys(self.phases[phase_num].compound_cs()):
-                    stimulus = strengths[cs]
+                for cs in self.phases[phase_num].compound_cs():
+                    stimulus = strengths.s[cs]
                     group_strengths[phase_num][f'{self.name} - {stimulus.fullName()}'].add(stimulus)
 
         return group_strengths
