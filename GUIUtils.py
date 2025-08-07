@@ -475,8 +475,10 @@ class AlphasBox(QGroupBox):
         super().__init__('Per-CS', parent = parent)
         self.parent = parent
 
-        scrollArea = QScrollArea(self)
-        layout = QVBoxLayout(scrollArea)
+        # scrollArea = QScrollArea()
+        scrollArea = QWidget()
+        layout = QHBoxLayout(scrollArea)
+        layout.setContentsMargins(5, 5, 5, 5)
         for perc in parent.per_cs_param.keys():
             boxLayout = QFormLayout()
             boxLayout.setContentsMargins(0, 0, 0, 0)
@@ -486,18 +488,20 @@ class AlphasBox(QGroupBox):
 
             parent.per_cs_box[perc] = QWidget()
             parent.per_cs_box[perc].setLayout(boxLayout)
-            parent.per_cs_box[perc].setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+            parent.per_cs_box[perc].setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Preferred)
             layout.addWidget(parent.per_cs_box[perc])
 
-        scrollArea.setLayout(layout)
-        scrollArea.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        # scrollArea.setLayout(layout)
+        # scrollArea.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Preferred)
+        # scrollArea.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
+        # scrollArea.setWidgetResizable(True)
 
         mainLayout = QVBoxLayout(self)
         mainLayout.addWidget(scrollArea)
 
         self.setLayout(mainLayout)
         self.setVisible(False)
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Preferred)
         self.clear()
 
     def clear(self):
@@ -584,7 +588,7 @@ class AdaptiveTypeButtons(QGroupBox):
             if key in parent.per_cs_param:
                 for cs, pair in parent.per_cs_param[key].items():
                     val = default ** len(cs.strip('()'))
-                    pair.box.setText(str(val))
+                    pair.box.setText(f'{val:.3f}')
 
         parent.refreshExperiment()
 
