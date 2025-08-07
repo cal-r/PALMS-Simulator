@@ -61,6 +61,7 @@ class Group:
 
         self.name = name
 
+
         self.s = Environment(
             s = {
                 k: Stimulus(
