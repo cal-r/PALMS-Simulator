@@ -31,23 +31,25 @@ class PhaseBox(QGroupBox):
         self.phaseInfo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
 
         self.xCoordInfo = QLabel('')
-        self.xCoordInfo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.xCoordInfo.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         self.yCoordInfo = QLabel('')
-        self.yCoordInfo.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.yCoordInfo.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
 
         phaseBoxLayout = QHBoxLayout()
         phaseBoxLayout.addWidget(leftPhaseButton)
-        phaseBoxLayout.addWidget(self.xCoordInfo, stretch = 1, alignment = Qt.AlignmentFlag.AlignLeft)
+        phaseBoxLayout.addWidget(self.xCoordInfo, stretch = 0, alignment = Qt.AlignmentFlag.AlignLeft)
         phaseBoxLayout.addWidget(self.phaseInfo, stretch = 1, alignment = Qt.AlignmentFlag.AlignCenter)
-        phaseBoxLayout.addWidget(self.yCoordInfo, stretch = 1, alignment = Qt.AlignmentFlag.AlignRight)
+        phaseBoxLayout.addWidget(self.yCoordInfo, stretch = 0, alignment = Qt.AlignmentFlag.AlignRight)
         phaseBoxLayout.addWidget(rightPhaseButton)
         phaseBoxLayout.setSpacing(50)
 
-        if screenshot_ready:
+        # if screenshot_ready:
+        if True:
             self.xCoordInfo.setVisible(False)
             self.yCoordInfo.setVisible(False)
 
         self.setLayout(phaseBoxLayout)
+        # self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
 
     def setInfo(self, phaseNum, numPhases):
         self.phaseInfo.setText(f'Phase {phaseNum}/{numPhases}')
@@ -473,24 +475,28 @@ class AlphasBox(QGroupBox):
         super().__init__('Per-CS', parent = parent)
         self.parent = parent
 
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
+        scrollArea = QScrollArea(self)
+        layout = QVBoxLayout(scrollArea)
         for perc in parent.per_cs_param.keys():
             boxLayout = QFormLayout()
             boxLayout.setContentsMargins(0, 0, 0, 0)
             boxLayout.setSpacing(10)
             boxLayout.setFormAlignment(Qt.AlignmentFlag.AlignLeft)
-            boxLayout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
+            # boxLayout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
 
             parent.per_cs_box[perc] = QWidget()
             parent.per_cs_box[perc].setLayout(boxLayout)
             parent.per_cs_box[perc].setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
             layout.addWidget(parent.per_cs_box[perc])
 
-        self.setLayout(layout)
+        scrollArea.setLayout(layout)
+
+        mainLayout = QVBoxLayout(self)
+        mainLayout.addWidget(scrollArea)
+
+        self.setLayout(mainLayout)
         self.setVisible(False)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        self.setMinimumWidth(500)
         self.clear()
 
     def clear(self):
@@ -531,6 +537,8 @@ class AlphasBox(QGroupBox):
                         hoverText = hoverText,
                         maximumWidth = 50,
                     ).addRow(layout)
+
+        self.setMinimumWidth(self.width())
 
 class AdaptiveTypeButtons(QGroupBox):
     def __init__(self, parent):
