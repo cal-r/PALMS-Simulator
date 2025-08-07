@@ -3,6 +3,7 @@ from collections import deque, defaultdict
 from functools import reduce
 
 from typing import Any, ClassVar
+from csv import DictWriter
 
 import re
 
@@ -142,6 +143,33 @@ class StimulusHistory:
     @classmethod
     def emptydict(cls) -> dict[str, StimulusHistory]:
         return defaultdict(lambda: StimulusHistory())
+
+    @classmethod
+    def exportData(cls, strengths: list[dict[str, StimulusHistory]], file, should_plot_macknhall = False):
+        fieldnames = ['Phase', 'Group', 'CS', 'Trial', 'Assoc']
+        if not should_plot_macknhall:
+            fieldnames += ['Alpha']
+        else:
+            fieldnames += ['Alpha Mack', 'Alpha Hall']
+
+        writer = DictWriter(file, fieldnames = fieldnames, extrasaction = 'ignore')
+        writer.writeheader()
+
+        for phase_num, phase in enumerate(strengths, start = 1):
+            for group_cs, hist in phase.items():
+                group, cs = group_cs.rsplit(' - ', maxsplit = 1)
+                for trial, stimulus in enumerate(hist, start = 1):
+                    row = {
+                        'Phase': phase_num,
+                        'Group': group,
+                        'CS': cs,
+                        'Trial': trial,
+                        'Assoc': stimulus.assoc,
+                        'Alpha': stimulus.alpha,
+                        'Alpha Mack': stimulus.alpha_mack,
+                        'Alpha Hall': stimulus.alpha_hall,
+                    }
+                    writer.writerow(row)
 
 class Environment:
     # Static class variable indicating whether to use configural cues.

@@ -2,7 +2,6 @@ import os
 os.environ["QT_API"] = "PySide6"
 
 import sys
-from csv import DictWriter
 from typing import cast
 
 from PySide6.QtCore import Qt, QSize
@@ -13,6 +12,7 @@ from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from PIL import Image
 
 from AdaptiveType import AdaptiveType
+from Environment import StimulusHistory
 
 class PhaseBox(QGroupBox):
     def __init__(self, parent = None, screenshot_ready = False):
@@ -293,30 +293,7 @@ class ActionButtons(QWidget):
         strengths, _, args = self.parent.generateResults()
 
         with open(fileName, 'w') as file:
-            fieldnames = ['Phase', 'Group', 'CS', 'Trial', 'Assoc']
-            if not args.should_plot_macknhall:
-                fieldnames += ['Alpha']
-            else:
-                fieldnames += ['Alpha Mack', 'Alpha Hall']
-
-            writer = DictWriter(file, fieldnames = fieldnames, extrasaction = 'ignore')
-            writer.writeheader()
-
-            for phase_num, phase in enumerate(strengths, start = 1):
-                for group_cs, hist in phase.items():
-                    group, cs = group_cs.rsplit(' - ', maxsplit = 1)
-                    for trial, stimulus in enumerate(hist, start = 1):
-                        row = {
-                            'Phase': phase_num,
-                            'Group': group,
-                            'CS': cs,
-                            'Trial': trial,
-                            'Assoc': stimulus.assoc,
-                            'Alpha': stimulus.alpha,
-                            'Alpha Mack': stimulus.alpha_mack,
-                            'Alpha Hall': stimulus.alpha_hall,
-                        }
-                        writer.writerow(row)
+            StimulusHistory.exportData(strengths, file, args.should_plot_macknhall)
 
     def savePlots(self):
         dialog = QDialog(self)

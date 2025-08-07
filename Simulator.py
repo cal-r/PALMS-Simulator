@@ -40,6 +40,7 @@ def parse_args():
 
     output = parser.add_argument_group('Output parameters')
     output.add_argument('--savefig', metavar = 'filename', type = str, help = 'Instead of showing figures, one image per phase will be saved with the name "filename_1.png" ... "filename_n.png".')
+    output.add_argument('--savedata', metavar = 'filename', type = str, help = 'Instead of showing the plot, save the data to a file.')
     output.add_argument('--singular-legend', action = 'store_true', help = 'Hide legend in output, and generate a separate image with just the legend. If run with --savefig, save it under "filename_legend.png".')
     output.add_argument('--show-title', action = 'store_true', help = 'Show title and phases to saved output.')
     output.add_argument('--dpi', type = int, default = 200, help = 'Dots per inch.')
@@ -57,8 +58,8 @@ def parse_args():
     experiment = parser.add_argument_group('Experiment Parameters')
     experiment.add_argument("--adaptive-type", choices = AdaptiveType.types().keys(), default = 'Rescorla Wagner', help = 'Type of adaptive attention mode to use')
     experiment.add_argument('--alpha', metavar = 'α', type = float, default = .1, help = 'Alpha for all other stimuli')
-    experiment.add_argument('--alpha-mack', metavar = 'αᴹ', type = float, help = 'Alpha_mack for all other stimuli')
-    experiment.add_argument('--alpha-hall', metavar = 'αᴴ', type = float, help = 'Alpha_hall for all other stimuli')
+    experiment.add_argument('--alpha-mack', metavar = 'αᴹ', type = float, default = .1, help = 'Alpha_mack for all other stimuli')
+    experiment.add_argument('--alpha-hall', metavar = 'αᴴ', type = float, default = .1, help = 'Alpha_hall for all other stimuli')
     experiment.add_argument("--beta", metavar = 'β⁺', type = float, default = .3, help="Associativity of the US +.")
     experiment.add_argument("--beta-neg", metavar = 'β⁻', type = float, default = .2, help="Associativity of the absence of US +. Equal to beta by default.")
     experiment.add_argument("--lamda", metavar = 'λ', type = float, default = 1, help="Asymptote of learning.")
@@ -127,7 +128,7 @@ def main() -> None:
 
     assert(groups_strengths is not None)
 
-    if args.savefig is None:
+    if args.savefig is None and args.savedata is None:
         figures = generate_figures(
             groups_strengths,
             phases = phases,
@@ -141,19 +142,28 @@ def main() -> None:
             fig.show()
         input('Press any key to continue...')
     else:
-        save_plots(
-            groups_strengths,
-            phases = phases,
-            filename = args.savefig,
-            plot_phase = args.plot_phase,
-            plot_alpha = args.plot_alpha,
-            plot_macknhall = args.plot_macknhall,
-            show_title = args.show_title,
-            plot_stimuli = args.plot_stimuli,
-            singular_legend = args.singular_legend,
-            dpi = args.dpi,
-            plot_width = args.output_width,
-        )
+        if args.savefig is not None:
+            save_plots(
+                groups_strengths,
+                phases = phases,
+                filename = args.savefig,
+                plot_phase = args.plot_phase,
+                plot_alpha = args.plot_alpha,
+                plot_macknhall = args.plot_macknhall,
+                show_title = args.show_title,
+                plot_stimuli = args.plot_stimuli,
+                singular_legend = args.singular_legend,
+                dpi = args.dpi,
+                plot_width = args.output_width,
+            )
+
+        if args.savedata is not None:
+            with open(args.savedata, 'w') as file:
+                StimulusHistory.exportData(
+                    groups_strengths,
+                    file = file,
+                    should_plot_macknhall = args.plot_macknhall,
+                )
 
 if __name__ == '__main__':
     main()
