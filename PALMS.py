@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import os
 # os.environ["QT_QPA_PLATFORM"] = "xcb"
-os.environ['QT_AUTO_SCREEN_SCALE_FACTOR'] = 'TRUE'
 os.environ["QT_API"] = "PySide6"
 
 import logging
@@ -31,6 +30,7 @@ try:
     import pyi_splash
     pyi_splash.close()
 except:
+    os.environ['QT_AUTO_SCREEN_SCALE_FACTOR'] = 'TRUE'
     pass
 
 class PavlovianApp(QMainWindow):
