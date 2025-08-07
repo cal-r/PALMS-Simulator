@@ -149,11 +149,11 @@ class PavlovianApp(QMainWindow):
         return pixmap.scaled(150, 150, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
 
     class DualLabel:
-        def __init__(self, text, parent, default, font = 'Monospace', hoverText = None):
+        def __init__(self, text, parent, default, font = 'Monospace', hoverText = None, maximumWidth = 40):
             self.label = QLabel(text)
             self.label.setAlignment(Qt.AlignmentFlag.AlignRight)
             self.box = QLineEdit(default)
-            self.box.setMaximumWidth(40)
+            self.box.setMaximumWidth(maximumWidth)
             self.box.returnPressed.connect(parent.refreshExperiment)
             self.label.setFont(QFont(font))
 

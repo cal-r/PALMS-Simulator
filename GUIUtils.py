@@ -473,32 +473,24 @@ class AlphasBox(QGroupBox):
         super().__init__('Per-CS', parent = parent)
         self.parent = parent
 
-        content = QWidget()
-        content.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-
-        scrollArea = QScrollArea()
-        scrollArea.setWidgetResizable(True)
-        scrollArea.setWidget(content)
-        scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        scrollArea.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-
-        layout = QHBoxLayout(content)
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
         for perc in parent.per_cs_param.keys():
             boxLayout = QFormLayout()
             boxLayout.setContentsMargins(0, 0, 0, 0)
             boxLayout.setSpacing(10)
+            boxLayout.setFormAlignment(Qt.AlignmentFlag.AlignLeft)
+            boxLayout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
 
             parent.per_cs_box[perc] = QWidget()
             parent.per_cs_box[perc].setLayout(boxLayout)
             parent.per_cs_box[perc].setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
             layout.addWidget(parent.per_cs_box[perc])
 
-        main_layout = QVBoxLayout(self)
-        main_layout.setContentsMargins(0, 0, 0, 0)
-        main_layout.addWidget(scrollArea)
-        self.setLayout(main_layout)
+        self.setLayout(layout)
         self.setVisible(False)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.setMinimumWidth(500)
         self.clear()
 
     def clear(self):
@@ -535,8 +527,9 @@ class AlphasBox(QGroupBox):
                     form[cs] = parent.DualLabel(
                         f'{shortnames[perc]}<sub>{cs}</sub>',
                         parent,
-                        f'{local_val:.2g}',
+                        f'{local_val:.3f}',
                         hoverText = hoverText,
+                        maximumWidth = 50,
                     ).addRow(layout)
 
 class AdaptiveTypeButtons(QGroupBox):
