@@ -120,15 +120,15 @@ class Group:
             maxAssoc = max(self.s[x].assoc for x in compounds)
             secondMaxAssoc = max([self.s[x].assoc for x in compounds if x != argmaxAssoc], default = 0)
 
-            for cs in compounds:
-                if cs not in hist:
-                    hist[cs].add(self.s[cs])
+            if part not in hist:
+                hist[part].add(self.s[part])
 
+            for cs in compounds:
                 # We need to calculate max_{i != cs} V_i.
                 # This is always either the maximum V_i, or the second maximum when i = cs.
                 rp.maxAssocRest = maxAssoc if cs != argmaxAssoc else secondMaxAssoc
                 self.adaptive_type.run_step(self.s[cs], rp)
 
-                hist[cs].add(self.s[cs])
+            hist[part].add(self.s[part])
 
         return Environment.fromHistories(hist)
