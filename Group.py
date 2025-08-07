@@ -121,15 +121,13 @@ class Group:
             maxAssoc = max(self.s[x].assoc for x in compounds)
             secondMaxAssoc = max([self.s[x].assoc for x in compounds if x != argmaxAssoc], default = 0)
 
-            if part not in hist:
-                hist[part].add(self.s[part])
+            # This is a predictive model. Do not include the last stimulus in the plot.
+            hist[part].add(self.s[part])
 
             for cs in compounds:
                 # We need to calculate max_{i != cs} V_i.
                 # This is always either the maximum V_i, or the second maximum when i = cs.
                 rp.maxAssocRest = maxAssoc if cs != argmaxAssoc else secondMaxAssoc
                 self.adaptive_type.run_step(self.s[cs], rp)
-
-            hist[part].add(self.s[part])
 
         return Environment.fromHistories(hist)

@@ -92,9 +92,6 @@ def generate_figures(
             multiple = True
 
         for num, (key, hist) in enumerate(experiments.items()):
-            # This is a predictive model. Do not include the last stimulus in the plot.
-            hist = hist[:-1]
-
             stimulus = key.split(' ')[-1]
             if plot_stimuli is not None and stimulus not in plot_stimuli:
                 continue
