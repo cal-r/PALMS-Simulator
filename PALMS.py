@@ -27,9 +27,11 @@ from matplotlib import pyplot
 
 from GUIUtils import *
 
+forceRatio = False
 try:
     import pyi_splash
     pyi_splash.close()
+    forceRatio = True
 except:
     pass
 
@@ -475,7 +477,8 @@ def main():
 
     dpi = args.dpi
     if dpi is None:
-        print(app.primaryScreen().devicePixelRatio())
+        if forceRatio:
+            dpi = 110
         dpi = 110 * app.primaryScreen().devicePixelRatio()
 
     logging.info('Creating gallery')
