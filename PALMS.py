@@ -27,6 +27,12 @@ from matplotlib import pyplot
 
 from GUIUtils import *
 
+try:
+    import pyi_splash
+    pyi_splash.close()
+except:
+    pass
+
 class PavlovianApp(QMainWindow):
     adaptive_types: list[str]
     current_adaptive_type: str
