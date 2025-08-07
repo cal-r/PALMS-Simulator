@@ -35,7 +35,7 @@ runs:
           --exclude-module PySide6.Qt6.Qt6Network \
           --collect-data PySide6.Qt6.plugins
         "
-        COMMON_OPTIONS="--windowed --noconfirm --clean"
+        COMMON_OPTIONS="--windowed --noconfirm --clean --splash resources/splash.png"
 
         if [[ "${{ inputs.os }}" == "macos-latest" ]]
         then
