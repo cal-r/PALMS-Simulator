@@ -28,12 +28,12 @@ runs:
       shell: bash
       run: |
         EXCLUDED_MODULE_OPTIONS=" \
-          --exclude-module PyQt5  \
-          --exclude-module PyQt6.Qt6.translations  \
-          --exclude-module PyQt6.Qt6.lib.libQt6Pdf  \
-          --exclude-module PyQt6.Qt6.lib.libicudata  \
-          --exclude-module PyQt6.Qt6.Qt6Network \
-          --collect-data PyQt6.Qt6.plugins
+          --exclude-module PySide5  \
+          --exclude-module PySide6.Qt6.translations  \
+          --exclude-module PySide6.Qt6.lib.libQt6Pdf  \
+          --exclude-module PySide6.Qt6.lib.libicudata  \
+          --exclude-module PySide6.Qt6.Qt6Network \
+          --collect-data PySide6.Qt6.plugins
         "
         COMMON_OPTIONS="--windowed --noconfirm --clean"
 
