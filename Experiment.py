@@ -198,8 +198,7 @@ class Experiment:
         group_strengths = [StimulusHistory.emptydict() for _ in results]
         for phase_num, strength_hist in enumerate(results):
             for strengths in strength_hist:
-                for cs in self.phases[phase_num].compound_cs():
-                    stimulus = strengths.s[cs]
+                for cs, stimulus in strengths.s.items():
                     group_strengths[phase_num][f'{self.name} - {stimulus.fullName()}'].add(stimulus)
 
         return group_strengths
