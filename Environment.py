@@ -194,6 +194,9 @@ class Environment:
     # Get the individual values of either a single key (len(key) == 1), or
     # the combined values of a combination of keys (sum of values).
     def __getitem__(self, key: str) -> Stimulus:
+        if key in self.s:
+            return self.s[key]
+
         return reduce(lambda a, b: a + b, [self.s[k] for k in self.list_cs(key)])
 
     def filter_keys(self, keys: list[str]) -> list[str]:
