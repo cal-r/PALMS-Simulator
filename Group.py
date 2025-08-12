@@ -125,6 +125,8 @@ class Group:
             hist[part].add(self.s[part])
 
             for cs in compounds:
+                hist[cs].add(self.s[cs])
+
                 # We need to calculate max_{i != cs} V_i.
                 # This is always either the maximum V_i, or the second maximum when i = cs.
                 rp.maxAssocRest = maxAssoc if cs != argmaxAssoc else secondMaxAssoc
