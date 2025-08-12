@@ -59,6 +59,9 @@ class Stimulus:
         self.alpha_mack_0 = alpha_mack_0 or self.alpha_mack
         self.alpha_hall_0 = alpha_hall_0 or self.alpha_hall
 
+    def __repr__(self) -> str:
+        return str(self.assoc)
+
     def fullName(self) -> str:
         if re.fullmatch(r'\(.*\)', self.name):
             return f'q{self.name}'
@@ -184,6 +187,9 @@ class Environment:
 
     def __init__(self, s: dict[str, Stimulus]):
         self.s = s
+
+    def __repr__(self) -> str:
+        return str(self.s)
 
     # fromHistories "transposes" a several histories of single CSs into a single list of many CSs.
     @staticmethod

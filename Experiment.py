@@ -62,6 +62,7 @@ class Phase:
 class RWArgs:
     adaptive_type: str
     configural_cues: bool
+    simple_stimuli: bool
 
     alphas: dict[str, float]
     alpha_macks: dict[str, float]
@@ -199,6 +200,13 @@ class Experiment:
         for phase_num, strength_hist in enumerate(results):
             for strengths in strength_hist:
                 for cs, stimulus in strengths.s.items():
-                    group_strengths[phase_num][f'{self.name} - {stimulus.fullName()}'].add(stimulus)
+                    if cs.endswith('#') and not args.simple_stimuli:
+                        continue
+                    elif cs.endswith('#'):
+                        fullName = cs
+                    else:
+                        fullName = stimulus.fullName()
+
+                    group_strengths[phase_num][f'{self.name} - {fullName}'].add(stimulus)
 
         return group_strengths
