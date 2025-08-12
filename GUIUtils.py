@@ -310,8 +310,10 @@ class ActionButtons(QWidget):
         # File dialog with filter and suggested extension
         def choose_file():
             fname, _ = QFileDialog.getSaveFileName(
-                dialog, "Save Plots", "plot.png",
-                "PNG Files (*.png);;PDF Files (*.pdf);;SVG Files (*.svg);;All Files (*)"
+                dialog,
+                "Save Plots",
+                os.path.join(os.environ['HOME'], 'Desktop', 'plot.png'),
+                "PNG Files (*.png);;PDF Files (*.pdf);;SVG Files (*.svg);;All Files (*)",
             )
             if fname:
                 file_edit.setText(fname)
@@ -325,7 +327,7 @@ class ActionButtons(QWidget):
         width.setAlignment(Qt.AlignmentFlag.AlignRight)
         width.setMaximumWidth(40)
 
-        height = QLineEdit('2')
+        height = QLineEdit('6')
         height.setAlignment(Qt.AlignmentFlag.AlignRight)
         height.setMaximumWidth(40)
 
