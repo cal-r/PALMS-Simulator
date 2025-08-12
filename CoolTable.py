@@ -73,23 +73,19 @@ class CoolTable(QWidget):
 
         return item.text()
 
-    def setRandInSelection(self, set_rand: bool):
+    def setPrefixInSelection(self, prefix, value: None | bool | float):
         self.freeze = True
         for item in self.table.selectedItems():
-            item.setText(item.text().replace('rand/', ''))
+            text = re.sub(rf'{prefix}(=[0-9]+(\.[0-9]*)?)?/', '', item.text())
 
-            if set_rand:
-                item.setText('rand/' + item.text())
+            if value is None:
+                val_prefix = ''
+            elif type(value) is bool:
+                val_prefix = f'{prefix}/' if value else ''
+            else:
+                val_prefix = f'{prefix}={value}/'
 
-        self.freeze = False
-
-    def setLambdaInSelection(self, set_lambda: None | float):
-        self.freeze = True
-        for item in self.table.selectedItems():
-            item.setText(re.sub(r'lamb?da=[0-9]+(\.[0-9]+)?\/', '', item.text()))
-
-            if set_lambda is not None:
-                item.setText(f'lambda={set_lambda}/' + item.text())
+            item.setText(val_prefix + text)
 
         self.freeze = False
 
