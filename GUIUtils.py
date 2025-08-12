@@ -126,6 +126,12 @@ class ActionButtons(QWidget):
         self.toggleRandButton.setStyleSheet(checkedStyle)
         self.toggleRandButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
+        self.phaseBetaButton = QPushButton('Per-Phase β')
+        self.phaseBetaButton.clicked.connect(self.togglePhaseBeta)
+        self.phaseBetaButton.setCheckable(True)
+        self.phaseBetaButton.setStyleSheet(checkedStyle)
+        self.phaseBetaButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
         self.phaseLambdaButton = QPushButton('Per-Phase λ')
         self.phaseLambdaButton.clicked.connect(self.togglePhaseLambda)
         self.phaseLambdaButton.setCheckable(True)
@@ -174,6 +180,7 @@ class ActionButtons(QWidget):
 
         phaseOptionsLayout = QVBoxLayout()
         phaseOptionsLayout.addWidget(self.toggleRandButton)
+        phaseOptionsLayout.addWidget(self.phaseBetaButton)
         phaseOptionsLayout.addWidget(self.phaseLambdaButton)
         phaseOptionsLayout.addWidget(toggleAlphasButton)
         phaseOptionsLayout.addWidget(configuralButton)
@@ -258,12 +265,17 @@ class ActionButtons(QWidget):
 
     def toggleRand(self):
         set_rand = any(p[self.parent.phaseNum - 1].rand for p in self.parent.phases.values())
-        self.parent.tableWidget.setRandInSelection(not set_rand)
+        self.parent.tableWidget.setPrefixInSelection('rand', not set_rand)
+        self.parent.refreshExperiment()
+
+    def togglePhaseBeta(self):
+        set_beta = any(p[self.parent.phaseNum - 1].beta is not None for p in self.parent.phases.values())
+        self.parent.tableWidget.setPrefixInSelection('beta', self.parent.floatOr(self.parent.params['beta'].box.text(), 0) if not set_beta else None)
         self.parent.refreshExperiment()
 
     def togglePhaseLambda(self):
         set_lambda = any(p[self.parent.phaseNum - 1].lamda is not None for p in self.parent.phases.values())
-        self.parent.tableWidget.setLambdaInSelection(self.parent.floatOr(self.parent.params['lamda'].box.text(), 0) if not set_lambda else None)
+        self.parent.tableWidget.setPrefixInSelection('lambda', self.parent.floatOr(self.parent.params['lamda'].box.text(), 0) if not set_lambda else None)
         self.parent.refreshExperiment()
 
     def toggleAlphasBox(self):
