@@ -91,7 +91,13 @@ def generate_figures(
             fig, axes = pyplot.subplots(1, 2, figsize = (16, 6), dpi = dpi)
             multiple = True
 
-        for num, (key, hist) in enumerate(experiments.items()):
+        def sort_key(key):
+            group, cs = key.split(' - ')
+            return group, -len(cs), cs
+
+        sorted_exp = sorted(experiments, key = sort_key)
+        for num, key in enumerate(sorted_exp):
+            hist = experiments[key]
             stimulus = key.split(' ')[-1]
             if plot_stimuli is not None and stimulus not in plot_stimuli:
                 continue
