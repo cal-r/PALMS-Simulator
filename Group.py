@@ -128,6 +128,7 @@ class Group:
             for cs in compounds:
                 if len(compounds) > 1:
                     hist[cs].add(self.s[cs])
+                    hist[f'{cs}({part + plus})'].add(self.s[cs])
 
                 # We need to calculate max_{i != cs} V_i.
                 # This is always either the maximum V_i, or the second maximum when i = cs.
