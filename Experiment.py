@@ -210,7 +210,7 @@ class Experiment:
         for phase_num, strength_hist in enumerate(results):
             for strengths in strength_hist:
                 for cs, stimulus in strengths.s.items():
-                    if cs.endswith(('+', '-')) and not args.part_stimuli:
+                    if ('+' in cs or '-' in cs) and not args.part_stimuli:
                         continue
 
                     full_name = cs
