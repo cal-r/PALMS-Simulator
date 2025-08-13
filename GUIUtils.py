@@ -150,7 +150,7 @@ class ActionButtons(QWidget):
         self.configuralButton.setStyleSheet(checkedStyle)
         self.configuralButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-        partStimuliButton = QPushButton('Plot Part Stimuli')
+        partStimuliButton = QPushButton('Plot Trial Type Data')
         partStimuliButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         partStimuliButton.setStyleSheet(checkedStyle)
         partStimuliButton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
