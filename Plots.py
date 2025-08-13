@@ -93,7 +93,11 @@ def generate_figures(
 
         def sort_key(key):
             group, cs = key.split(' - ')
-            return group, -len(cs), cs
+            priority = -len(cs)
+            if cs.startswith('q'):
+                priority = 0
+
+            return group, priority, cs
 
         sorted_exp = sorted(experiments, key = sort_key)
         for num, key in enumerate(sorted_exp):

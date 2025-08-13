@@ -123,6 +123,7 @@ class Group:
 
             # This is a predictive model. Do not include the last stimulus in the plot.
             hist[part].add(self.s[part])
+            hist[part + plus].add(self.s[part])
 
             for cs in compounds:
                 if len(compounds) > 1:

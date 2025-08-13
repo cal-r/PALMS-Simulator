@@ -54,7 +54,7 @@ class PavlovianApp(QMainWindow):
 
     line_hidden: dict[str, bool]
     plot_alpha: bool
-    plot_simple_stimuli: bool
+    plot_part_stimuli: bool
 
     dpi: int
 
@@ -84,7 +84,7 @@ class PavlovianApp(QMainWindow):
 
         self.configural_cues = False
         self.plot_alpha = False
-        self.plot_simple_stimuli = False
+        self.plot_part_stimuli = False
 
         self.line_hidden = {}
         self.dpi = dpi
@@ -233,7 +233,7 @@ class PavlovianApp(QMainWindow):
             salience = self.floatOr(self.params['salience'].box.text(), 0),
 
             configural_cues = self.configural_cues,
-            simple_stimuli = self.plot_simple_stimuli,
+            part_stimuli = self.plot_part_stimuli,
 
             alphas = self.csPercDict('alpha'),
             alpha_macks = self.csPercDict('alpha_mack'),
