@@ -3,6 +3,7 @@ from __future__ import annotations
 import random
 import re
 from dataclasses import dataclass
+from typing import get_type_hints
 
 from Group import Group
 from Environment import Stimulus, Environment, StimulusHistory
@@ -60,6 +61,10 @@ class Phase:
 
 @dataclass
 class RWArgs:
+    def set_value(self, name: str, value: Any):
+        prop_type = get_type_hints(self)[name]
+        setattr(self, name, prop_type(value))
+
     adaptive_type: str
 
     alphas: dict[str, float]

@@ -151,7 +151,21 @@ class PavlovianApp(QMainWindow):
         adaptiveTypeButtons.children()[1].click()
 
     def loadFile(self, filename):
-        lines = [x.strip() for x in open(filename)]
+        lines = []
+        for line in open(filename):
+            line = line.strip()
+            if not line.startswith('@'):
+                lines.append(line.strip())
+                continue
+
+            for prop in line.strip('@').split(';'):
+                name, value = prop.split('=')
+
+                replacements = {'betap': 'beta', 'lambda': 'lamda'}
+                name = replacements.get(name, name)
+
+                self.params[name].box.setText(value)
+
         self.tableWidget.loadFile(lines)
 
     def getPixmap(self, filename):
