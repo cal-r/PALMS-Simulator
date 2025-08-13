@@ -27,8 +27,6 @@ from matplotlib import pyplot
 
 from GUIUtils import *
 
-import ipdb
-
 forceRatio = False
 try:
     import pyi_splash
