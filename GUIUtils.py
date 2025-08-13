@@ -242,12 +242,24 @@ class ActionButtons(QWidget):
         if not fileName.endswith(".rw"):
             fileName += ".rw"
 
+        lines = []
+
+        lines.append(f'@adaptive_type={self.parent.current_adaptive_type}')
+        if self.parent.configural_cues:
+            lines.append('@configural_cues=True')
+
+        params = [f'{key}={dual.box.text()}' for key, dual in self.parent.params.items()]
+        lines.append('@' + ';'.join(params))
+
+        if self.parent.alphasBox.isVisible():
+            percs_params = [f'{perc}_{cs}={dual.box.text()}' for perc, value in self.parent.per_cs_param.items() for cs, dual in value.items()]
+            lines.append('@' + ';'.join(percs_params))
+
         rowCount = self.parent.tableWidget.rowCount()
         columnCount = self.parent.tableWidget.columnCount()
         while columnCount > 0 and not any(self.parent.tableWidget.getText(row, columnCount - 1) for row in range(rowCount)):
             columnCount -= 1
 
-        lines = []
         for row in range(rowCount):
             name = self.parent.tableWidget.table.verticalHeaderItem(row).text()
             phase_strs = [self.parent.tableWidget.getText(row, column) for column in range(columnCount)]
@@ -561,7 +573,7 @@ class AdaptiveTypeButtons(QGroupBox):
         self.buttonGroup.setExclusive(True)
 
         for i, adaptive_type in enumerate(parent.adaptive_types):
-            button = QPushButton(adaptive_type)
+            button = QPushButton(adaptive_type.replace('/ ', '/\n'))
             button.adaptive_type = adaptive_type
             button.setCheckable(True)
             button.setFocusPolicy(Qt.FocusPolicy.NoFocus)

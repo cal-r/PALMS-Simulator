@@ -122,8 +122,8 @@ def main() -> None:
                 replacements = {'betap': 'beta', 'betan': 'beta_neg', 'lambda': 'lamda'}
                 name = replacements.get(name, name)
 
-                if not name.islower():
-                    perc, cs = name.split('_')
+                if '_' in name and name.split('_')[-1].isupper():
+                    perc, cs = name.rsplit('_', 1)
                     getattr(experiment_args, perc + 's')[cs] = float(value)
                 else:
                     experiment_args.set_value(name, value)

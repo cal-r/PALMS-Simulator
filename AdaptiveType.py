@@ -43,7 +43,7 @@ class AdaptiveType:
     def types(cls) -> dict[str, Type[AdaptiveType]]:
         return {
             'Rescorla Wagner': RescorlaWagner,
-            'Rescorla Wagner w/\nVariable Learning Rate': RescorlaWagnerLinear,
+            'Rescorla Wagner w/ Variable Learning Rate': RescorlaWagnerLinear,
             'Pearce Kaye Hall': PearceKayeHall,
             'Mackintosh Extended': LePelley,
             'LePelley\'s Hybrid': LePelleyHybrid,
