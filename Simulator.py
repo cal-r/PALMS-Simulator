@@ -113,11 +113,13 @@ def main() -> None:
     phases: dict[str, list[Phase]] = dict()
 
     for e, experiment in enumerate(args.experiment_file.readlines()):
-        if experiment.startswith('#'):
+        experiment = experiment.strpi()
+
+        if not experiment or experiment.startswith('#'):
             continue
 
         if experiment.startswith('@'):
-            for prop in experiment.strip('@').strip().split(';'):
+            for prop in experiment.strip('@').split(';'):
                 name, value = prop.split('=')
                 replacements = {'betap': 'beta', 'betan': 'beta_neg', 'lambda': 'lamda'}
                 name = replacements.get(name, name)
