@@ -62,12 +62,6 @@ class Stimulus:
     def __repr__(self) -> str:
         return str(self.assoc)
 
-    def fullName(self) -> str:
-        if re.fullmatch(r'\(.*\)', self.name):
-            return f'q{self.name}'
-
-        return re.sub(r'\((.*)\)', r'', self.name)
-
     def join(self, other: Stimulus, op) -> Stimulus:
         ret: dict[str, Any] = dict(
             name = ''.join(sorted(set(self.splitName() + other.splitName())))

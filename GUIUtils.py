@@ -150,12 +150,12 @@ class ActionButtons(QWidget):
         configuralButton.setStyleSheet(checkedStyle)
         configuralButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-        simpleStimuliButton = QPushButton('Plot Simple Stimuli')
-        simpleStimuliButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        simpleStimuliButton.setStyleSheet(checkedStyle)
-        simpleStimuliButton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        simpleStimuliButton.clicked.connect(self.togglePlotSimpleStimuli)
-        simpleStimuliButton.setCheckable(True)
+        partStimuliButton = QPushButton('Plot Part Stimuli')
+        partStimuliButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        partStimuliButton.setStyleSheet(checkedStyle)
+        partStimuliButton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        partStimuliButton.clicked.connect(self.togglePlotPartStimuli)
+        partStimuliButton.setCheckable(True)
 
         exportDataButton = QPushButton("Export Data")
         exportDataButton.clicked.connect(self.exportData)
@@ -197,7 +197,7 @@ class ActionButtons(QWidget):
 
         plotOptionsLayout = QVBoxLayout()
         plotOptionsLayout.addWidget(plotAlphaButton)
-        plotOptionsLayout.addWidget(simpleStimuliButton)
+        plotOptionsLayout.addWidget(partStimuliButton)
         plotOptionsLayout.addWidget(printButton)
         plotOptionsLayout.addWidget(savePlotButton)
         plotOptionsLayout.addWidget(hideButton)
@@ -304,8 +304,8 @@ class ActionButtons(QWidget):
         self.parent.configural_cues = not self.parent.configural_cues
         self.parent.refreshExperiment()
 
-    def togglePlotSimpleStimuli(self):
-        self.parent.plot_simple_stimuli = not self.parent.plot_simple_stimuli
+    def togglePlotPartStimuli(self):
+        self.parent.plot_part_stimuli = not self.parent.plot_part_stimuli
         self.parent.refreshExperiment()
 
     def exportData(self):
