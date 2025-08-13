@@ -27,6 +27,8 @@ from matplotlib import pyplot
 
 from GUIUtils import *
 
+import ipdb
+
 forceRatio = False
 try:
     import pyi_splash
@@ -110,7 +112,7 @@ class PavlovianApp(QMainWindow):
 
         self.alphasBox = AlphasBox(self)
         aboutButton = AboutButton(self)
-        adaptiveTypeButtons = AdaptiveTypeButtons(self)
+        self.adaptiveTypeButtons = AdaptiveTypeButtons(self)
 
         iconLabel = QLabel(self)
         iconLabel.setPixmap(self.getPixmap('palms.png'))
@@ -126,7 +128,7 @@ class PavlovianApp(QMainWindow):
         mainLayout.setSpacing(0)
         mainLayout.addWidget(self.tableWidget, 0, 0, 1, 4)
         mainLayout.addWidget(iconLabel, 0, 4, 1, 1, alignment = Qt.AlignmentFlag.AlignCenter)
-        mainLayout.addWidget(adaptiveTypeButtons, 1, 0, 4, 1)
+        mainLayout.addWidget(self.adaptiveTypeButtons, 1, 0, 4, 1)
         mainLayout.addWidget(parametersGroupBox, 1, 1, 4, 1)
         mainLayout.addWidget(self.alphasBox, 1, 2, 4, 1)
         mainLayout.addWidget(self.plotBox, 1, 3, 4, 1)
@@ -148,10 +150,12 @@ class PavlovianApp(QMainWindow):
 
         self.setWindowTitle("PALMS Simulator")
         self.setWindowFlags(Qt.WindowType.Window | Qt.WindowType.WindowCloseButtonHint | Qt.WindowType.WindowMaximizeButtonHint)
-        adaptiveTypeButtons.children()[1].click()
+        self.adaptiveTypeButtons.buttonGroup.button(0).click()
 
     def loadFile(self, filename):
         lines = []
+        changes = {}
+        percs_changes = {}
         for line in open(filename):
             line = line.strip()
 
@@ -168,9 +172,27 @@ class PavlovianApp(QMainWindow):
                 replacements = {'betap': 'beta', 'lambda': 'lamda'}
                 name = replacements.get(name, name)
 
-                self.params[name].box.setText(value)
+                if name == 'adaptive_type':
+                    self.adaptiveTypeButtons.clickAdaptiveTypeButton(value)
+                elif not name.islower():
+                    openAlphasBox = True
+                    percs_changes[name] = value
+                else:
+                    changes[name] = value
+
 
         self.tableWidget.loadFile(lines)
+
+        for name, value in changes.items():
+            self.params[name].box.setText(value)
+
+        if percs_changes:
+            self.refreshExperiment()
+            self.actionButtons.toggleAlphasButton.click()
+
+            for name, value in percs_changes.items():
+                perc, cs = name.split('_')
+                self.per_cs_param[perc][cs].box.setText(value)
 
     def getPixmap(self, filename):
         here = Path(__file__).resolve().parent

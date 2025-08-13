@@ -138,11 +138,11 @@ class ActionButtons(QWidget):
         self.phaseLambdaButton.setStyleSheet(checkedStyle)
         self.phaseLambdaButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-        toggleAlphasButton = QPushButton('Per-CS Parameters')
-        toggleAlphasButton.clicked.connect(self.toggleAlphasBox)
-        toggleAlphasButton.setCheckable(True)
-        toggleAlphasButton.setStyleSheet(checkedStyle)
-        toggleAlphasButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.toggleAlphasButton = QPushButton('Per-CS Parameters')
+        self.toggleAlphasButton.clicked.connect(self.toggleAlphasBox)
+        self.toggleAlphasButton.setCheckable(True)
+        self.toggleAlphasButton.setStyleSheet(checkedStyle)
+        self.toggleAlphasButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         configuralButton = QPushButton('Configural Cues')
         configuralButton.clicked.connect(self.toggleConfiguralCues)
@@ -189,7 +189,7 @@ class ActionButtons(QWidget):
         phaseOptionsLayout.addWidget(self.toggleRandButton)
         phaseOptionsLayout.addWidget(self.phaseBetaButton)
         phaseOptionsLayout.addWidget(self.phaseLambdaButton)
-        phaseOptionsLayout.addWidget(toggleAlphasButton)
+        phaseOptionsLayout.addWidget(self.toggleAlphasButton)
         phaseOptionsLayout.addWidget(configuralButton)
         phaseOptionsLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
         phaseOptionsGroupBox = QGroupBox('Phase Options')
@@ -557,8 +557,8 @@ class AdaptiveTypeButtons(QGroupBox):
         layout.setSpacing(0)
         layout.setContentsMargins(0, 0, 0, 0)
 
-        buttonGroup = QButtonGroup(parent)
-        buttonGroup.setExclusive(True)
+        self.buttonGroup = QButtonGroup(parent)
+        self.buttonGroup.setExclusive(True)
 
         for i, adaptive_type in enumerate(parent.adaptive_types):
             button = QPushButton(adaptive_type)
@@ -571,17 +571,27 @@ class AdaptiveTypeButtons(QGroupBox):
             button.setStyleSheet(noMarginStyle + checkedStyle)
             button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
-            buttonGroup.addButton(button, i)
-            layout.addWidget(button)
-
+            self.buttonGroup.addButton(button, i)
             button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-        buttonGroup.buttonClicked.connect(self.changeAdaptiveType)
+            layout.addWidget(button)
+
+        self.buttonGroup.buttonClicked.connect(lambda button: self.changeAdaptiveType(button.adaptive_type))
         self.setLayout(layout)
 
-    def changeAdaptiveType(self, button):
+    def clickAdaptiveTypeButton(self, adaptive_type):
+        for button in self.buttonGroup.buttons():
+            if button.adaptive_type == adaptive_type:
+                button.click()
+                return
+
+        print(f'Secret adaptive type! {adaptive_type}')
+        buttonGroup.checkedButton.release()
+        self.changeAdaptiveType(self, adaptive_type)
+
+    def changeAdaptiveType(self, adaptive_type):
         parent = self.parent
-        parent.current_adaptive_type = button.adaptive_type
+        parent.current_adaptive_type = adaptive_type
         parent.enabled_params = set(AdaptiveType.types()[parent.current_adaptive_type].parameters())
         parent.enableParams()
 
