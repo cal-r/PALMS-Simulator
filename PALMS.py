@@ -176,8 +176,7 @@ class PavlovianApp(QMainWindow):
                     self.adaptiveTypeButtons.clickAdaptiveTypeButton(value)
                 elif name == 'configural_cues':
                     self.actionButtons.configuralButton.click()
-                elif not name.islower():
-                    openAlphasBox = True
+                elif '_' in name and name.split('_')[-1].isupper():
                     percs_changes[name] = value
                 else:
                     changes[name] = value
@@ -193,7 +192,7 @@ class PavlovianApp(QMainWindow):
             self.actionButtons.toggleAlphasButton.click()
 
             for name, value in percs_changes.items():
-                perc, cs = name.split('_')
+                perc, cs = name.rsplit('_', 1)
                 self.per_cs_param[perc][cs].box.setText(value)
 
     def getPixmap(self, filename):
