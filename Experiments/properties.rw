@@ -3,5 +3,6 @@
 @alpha_A=1;alpha_C=0.001
 @betap=0.9;betan=0.01
 @num_trials=10
+@configural_cues=True
 Control|50C+|50AB+|B
 Test|50A+|50AB+|B

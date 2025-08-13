@@ -174,6 +174,8 @@ class PavlovianApp(QMainWindow):
 
                 if name == 'adaptive_type':
                     self.adaptiveTypeButtons.clickAdaptiveTypeButton(value)
+                elif name == 'configural_cues':
+                    self.actionButtons.configuralButton.click()
                 elif not name.islower():
                     openAlphasBox = True
                     percs_changes[name] = value
