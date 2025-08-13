@@ -54,7 +54,7 @@ def parse_args():
     plot.add_argument('--plot-alpha', type = bool, action = argparse.BooleanOptionalAction, help = 'Whether to plot the total alpha.')
     plot.add_argument('--plot-macknhall', type = bool, action = argparse.BooleanOptionalAction, help = 'Whether to plot the alpha Mack and alpha Hall.')
     plot.add_argument('--plot-alphas', type = bool, action = argparse.BooleanOptionalAction, help = 'Whether to plot all the alphas, including total alpha, alpha Mack, and alpha Hall.')
-
+    plot.add_argument('--part-stimuli', type = bool, action = argparse.BooleanOptionalAction, help = 'Whether to plot part stimuli with US in addition to the regular plot.')
 
     experiment = parser.add_argument_group('Experiment Parameters')
     experiment.add_argument("--adaptive-type", choices = AdaptiveType.types().keys(), default = 'Rescorla Wagner', help = 'Type of adaptive attention mode to use')
