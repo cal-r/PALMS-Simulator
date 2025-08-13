@@ -121,7 +121,7 @@ def main() -> None:
         if experiment.startswith('@'):
             for prop in experiment.strip('@').split(';'):
                 name, value = prop.split('=')
-                replacements = {'betap': 'beta', 'betan': 'beta_neg', 'lambda': 'lamda'}
+                replacements = {'model': 'adaptive_type', 'betap': 'beta', 'betan': 'beta_neg', 'lambda': 'lamda'}
                 name = replacements.get(name, name)
 
                 if '_' in name and name.split('_')[-1].isupper():

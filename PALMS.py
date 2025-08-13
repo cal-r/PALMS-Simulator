@@ -169,7 +169,7 @@ class PavlovianApp(QMainWindow):
             for prop in line.strip('@').split(';'):
                 name, value = prop.split('=')
 
-                replacements = {'betap': 'beta', 'lambda': 'lamda'}
+                replacements = {'betap': 'beta', 'lambda': 'lamda', 'model': 'adaptive_type'}
                 name = replacements.get(name, name)
 
                 if name == 'adaptive_type':

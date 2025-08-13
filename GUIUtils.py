@@ -244,7 +244,7 @@ class ActionButtons(QWidget):
 
         lines = []
 
-        lines.append(f'@adaptive_type={self.parent.current_adaptive_type}')
+        lines.append(f'@model={self.parent.current_adaptive_type}')
         if self.parent.configural_cues:
             lines.append('@configural_cues=True')
 
