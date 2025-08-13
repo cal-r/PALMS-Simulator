@@ -119,9 +119,14 @@ def main() -> None:
         if experiment.startswith('@'):
             for prop in experiment.strip('@').strip().split(';'):
                 name, value = prop.split('=')
-                replacements = {'betap': 'beta', 'lambda': 'lamda'}
+                replacements = {'betap': 'beta', 'betan': 'beta_neg', 'lambda': 'lamda'}
                 name = replacements.get(name, name)
-                experiment_args.set_value(name, value)
+
+                if not name.islower():
+                    perc, cs = name.split('_')
+                    getattr(experiment_args, perc + 's')[cs] = float(value)
+                else:
+                    experiment_args.set_value(name, value)
             continue
 
         name, *phase_strs = experiment.strip().split('|')
