@@ -154,6 +154,10 @@ class PavlovianApp(QMainWindow):
         lines = []
         for line in open(filename):
             line = line.strip()
+
+            if line.startswith('#'):
+                continue
+
             if not line.startswith('@'):
                 lines.append(line.strip())
                 continue

@@ -1,3 +1,4 @@
 @alpha=0.9;beta=0.1;lambda=5
+@adaptive_type=Pearce Kaye Hall
 Control|50C+|50AB+|B
 Test|50A+|50AB+|B
