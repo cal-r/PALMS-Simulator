@@ -113,7 +113,7 @@ def main() -> None:
     phases: dict[str, list[Phase]] = dict()
 
     for e, experiment in enumerate(args.experiment_file.readlines()):
-        experiment = experiment.strpi()
+        experiment = experiment.strip()
 
         if not experiment or experiment.startswith('#'):
             continue
