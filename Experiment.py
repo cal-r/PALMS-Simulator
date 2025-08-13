@@ -213,10 +213,7 @@ class Experiment:
                     if ('+' in cs or '-' in cs) and not args.part_stimuli:
                         continue
 
-                    full_name = cs
-                    if re.fullmatch(r'\(.*\)', cs):
-                        full_name = f'q{cs}'
-
+                    full_name = cs.replace('(', 'q(')
                     group_strengths[phase_num][f'{self.name} - {full_name}'].add(stimulus)
 
         return group_strengths
