@@ -61,8 +61,6 @@ class Phase:
 @dataclass
 class RWArgs:
     adaptive_type: str
-    configural_cues: bool
-    part_stimuli: bool
 
     alphas: dict[str, float]
     alpha_macks: dict[str, float]
@@ -101,6 +99,9 @@ class RWArgs:
 
     title_suffix: None | str = None
     savefig: None | str = None
+
+    configural_cues: bool = False
+    part_stimuli: bool = False
 
 class Experiment:
     name: str
