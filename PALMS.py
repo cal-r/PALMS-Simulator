@@ -539,9 +539,7 @@ def main():
 
     dpi = args.dpi
     if dpi is None:
-        dpi = 110 * app.primaryScreen().devicePixelRatio()
-        if forceRatio:
-            dpi = 110
+        dpi = 110
 
     logging.info('Creating gallery')
 

@@ -1,4 +1,4 @@
-\documentclass[varwidth]{standalone}
+\documentclass[border=10pt,varwidth]{standalone}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage[T1]{fontenc}
@@ -22,13 +22,13 @@
 \end{center}
 \begin{gather*}
 	\begin{aligned}
-		\rho &= \lambda - \left( \textstyle\sum_i V_i^{n - 1} - \textstyle\sum_i \overline{V_i^{n - 1}} \right)
+		\rho &= \lambda - \left( \textstyle\sum_i V_i^{n - 1} - \textstyle\sum_i \overline{V}_i^{n - 1} \right)
 	\end{aligned} \\
 	\begin{aligned}
 		\Delta V_\eks^n &= \alpha_\eks^{n - 1} \cdot \beta^+ \cdot (1 - V_\eks^{n - 1} + \overline{V}_\eks^{n - 1}) \cdot \left| \rho \right| & \text{if } \rho > 0 \\
 		 \Delta \overline{V}_\eks^n &= \alpha_\eks^{n - 1} \cdot \beta^- \cdot (1 - \overline{V}_\eks^{n - 1} + V_\eks^{n - 1}) \cdot \left| \rho \right| & \text{if } \rho < 0
 	\end{aligned} \\
-	{V^{\text{\tiny\scshape NET}}}_\eks^n = \Delta V_\eks^n - \overline{V}_\eks^n \\[1em]
+	{V^{\text{\tiny\scshape NET}}}_\eks^n = V_\eks^n - \overline{V}_\eks^n \\[1em]
 	\Lambda^{n - 1}_\eks = \sum_{i \neq \eks} V^{n - 1}_i \qquad
 	\overline{\Lambda}^{n - 1}_\eks = \sum_{i \neq \eks} \overline{V}^{n - 1}_i \\
 	\alpha_\eks^n =

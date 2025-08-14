@@ -1,0 +1,5 @@
+@model=Mackintosh Extended
+@alpha=0.5;alpha_mack=0.1;alpha_hall=0.1;salience=0.1;lamda=1;beta=0.5;betan=0.5;gamma=0.15;thetaE=0.1;thetaI=0.1;num_trials=100
+@alpha_A=0.7;alpha_B=0.1;alpha_mack_A=0.1;alpha_mack_B=0.1;alpha_hall_A=0.1;alpha_hall_B=0.1;salience_A=0.100;salience_B=0.100
+Group 1|40AB+
+Group 2|rand/40A+/40B+
