@@ -14,6 +14,8 @@ from PIL import Image
 from AdaptiveType import AdaptiveType
 from Environment import StimulusHistory
 
+import ipdb
+
 class PhaseBox(QGroupBox):
     def __init__(self, parent = None, screenshot_ready = False):
         super().__init__(parent)
@@ -305,7 +307,7 @@ class ActionButtons(QWidget):
                 for cs, pair in form.items():
                     global_val = float(self.parent.params[perc].box.text())
                     local_val = global_val ** len(cs.strip('()'))
-                    pair.box.setText(f'{local_val:.2g}')
+                    pair.setText(f'{local_val:.2g}', set_modified = False)
         else:
             self.parent.alphasBox.setVisible(False)
             self.parent.refreshExperiment()
@@ -420,6 +422,8 @@ Selecting "separate legend" removes the legend from these plots, and creates a n
 
     def clearExperiment(self):
         self.parent.tableWidget.clearAll()
+        self.parent.parametersGroupBox.clearFields()
+        self.parent.alphasBox.clearFields()
         self.parent.refreshExperiment()
 
     def showModelInfo(self):
@@ -471,23 +475,32 @@ class ParametersGroupBox(QGroupBox):
             thetaI = "Inhibitory theta based on LePelley's model.",
             num_trials = "Number of random trials per experiment.",
         )
-        params = QFormLayout()
-        params.setSpacing(10)
+
+        self.params = parent.params
+
+        layout = QFormLayout()
+        layout.setSpacing(10)
         for key, val in AdaptiveType.initial_defaults().items():
-            label = parent.DualLabel(short_names[key], parent, str(val), hoverText = descriptions[key]).addRow(params)
-            parent.params[key] = label
+            label = parent.DualLabel(short_names[key], parent, str(val), hoverText = descriptions[key]).addRow(layout)
+            self.params[key] = label
 
-        parent.params['num_trials'].box.setGeometry(100, 120, 120, 60)
-        parent.params['num_trials'].box.setDisabled(True)
+        self.params['num_trials'].box.setGeometry(100, 120, 120, 60)
+        self.params['num_trials'].box.setDisabled(True)
 
-        params.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
-        self.setLayout(params)
+        layout.setLabelAlignment(Qt.AlignmentFlag.AlignRight)
+        self.setLayout(layout)
         self.setMaximumWidth(90)
+
+    def clearFields(self, defaults, only_unmodified = False):
+        for key, default in defaults.items():
+            if not only_unmodified or not self.params[key].modified:
+                self.params[key].setText(str(default), set_modified = False)
 
 class AlphasBox(QGroupBox):
     def __init__(self, parent):
         super().__init__('Per-CS', parent = parent)
         self.parent = parent
+        self.per_cs_param = parent.per_cs_param
 
         # scrollArea = QScrollArea()
         scrollArea = QWidget()
@@ -560,6 +573,16 @@ class AlphasBox(QGroupBox):
         # print(self.width())
         # self.setMinimumWidth(self.width())
 
+    def clearFields(self, defaults, only_unmodified = False):
+        common_keys = defaults.keys() & self.per_cs_param.keys()
+        for key in common_keys:
+            default = defaults[key]
+            param = self.per_cs_param[key]
+            for cs, pair in param.items():
+                if not only_unmodified or not pair.modified:
+                    val = default ** len(cs.strip('()'))
+                    pair.setText(f'{val:.3f}', set_modified = False)
+
 class AdaptiveTypeButtons(QGroupBox):
     def __init__(self, parent):
         super().__init__('Models', parent = parent)
@@ -607,13 +630,9 @@ class AdaptiveTypeButtons(QGroupBox):
         parent.enabled_params = set(AdaptiveType.types()[parent.current_adaptive_type].parameters())
         parent.enableParams()
 
-        for key, default in AdaptiveType.types()[parent.current_adaptive_type].defaults().items():
-            parent.params[key].box.setText(str(default))
-            if key in parent.per_cs_param:
-                for cs, pair in parent.per_cs_param[key].items():
-                    val = default ** len(cs.strip('()'))
-                    pair.box.setText(f'{val:.3f}')
-
+        defaults = AdaptiveType.types()[self.parent.current_adaptive_type].defaults()
+        parent.parametersGroupBox.clearFields(defaults = defaults, only_unmodified = True)
+        parent.alphasBox.clearFields(defaults = defaults, only_unmodified = True)
         parent.refreshExperiment()
 
 class PlotBox(QGroupBox):
