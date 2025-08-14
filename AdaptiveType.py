@@ -224,10 +224,8 @@ class LePelley(AdaptiveType):
             s.Ve += DVe
         elif rho < 0:
             DVi = s.alpha * self.betan * (1 - s.Vi + s.Ve) * abs(rho)
-            s.alpha += -self.thetaI * (abs(abs(rho) - s.Vi + s.Ve ) - abs(abs(rho) - LomI + LomE ))
+            s.alpha += -self.thetaI * (abs(abs(rho) - s.Vi + s.Ve) - abs(abs(rho) - LomI + LomE))
             s.Vi += DVi
-
-        s.assoc = s.Ve - s.Vi
 
         s.alpha = min(max(s.alpha, 0.05), 1)
         s.assoc = s.Ve - s.Vi
