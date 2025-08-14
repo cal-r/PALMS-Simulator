@@ -6,7 +6,7 @@ PNGS = $(FORMULAS:%.tex=%.png)
 all: $(PNGS) clean_pdf
 
 tex/%.pdf: %.tex | tex
-	pdflatex -output-directory=tex $<
+	latexmk -pdf -outdir=tex $<
 
 %.png: tex/%.pdf
 	magick convert -density 300 -background white -alpha remove -alpha off $< -quality 90 $@
