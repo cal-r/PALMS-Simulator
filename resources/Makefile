@@ -9,7 +9,7 @@ tex/%.pdf: %.tex | tex
 	pdflatex -output-directory=tex $<
 
 %.png: tex/%.pdf
-	magick convert -density 300 $< -quality 90 $@
+	magick convert -density 300 -background white -alpha remove -alpha off $< -quality 90 $@
 
 tex:
 	mkdir -p tex
