@@ -106,7 +106,7 @@ class PavlovianApp(QMainWindow):
         self.tableWidget.table.setMaximumHeight(120)
         self.tableWidget.onCellChange(self.refreshExperiment)
 
-        parametersGroupBox = ParametersGroupBox(self)
+        self.parametersGroupBox = ParametersGroupBox(self)
 
         self.alphasBox = AlphasBox(self)
         aboutButton = AboutButton(self)
@@ -127,7 +127,7 @@ class PavlovianApp(QMainWindow):
         mainLayout.addWidget(self.tableWidget, 0, 0, 1, 4)
         mainLayout.addWidget(iconLabel, 0, 4, 1, 1, alignment = Qt.AlignmentFlag.AlignCenter)
         mainLayout.addWidget(self.adaptiveTypeButtons, 1, 0, 4, 1)
-        mainLayout.addWidget(parametersGroupBox, 1, 1, 4, 1)
+        mainLayout.addWidget(self.parametersGroupBox, 1, 1, 4, 1)
         mainLayout.addWidget(self.alphasBox, 1, 2, 4, 1)
         mainLayout.addWidget(self.plotBox, 1, 3, 4, 1)
         mainLayout.addWidget(self.actionButtons, 1, 4, 3, 1)
@@ -183,7 +183,7 @@ class PavlovianApp(QMainWindow):
         self.tableWidget.loadFile(lines)
 
         for name, value in changes.items():
-            self.params[name].box.setText(value)
+            self.params[name].setText(value, set_modified = True)
 
         if percs_changes:
             self.refreshExperiment()
@@ -191,7 +191,7 @@ class PavlovianApp(QMainWindow):
 
             for name, value in percs_changes.items():
                 perc, cs = name.rsplit('_', 1)
-                self.per_cs_param[perc][cs].box.setText(value)
+                self.per_cs_param[perc][cs].setText(value, set_modified = True)
 
     def getPixmap(self, filename):
         here = Path(__file__).resolve().parent
@@ -199,21 +199,40 @@ class PavlovianApp(QMainWindow):
         return pixmap.scaled(150, 150, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
 
     class DualLabel:
+        label: QLabel
+        box: QLineEdit
+        hoverText: str
+        modified: bool
+
         def __init__(self, text, parent, default, font = 'Monospace', hoverText = None, maximumWidth = 40):
+            self.parent = parent
+
             self.label = QLabel(text)
             self.label.setAlignment(Qt.AlignmentFlag.AlignRight)
             self.box = QLineEdit(default)
             self.box.setMaximumWidth(maximumWidth)
-            self.box.returnPressed.connect(parent.refreshExperiment)
+            self.box.returnPressed.connect(self.changeText)
             self.label.setFont(QFont(font))
+
+            self.modified = False
 
             self.hoverText = hoverText
             if hoverText:
                 self.label.setToolTip(hoverText)
 
+        def setText(self, text: str, set_modified: None | bool = None):
+            self.box.setText(text)
+
+            if set_modified is not None:
+                self.modified = set_modified
+
         def addRow(self, layout):
             layout.addRow(self.label, self.box)
             return self
+
+        def changeText(self):
+            self.modified = True
+            self.parent.refreshExperiment()
 
     def enableParams(self):
         for key in AdaptiveType.parameters():
