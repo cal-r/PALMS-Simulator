@@ -197,12 +197,6 @@ class CoolTable(QWidget):
 
         maxCols = 0
         for row, group in enumerate(lines):
-            if group.startswith('@'):
-                for prop in group.strip('@').strip().split(';'):
-                    name, value = prop.split('=')
-                    self.params[name].setText(value)
-                continue
-
             name, *phase_strs = [x.strip() for x in group.split('|')]
 
             if len(phase_strs) > maxCols:
@@ -218,4 +212,3 @@ class CoolTable(QWidget):
 
         self.updateSizes()
         self.freeze = False
-

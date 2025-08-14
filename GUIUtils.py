@@ -250,12 +250,14 @@ class ActionButtons(QWidget):
         if self.parent.configural_cues:
             lines.append('@configural_cues=True')
 
-        params = [f'{key}={dual.box.text()}' for key, dual in self.parent.params.items()]
-        lines.append('@' + ';'.join(params))
+        params = [f'{key}={dual.box.text()}' for key, dual in self.parent.params.items() if dual.modified]
+        if params:
+            lines.append('@' + ';'.join(params))
 
         if self.parent.alphasBox.isVisible():
-            percs_params = [f'{perc}_{cs}={dual.box.text()}' for perc, value in self.parent.per_cs_param.items() for cs, dual in value.items()]
-            lines.append('@' + ';'.join(percs_params))
+            percs_params = [f'{perc}_{cs}={dual.box.text()}' for perc, value in self.parent.per_cs_param.items() for cs, dual in value.items() if dual.modified]
+            if percs_params:
+                lines.append('@' + ';'.join(percs_params))
 
         rowCount = self.parent.tableWidget.rowCount()
         columnCount = self.parent.tableWidget.columnCount()
