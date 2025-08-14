@@ -11,6 +11,8 @@ from PySide6.QtWidgets import *
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from PIL import Image
 
+from pathlib import Path
+
 from AdaptiveType import AdaptiveType
 from Environment import StimulusHistory
 
@@ -221,8 +223,21 @@ class ActionButtons(QWidget):
         layout.addWidget(fileOptionsGroupBox)
         self.setLayout(layout)
 
+    def getRootDir(self) -> Path:
+        if not getattr(sys, 'frozen', False):
+            return Path(__file__).resolve().parent
+
+        exe = Path(sys.executable).resolve()
+
+        # MacOS
+        if len(exe.parents) > 3 and exe.parents[2].suffix == '.app':
+            return exe.parents[3]
+
+        # Linux and Windows
+        return exe.parent
+
     def openFileDialog(self):
-        file, _ = QFileDialog.getOpenFileName(self, 'Open File', './Experiments')
+        file, _ = QFileDialog.getOpenFileName(self, 'Open File', str(self.getRootDir() / 'Experiments'))
         if file == '':
             return
 
@@ -230,12 +245,13 @@ class ActionButtons(QWidget):
         self.parent.refreshExperiment()
 
     def saveExperiment(self):
-        default_directory = os.path.join(os.getcwd(), 'Experiments')
+        default_directory = self.getRootDir() / 'Experiments'
+
         default_file_name = "experiment.rw"
         if os.path.exists(default_directory):
-            default_file_name = os.path.join(default_directory, "experiment.rw")
+            default_file_name = default_directory / "experiment.rw"
 
-        fileName, _ = QFileDialog.getSaveFileName(self, "Save Experiment", default_file_name, "RW Files (*.rw);;All Files (*)")
+        fileName, _ = QFileDialog.getSaveFileName(self, "Save Experiment", str(default_file_name), "RW Files (*.rw);;All Files (*)")
         if not fileName:
             return
 
