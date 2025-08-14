@@ -14,8 +14,6 @@ from PIL import Image
 from AdaptiveType import AdaptiveType
 from Environment import StimulusHistory
 
-import ipdb
-
 class PhaseBox(QGroupBox):
     def __init__(self, parent = None, screenshot_ready = False):
         super().__init__(parent)
