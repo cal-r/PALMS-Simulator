@@ -260,7 +260,7 @@ class ActionButtons(QWidget):
         self.parent.refreshExperiment()
 
     def saveExperiment(self):
-        default_directory = self.getExperimentPath()
+        default_directory = Path(os.environ['HOME']) / 'Desktop'
 
         default_file_name = "experiment.rw"
         if os.path.exists(default_directory):
@@ -385,6 +385,7 @@ class ActionButtons(QWidget):
             )
             if fname:
                 file_edit.setText(fname)
+
         browse_btn.clicked.connect(choose_file)
         file_layout.addWidget(file_label)
         file_layout.addWidget(file_edit)
@@ -431,6 +432,8 @@ Selecting "separate legend" removes the legend from these plots, and creates a n
         button_layout.addWidget(btn_box)
 
         layout.addLayout(button_layout)
+
+        choose_file()
 
         if dialog.exec() == QDialog.Accepted:
             file_path = file_edit.text()
