@@ -32,7 +32,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y xvfb scrot
-          sudo apt-get install -y libegl1 libopengl0 libxkbcommon-x11-0
+          sudo apt-get install -y libegl1 libopengl0 libxkbcommon-x11-0 libxcb-cursor0 libgl1
 
       - name: Extract .tar.gz
         shell: bash
