@@ -31,17 +31,13 @@ jobs:
       - name: Install tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y xvfb scrot x11-apps
+          sudo apt-get install -y xvfb scrot
 
       - name: Extract .tar.gz
         shell: bash
         run: |
           mkdir -p dist
           tar -xzf release/release_linux.tar.gz -C dist
-
-      - name: Make app executable
-        shell: bash
-        run: chmod +x dist/PALMS
 
       - name: Run app, screenshot, and check for errors
         shell: bash
@@ -54,9 +50,10 @@ jobs:
           XVFB_PID=$!
           trap 'kill $XVFB_PID || true' EXIT
           export DISPLAY="$XVFB_DISPLAY"
+          sleep 5
 
           cd dist
-          PALMS --smoke-test Experiments/Haselgrove_etal_2010_exp1.rw &
+          ./PALMS --smoke-test Experiments/Haselgrove_etal_2010_exp1.rw &
           PID=$!
 
           sleep 30
