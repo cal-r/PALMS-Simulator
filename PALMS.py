@@ -58,7 +58,7 @@ class PavlovianApp(QMainWindow):
 
     dpi: int
 
-    def __init__(self, dpi = 200, screenshot_ready = False, parent=None, smoke_test = False):
+    def __init__(self, dpi = 200, screenshot_ready = False, parent = None, smoke_test = False):
         super(PavlovianApp, self).__init__(parent)
 
         self.adaptive_types = AdaptiveType.types().keys()
@@ -195,7 +195,7 @@ class PavlovianApp(QMainWindow):
 
     def getPixmap(self, filename):
         here = Path(__file__).resolve().parent
-        pixmap = QPixmap(str(here / "resources" / filename), flags=Qt.ImageConversionFlag.NoFormatConversion)
+        pixmap = QPixmap(str(here / "resources" / filename), flags = Qt.ImageConversionFlag.NoFormatConversion)
         return pixmap.scaled(150, 150, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
 
     class DualLabel:
@@ -514,6 +514,7 @@ def parse_args():
     gui_parser.add_argument('--screenshot-ready', action = 'store_true', help = 'Hide guide numbers for easier screenshots.')
     gui_parser.add_argument('--debug', action = 'store_true', help = 'Whether to go to a debugging console if there is an exception')
     gui_parser.add_argument('--smoke-test', action = 'store_true', help = 'Run a smoke test: open the app, log everything, wait 5 seconds, close the app.')
+    gui_parser.add_argument('--verbose', '-v', action = 'store_true', help = 'Verbose logging.')
     gui_parser.add_argument('load_file', nargs = '?', help = 'File to load initially')
 
     if len(sys.argv) > 1 and sys.argv[1] in ['-h', '--help']:
@@ -523,8 +524,9 @@ def parse_args():
 
 def main():
     args = parse_args()
-    if args.smoke_test:
-        logging.basicConfig(level=logging.INFO, format='[%(relativeCreated)d] %(message)s')
+    logging.basicConfig(level = logging.WARN, format = '[%(relativeCreated)d] %(message)s')
+    if args.smoke_test or args.verbose:
+        logging.getLogger().setLevel(logging.INFO)
 
     logging.info('Starting')
 

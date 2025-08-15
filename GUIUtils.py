@@ -1,6 +1,7 @@
 import os
 os.environ["QT_API"] = "PySide6"
 
+import logging
 import sys
 from typing import cast
 
@@ -223,21 +224,35 @@ class ActionButtons(QWidget):
         layout.addWidget(fileOptionsGroupBox)
         self.setLayout(layout)
 
-    def getRootDir(self) -> Path:
+        logging.info(f'Experiment path set to ' + str(self.getExperimentPath()))
+
+    def getExperimentPath(self) -> Path:
         if not getattr(sys, 'frozen', False):
-            return Path(__file__).resolve().parent
+            logging.info('Unfrozen path, using __file__.')
+            parent = Path(__file__).resolve().parent
+        else:
+            exe = Path(sys.executable).resolve()
+            logging.info('Frozen path, using exe {str(exe)}.')
 
-        exe = Path(sys.executable).resolve()
+            if len(exe.parents) > 3 and exe.parents[2].suffix == '.app':
+                # MacOS
+                parent = exe.parents[3]
+            else:
+                # Linux and Windows
+                parent = exe.parent
 
-        # MacOS
-        if len(exe.parents) > 3 and exe.parents[2].suffix == '.app':
-            return exe.parents[3]
+        experiments = parent / 'Experiments'
+        logging.info(parent)
+        logging.info(experiments)
+        if os.path.exists(experiments):
+            return experiments
 
-        # Linux and Windows
-        return exe.parent
+        desktop = Path(os.environ['HOME']) / 'Desktop'
+        logging.warn(f'Experiments path {str(experiments)} not found. Using desktop directory {str(desktop)} instead.')
+        return desktop
 
     def openFileDialog(self):
-        file, _ = QFileDialog.getOpenFileName(self, 'Open File', str(self.getRootDir() / 'Experiments'))
+        file, _ = QFileDialog.getOpenFileName(self, 'Open File', str(self.getExperimentPath()))
         if file == '':
             return
 
@@ -245,7 +260,7 @@ class ActionButtons(QWidget):
         self.parent.refreshExperiment()
 
     def saveExperiment(self):
-        default_directory = self.getRootDir() / 'Experiments'
+        default_directory = self.getExperimentPath()
 
         default_file_name = "experiment.rw"
         if os.path.exists(default_directory):
