@@ -182,7 +182,12 @@ def generate_figures(
                 legend.set_draggable(True)
                 for legend_line in legend.get_lines():
                     legend_line.set_alpha(1)
-                    legend_line.set_picker(1)
+
+                if ticker_threshold:
+                    for line, text in zip(legend.get_lines(), legend.get_texts()):
+                        line.set_picker(5)
+                        text.set_picker(5)
+                        text.set_label(line.get_label())
 
         if phases is not None:
             title = titleify(title, phases, phase_num)
