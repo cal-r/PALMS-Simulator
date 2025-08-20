@@ -1,6 +1,14 @@
-\documentclass[varwidth]{standalone}
+\documentclass[border=10pt,varwidth]{standalone}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{url}
+\usepackage{etoolbox}
+
+\patchcmd{\thebibliography}{\section*{\refname}}{}{}{}
+
+\bibliographystyle{plain}
 
 \begin{document}
 Pearce-Hall model equations:
