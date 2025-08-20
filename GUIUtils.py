@@ -460,8 +460,9 @@ Selecting "separate legend" removes the legend from these plots, and creates a n
 
     def clearExperiment(self):
         self.parent.tableWidget.clearAll()
-        self.parent.parametersGroupBox.clearFields()
-        self.parent.alphasBox.clearFields()
+        defaults = AdaptiveType.types()[self.parent.current_adaptive_type].defaults()
+        self.parent.parametersGroupBox.clearFields(defaults)
+        self.parent.alphasBox.clearFields(vals = self.parent.params)
         self.parent.refreshExperiment()
 
     def showModelInfo(self):
