@@ -533,6 +533,9 @@ class ParametersGroupBox(QGroupBox):
             if not only_unmodified or not self.params[key].modified:
                 self.params[key].setText(str(default), set_modified = False)
 
+            if key.startswith('alpha_') and not self.params[key].modified and self.params['alpha'].modified:
+                self.params[key].setText(self.params['alpha'].box.text(), set_modified = True)
+
 class AlphasBox(QGroupBox):
     def __init__(self, parent):
         super().__init__('Per-CS', parent = parent)
@@ -607,18 +610,18 @@ class AlphasBox(QGroupBox):
                         maximumWidth = 50,
                     ).addRow(layout)
 
-        # print(self.width())
-        # self.setMinimumWidth(self.width())
-
-    def clearFields(self, defaults, only_unmodified = False):
-        common_keys = defaults.keys() & self.per_cs_param.keys()
+    def clearFields(self, vals, only_unmodified = False):
+        common_keys = vals.keys() & self.per_cs_param.keys()
         for key in common_keys:
-            default = defaults[key]
+            default = float(vals[key].box.text())
             param = self.per_cs_param[key]
             for cs, pair in param.items():
                 if not only_unmodified or not pair.modified:
                     val = default ** len(cs.strip('()'))
                     pair.setText(f'{val:.3f}'.rstrip('0').rstrip('.'), set_modified = False)
+
+                if key.startswith('alpha_') and not pair.modified and self.per_cs_param['alpha'][cs].modified:
+                    pair.setText(self.per_cs_param['alpha'][cs].box.text(), set_modified = True)
 
 class AdaptiveTypeButtons(QGroupBox):
     def __init__(self, parent):
@@ -669,7 +672,7 @@ class AdaptiveTypeButtons(QGroupBox):
 
         defaults = AdaptiveType.types()[self.parent.current_adaptive_type].defaults()
         parent.parametersGroupBox.clearFields(defaults = defaults, only_unmodified = True)
-        parent.alphasBox.clearFields(defaults = defaults, only_unmodified = True)
+        parent.alphasBox.clearFields(vals = parent.params, only_unmodified = True)
         parent.refreshExperiment()
 
 class PlotBox(QGroupBox):
