@@ -245,6 +245,10 @@ class LePelleyHybrid(AdaptiveType):
         )
 
     def step(self, s: Stimulus, rp: RunParameters):
+        # Ignore likely dummy stimuli
+        if s.assoc == 0 and s.alpha_mack == 0 and s.alpha_hall == 0:
+            return
+            
         rho = rp.lamda - (rp.sigmaE - rp.sigmaI)
 
         VXe = rp.sigmaE - s.Ve

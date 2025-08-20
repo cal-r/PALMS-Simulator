@@ -1,5 +1,13 @@
-\documentclass[varwidth]{standalone}
+\documentclass[border=10pt,varwidth]{standalone}
 \usepackage{amsmath}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{url}
+\usepackage{etoolbox}
+
+\patchcmd{\thebibliography}{\section*{\refname}}{}{}{}
+
+\bibliographystyle{plain}
 
 \begin{document}
 \begin{center}
