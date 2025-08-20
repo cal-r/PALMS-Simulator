@@ -247,8 +247,9 @@ class ActionButtons(QWidget):
         if os.path.exists(experiments):
             return experiments
 
+        desktop = self.getDesktop()
         logging.warn(f'Experiments path {str(experiments)} not found. Using desktop directory {str(desktop)} instead.')
-        return self.getDesktop()
+        return desktop
 
     def getDesktop(self) -> Path:
         desktop = Path(os.environ['HOME']) / 'Desktop'
