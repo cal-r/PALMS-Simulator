@@ -247,8 +247,11 @@ class ActionButtons(QWidget):
         if os.path.exists(experiments):
             return experiments
 
-        desktop = Path(os.environ['HOME']) / 'Desktop'
         logging.warn(f'Experiments path {str(experiments)} not found. Using desktop directory {str(desktop)} instead.')
+        return self.getDesktop()
+
+    def getDesktop(self) -> Path:
+        desktop = Path(os.environ['HOME']) / 'Desktop'
         return desktop
 
     def openFileDialog(self):
@@ -354,7 +357,7 @@ class ActionButtons(QWidget):
         self.parent.refreshExperiment()
 
     def exportData(self):
-        fileName, _ = QFileDialog.getSaveFileName(self, "Export Data", "data.csv", "CSV files (*.csv);;All Files (*)")
+        fileName, _ = QFileDialog.getSaveFileName(self, "Export Data", str(self.getDesktop() / 'data.csv'), "CSV files (*.csv);;All Files (*)")
         if not fileName:
             return
 
