@@ -80,9 +80,9 @@ class AdaptiveType:
     @classmethod
     def initial_defaults(cls) -> dict[str, float]:
         inits = dict(
-            alpha = 0.1,
-            alpha_mack = 0.1,
-            alpha_hall = 0.1,
+            alpha = 0.5,
+            alpha_mack = 0.5,
+            alpha_hall = 0.5,
             salience = 0.5,
             habituation = 0.99,
             lamda = 1,
@@ -140,7 +140,7 @@ class RescorlaWagner(AdaptiveType):
     @classmethod
     def defaults(cls) -> dict[str, float]:
         return dict(
-            alpha = .25,
+            alpha = .5,
             beta = .5,
             betan = .3,
         )
@@ -240,8 +240,8 @@ class LePelleyHybrid(AdaptiveType):
     @classmethod
     def defaults(cls) -> dict[str, float]:
         return dict(
-            alpha_mack = .9,
-            alpha_hall = .9,
+            alpha_mack = .5,
+            alpha_hall = .5,
         )
 
     def step(self, s: Stimulus, rp: RunParameters):
@@ -378,7 +378,7 @@ class MlabHybrid(AdaptiveType):
     @classmethod
     def defaults(cls) -> dict[str, float]:
         return dict(
-            alpha = 0.8,
+            alpha = 0.5,
             salience = .1,
             habituation = 1,
             lamda = 1,
