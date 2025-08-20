@@ -357,7 +357,7 @@ class ActionButtons(QWidget):
         self.parent.refreshExperiment()
 
     def exportData(self):
-        fileName, _ = QFileDialog.getSaveFileName(self, "Export Data", str(self.getDesktop() / 'data.csv'), "CSV files (*.csv);;All Files (*)")
+        fileName, _ = QFileDialog.getSaveFileName(self, "Export Data", "data.csv", "CSV files (*.csv);;All Files (*)")
         if not fileName:
             return
 
@@ -602,7 +602,7 @@ class AlphasBox(QGroupBox):
                     form[cs] = parent.DualLabel(
                         f'{shortnames[perc]}<sub>{cs}</sub>',
                         parent,
-                        f'{local_val:.3f}',
+                        f'{local_val:.3f}'.rstrip('0').rstrip('.'),
                         hoverText = hoverText,
                         maximumWidth = 50,
                     ).addRow(layout)
@@ -618,7 +618,7 @@ class AlphasBox(QGroupBox):
             for cs, pair in param.items():
                 if not only_unmodified or not pair.modified:
                     val = default ** len(cs.strip('()'))
-                    pair.setText(f'{val:.3f}', set_modified = False)
+                    pair.setText(f'{val:.3f}'.rstrip('0').rstrip('.'), set_modified = False)
 
 class AdaptiveTypeButtons(QGroupBox):
     def __init__(self, parent):
