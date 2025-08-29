@@ -113,8 +113,6 @@ class PavlovianApp(QMainWindow):
         self.adaptiveTypeButtons = AdaptiveTypeButtons(self)
 
         iconLabel = QLabel(self)
-        iconLabel.setPixmap(self.getPixmap('palms.png'))
-        iconLabel.setToolTip('Pavlovian\N{bellhop bell} \N{dog face} Associative\N{handshake} Learning\N{brain} Models\N{bar chart} Simulator\N{desktop computer}.')
 
         self.plotBox = PlotBox(self)
         self.plotCanvas = self.plotBox.plotCanvas
