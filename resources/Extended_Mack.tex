@@ -12,8 +12,8 @@
 
 \begin{document}
 \newcommand{\eks}{\textsf{x}}
-\newcommand{\longlambda}{\rlap{$\,\lambda$}\phantom{\big| \rho \big|}}
-\newcommand{\longI}{\rlap{$I$}\phantom{E}}
+\newcommand{\longlambda}{\rlap{$\,\lambda$}\phantom{\left| \rho \right|}}
+\newcommand{\longI}{\rlap{\textsubscript{I}}\phantom{\textsubscript{E}}}
 
 \begin{center}
 	\huge
@@ -22,20 +22,20 @@
 \end{center}
 \begin{gather*}
 	\begin{aligned}
-		\rho &= \lambda - \left( \textstyle\sum_i V_i^{n - 1} - \textstyle\sum_i \overline{V}_i^{n - 1} \right)
+		\rho &= \lambda - \left( \textstyle\sum_i V_i^{n - 1} - \textstyle\sum_i \overline{V_i^{n - 1}} \right)
 	\end{aligned} \\
 	\begin{aligned}
-		\Delta V_\eks^n &= \alpha_\eks^{n - 1} \cdot \beta^+ \cdot (1 - V_\eks^{n - 1} + \overline{V}_\eks^{n - 1}) \cdot \left| \rho \right| & \text{if } \rho > 0 \\
-		 \Delta \overline{V}_\eks^n &= \alpha_\eks^{n - 1} \cdot \beta^- \cdot (1 - \overline{V}_\eks^{n - 1} + V_\eks^{n - 1}) \cdot \left| \rho \right| & \text{if } \rho < 0
+		\Delta V_\eks^n &= \alpha_\eks^{n - 1} \cdot \beta^+ \cdot (1 - V_\eks^{n - 1} + \overline{V_\eks^{n - 1}}) \cdot \left| \rho \right| & \text{if } \rho > 0 \\
+		 \Delta \overline{V_\eks^n} &= \alpha_\eks^{n - 1} \cdot \beta^- \cdot (1 - \overline{V_\eks^{n - 1}} + V_\eks^{n - 1}) \cdot \left| \rho \right| & \text{if } \rho < 0
 	\end{aligned} \\
-	{V^{\text{\tiny\scshape NET}}}_\eks^n = V_\eks^n - \overline{V}_\eks^n \\[1em]
 	\Lambda^{n - 1}_\eks = \sum_{i \neq \eks} V^{n - 1}_i \qquad
-	\overline{\Lambda}^{n - 1}_\eks = \sum_{i \neq \eks} \overline{V}^{n - 1}_i \\
+	\overline{\Lambda^{n - 1}_\eks} = \sum_{i \neq \eks} \overline{V^{n - 1}_i} \\
 	\alpha_\eks^n =
 		\begin{cases}
-			- \theta_E \cdot \left( \left| \lambda - V^{n - 1}_\eks + \overline{V}^{n - 1}_\eks \right| - \left| \lambda - \Lambda^{n - 1}_\eks + \overline{\Lambda}^{n - 1}_\eks \right| \right) &\text{if } \rho > 0 \\
-			- \theta_I \cdot \left( \left| \left| \rho \right| - \overline{V}^{n - 1}_\eks + V^{n - 1}_\eks \right| - \left| \left| \rho \right| - \overline{\Lambda}^{n - 1}_\eks + \Lambda^{n - 1}_\eks \right| \right) &\text{if } \rho < 0
-		\end{cases}
+			- \theta_E \cdot \left( \left| \longlambda{} - V^{n - 1}_\eks + \overline{V^{n - 1}_\eks} \right| - \left| \longlambda{} - \Lambda^{n - 1}_\eks + \overline{\Lambda^{n - 1}_\eks} \right| \right) &\text{if } \rho > 0 \\[1ex]
+			- \theta_{\longI{}} \cdot \left( \left| \left| \rho \right| - \overline{V^{n - 1}_\eks} + V^{n - 1}_\eks \right| - \left| \left| \rho \right| - \overline{\Lambda^{n - 1}_\eks} + \Lambda^{n - 1}_\eks \right| \right) &\text{if } \rho < 0
+		\end{cases} \\[1ex]
+	{V^{\text{\tiny\scshape NET}}}_\eks^n = V_\eks^n - \overline{V_\eks^n}
 \end{gather*}
 
 \nocite{mackintosh_original}
