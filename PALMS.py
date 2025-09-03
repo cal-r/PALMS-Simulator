@@ -411,6 +411,9 @@ class PavlovianApp(QMainWindow):
         current_figure = self.figures[self.phaseNum - 1]
         self.plotCanvas.figure = current_figure
 
+        logging.info(f'Fig width: {current_figure.get_figwidth()}; fig DPI: {current_figure.dpi}')
+        logging.info(f'Canvas width: {self.plotCanvas.width()}')
+
         for ax in current_figure.get_axes():
             for line in ax.get_lines():
                 label = line.get_label().split(': ')[-1]
