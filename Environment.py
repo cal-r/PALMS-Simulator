@@ -9,6 +9,7 @@ import re
 
 class Stimulus:
     name: str
+    compound: bool
 
     assoc: float
 
@@ -38,8 +39,10 @@ class Stimulus:
             assoc = 0.,
             Ve = 0., Vi = 0.,
             alpha_mack_0 = None, alpha_hall_0 = None,
+            compound = False,
         ):
         self.name = name
+        self.compound = compound
 
         self.assoc = assoc
 
@@ -83,6 +86,8 @@ class Stimulus:
                 this = deque([0] * (size - len(this))) + this
                 that = deque([0] * (size - len(that))) + that
                 ret[prop] = deque([op(a, b) for a, b in zip(this, that)])
+            elif prop == 'compound':
+                ret[prop] = True
             else:
                 raise ValueError(f'Unknown type {type(this)} for {prop}, which is equal to {this} and {that}')
 

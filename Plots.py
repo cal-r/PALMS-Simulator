@@ -130,11 +130,10 @@ def generate_figures(
                 if multiple:
                     ax = axes[1]
 
-            cs = key.rsplit(' ', 1)[1]
-            if plot_alpha and not plot_macknhall:
+            if not hist.compound[0] and plot_alpha and not plot_macknhall:
                 ax.plot(hist.alpha, label='α: '+str(key), **plot_options) # type: ignore
 
-            if plot_macknhall:
+            if not hist.compound[0] and plot_macknhall:
                 ax.plot(hist.alpha_mack, label='Mack: ' + str(key), color = colors[key],     marker='$M$', markersize=6, alpha=1, picker = ticker_threshold)
                 ax.plot(hist.alpha_hall, label='Hall: ' + str(key), color = colors_alt[key], marker='$H$', markersize=6, alpha=1, picker = ticker_threshold)
 
