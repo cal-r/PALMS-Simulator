@@ -556,10 +556,10 @@ def main():
 
         dpi = 1.4 * app.primaryScreen().logicalDotsPerInch()
         if forceRatio:
-            logging.info('Doubling DPI ratio')
-            dpi *= 2
+            logging.info('Multiplying DPI ratio to devicePixelRatio')
+            dpi *= app.primaryScreen.devicePixelRatio()
 
-        logging.info('Final DPI: {dpi}')
+        logging.info(f'Final DPI: {dpi}')
 
     logging.info('Creating gallery')
 
