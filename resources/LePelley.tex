@@ -12,7 +12,7 @@
 \begin{document}
 \newcommand{\eks}{\textsf{x}}
 \newcommand{\longlambda}{\rlap{$\,\lambda$}\phantom{\left| \rho^n \right|}}
-\newcommand{\longI}{\rlap{$I$}\phantom{E}}
+\newcommand{\longI}{\rlap{\textsuperscript{I}}\phantom{E}}
 \newcommand{\VNet}{\mathbb{V}}
 
 \begin{center}
@@ -24,7 +24,7 @@
 	\begin{gathered}
 		\rho^n = \lambda - \textstyle\sum_i \left( V_i - \overline{V_i} \right) \\
 		\begin{aligned}
-			\Delta V_\eks^{n + 1} &= {\alpha^M_\eks}^n \cdot {\alpha^H_\eks}^n \cdot \beta^+ \cdot (1 - V_\eks^n + \overline{V_\eks^n}) \cdot \left| \rho^n \right| & \text{if } \rho^n \geq 0 \\
+			\Delta V_\eks^{n + 1} &= {\alpha^M_\eks}^n \cdot {\alpha^H_\eks}^n \cdot \beta^+ \cdot (1 - V_\eks^n + \overline{V_\eks^n}) \cdot \left| \rho^n \right| & \text{if } \rho^n > 0 \\
 			 \Delta \overline{V_\eks^{n + 1}} &= {\alpha^M_\eks}^n \cdot {\alpha^H_\eks}^n \cdot \beta^- \cdot (1 - \overline{V_\eks^n} + V_\eks^n) \cdot \left| \rho^n \right| & \text{if } \rho^n < 0
 		\end{aligned}
 	\end{gathered} \\[1em]
@@ -32,7 +32,7 @@
 		{\alpha^M_\eks}^{n + 1} =
 			\begin{cases}
 				{\alpha^M_\eks}^n - \theta^E \cdot {\alpha^H_\eks}^n \cdot \left( \left| \longlambda - V_\eks^n + \overline{V}_\eks^n \right| - \left| \longlambda - \textstyle\sum_i^{i \neq \eks} \left( - V_i^n + \overline{V_i^n} \right) \right| \right) & \text{if } \rho^n > 0 \\[1ex]
-				 {\alpha^M_\eks}^n -\theta^{\longI} \cdot {\alpha^H_\eks}^n \cdot \left( \left| \left| \rho^n \right| - \overline{V}_\eks^n + V_\eks^n \right| - \left| \left| \rho^n \right| - \textstyle\sum_i^{i \neq \eks} \left( - \overline{V_i^n} + V_i^n \right) \right| \right) & \text{if } \rho^n < 0
+				 {\alpha^M_\eks}^n -\theta{\longI{}} \cdot {\alpha^H_\eks}^n \cdot \left( \left| \left| \rho^n \right| - \overline{V}_\eks^n + V_\eks^n \right| - \left| \left| \rho^n \right| - \textstyle\sum_i^{i \neq \eks} \left( - \overline{V_i^n} + V_i^n \right) \right| \right) & \text{if } \rho^n < 0
 			\end{cases} \\[1ex]
 				{\alpha^H_\eks}^{n + 1} = \gamma \cdot \left| \rho^n \right| + \left( 1 - \gamma \right) \cdot {\alpha^H_\eks}^{n}
 	\end{gathered} \\[1em]
