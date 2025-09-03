@@ -542,7 +542,10 @@ def main():
 
     dpi = args.dpi
     if dpi is None:
-        dpi = 110 * app.primaryScreen().devicePixelRatio()
+        logging.info(f'Logical DPI: {app.primaryScreen().logicalDotsPerInch()}.')
+        logging.info(f'Device pixel ratio: {app.primaryScreen().devicePixelRatio()}.')
+        # dpi = 110 * app.primaryScreen().logicalDotsPerInch()
+        dpi = 1.4 * app.primaryScreen().logicalDotsPerInch()
 
     logging.info('Creating gallery')
 
