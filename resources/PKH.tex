@@ -19,13 +19,13 @@
 \end{center}
 \begin{equation*}
 	\begin{gathered}
-		\rho = \lambda - \left( \textstyle\sum_i V_i^n - \textstyle\sum_i \overline{V_i^n} \right) \\[1ex]
+		\rho^n = \lambda - \left( \textstyle\sum_i V_i^n - \textstyle\sum_i \overline{V_i^n} \right) \\[1ex]
 		\begin{aligned}
-			\Delta V_\eks^{n + 1}            &= S \cdot \beta^+ \cdot \alpha_\eks \cdot \lambda             & \text{if } \rho \geq 0 \\
-			\Delta \overline{V_\eks^{n + 1}} &= S \cdot \beta^- \cdot \alpha_\eks \cdot \left| \rho \right| & \text{if } \rho < 0 \\
+			\Delta V_\eks^{n + 1}            &= S \cdot \beta^+ \cdot \alpha_\eks \cdot \lambda             & \text{if } \rho^n \geq 0 \\
+			\Delta \overline{V_\eks^{n + 1}} &= S \cdot \beta^- \cdot \alpha_\eks \cdot \left| \rho^n \right| & \text{if } \rho^n < 0 \\
 		\end{aligned} \\[1ex]
 		\begin{aligned}
-			\alpha_\eks^{n + 1} &= \gamma \cdot \left| \rho \right| + (1 - \gamma) \cdot \alpha_\eks^n \\
+			\alpha_\eks^{n + 1} &= \gamma \cdot \left| \rho^n \right| + (1 - \gamma) \cdot \alpha_\eks^n \\
 			V_\eks^{n + 1} &= \Delta V_\eks^{n + 1} - \Delta \overline{V_\eks^{n + 1}}
 		\end{aligned}
 	\end{gathered}
