@@ -1,2 +1,3 @@
+@num_trials=10
 Group AY-AX|rand/240A+/240B+/120X+/120X-/120Y+/120Y-|rand/190AY+/190AX-
 Group AY-BY|rand/240A+/240B+/120X+/120X-/120Y+/120Y-|rand/190AY+/190BY-

@@ -87,7 +87,7 @@ class Stimulus:
                 that = deque([0] * (size - len(that))) + that
                 ret[prop] = deque([op(a, b) for a, b in zip(this, that)])
             elif prop == 'compound':
-                ret[prop] = True
+                ret[prop] = this or that or self.name != other.name
             else:
                 raise ValueError(f'Unknown type {type(this)} for {prop}, which is equal to {this} and {that}')
 
@@ -110,6 +110,8 @@ class Stimulus:
                 ret[prop] = this / quot
             elif type(this) is deque:
                 ret[prop] = deque([a / quot for a in this]) # type: ignore
+            elif type(this) is bool:
+                ret[prop] = this
             else:
                 raise ValueError(f'Unknown type {type(this)} for {prop}, which is equal to {this}')
 
