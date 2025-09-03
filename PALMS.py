@@ -542,6 +542,9 @@ def main():
 
     dpi = args.dpi
     if dpi is None:
+        QGuiApplication.setHighDpiScaleFactorRoundingPolicy(
+            Qt.HighDpiScaleFactorRoundingPolicy.PassThrough,
+        )
         logging.info(f'Logical DPI: {app.primaryScreen().logicalDotsPerInch()}.')
         logging.info(f'Device pixel ratio: {app.primaryScreen().devicePixelRatio()}.')
         logging.info(f'Pyplot backend: {pyplot.get_backend()}.')
