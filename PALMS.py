@@ -557,7 +557,7 @@ def main():
         dpi = 1.4 * app.primaryScreen().logicalDotsPerInch()
         if forceRatio:
             logging.info('Multiplying DPI ratio to devicePixelRatio')
-            dpi *= app.primaryScreen.devicePixelRatio()
+            dpi *= app.primaryScreen().devicePixelRatio()
 
         logging.info(f'Final DPI: {dpi}')
 
