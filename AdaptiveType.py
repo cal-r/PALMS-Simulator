@@ -265,7 +265,7 @@ class LePelleyHybrid(AdaptiveType):
                 s.alpha_mack += -self.thetaE * s.alpha_hall * (abs(rp.lamda - s.Ve + s.Vi) - abs(rp.lamda - VXe + VXi))
         else:
             DVi = s.alpha_mack * self.betan * s.alpha_hall * (1 - s.Vi + s.Ve) * abs(rho)
-            s.alpha_mack += -self.thetaI * (abs(abs(rho) - s.Vi + s.Ve) - abs(abs(rho) - VXi + VXe))
+            s.alpha_mack += -self.thetaI * s.alpha_hall * (abs(abs(rho) - s.Vi + s.Ve) - abs(abs(rho) - VXi + VXe))
 
         s.alpha_hall = self.gamma * abs(rho) + (1 - self.gamma) * s.alpha_hall
         s.alpha_mack = min(max(s.alpha_mack, 0.05), 1)
