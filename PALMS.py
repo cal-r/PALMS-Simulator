@@ -444,7 +444,7 @@ class PavlovianApp(QMainWindow):
         self.actionButtons.phaseLambdaButton.setChecked(any_lambda)
 
     def pickLine(self, event):
-        label = event.artist.get_label()
+        label = event.artist.get_label().split(':')[-1].strip()
         if label == '':
             return
 
