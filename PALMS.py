@@ -544,8 +544,9 @@ def main():
     if dpi is None:
         logging.info(f'Logical DPI: {app.primaryScreen().logicalDotsPerInch()}.')
         logging.info(f'Device pixel ratio: {app.primaryScreen().devicePixelRatio()}.')
+        logging.info(f'Pyplot backend: {pyplot.get_backend()}.')
         for envvar in ("QT_AUTO_SCREEN_SCALE_FACTOR","QT_SCALE_FACTOR", "QT_SCREEN_SCALE_FACTORS","QT_DEVICE_PIXEL_RATIO"):
-            logging.info(f'{envvar}:\t{os.environ.get(envvar)}')
+            logging.info(f'Env {envvar}: {os.environ.get(envvar)}')
 
         # dpi = 110 * app.primaryScreen().logicalDotsPerInch()
         dpi = 1.4 * app.primaryScreen().logicalDotsPerInch()
