@@ -228,11 +228,11 @@ class ActionButtons(QWidget):
 
     def getExperimentPath(self) -> Path:
         if not getattr(sys, 'frozen', False):
-            logging.info('Unfrozen path, using __file__.')
+            logging.info(f'Unfrozen path, using __file__ {__file__}.')
             parent = Path(__file__).resolve().parent
         else:
             exe = Path(sys.executable).resolve()
-            logging.info('Frozen path, using exe {str(exe)}.')
+            logging.info(f'Frozen path, using exe {str(exe)}.')
 
             if len(exe.parents) > 3 and exe.parents[2].suffix == '.app':
                 # MacOS
@@ -684,6 +684,8 @@ class PlotBox(QGroupBox):
         self.parent = parent
 
         self.plotCanvas = FigureCanvasQTAgg()
+        logging.info(f'Pixel Ratio F: {self.plotCanvas.devicePixelRatioF()}')
+
         self.phaseBox = PhaseBox(parent, screenshot_ready = False)
 
         layout = QVBoxLayout()
