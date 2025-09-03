@@ -1,4 +1,4 @@
-\documentclass[border=10pt,varwidth]{standalone}
+\documentclass[border=10pt,varwidth=13cm]{standalone}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage[T1]{fontenc}
@@ -23,7 +23,7 @@
 \end{center}
 \begin{gather*}
 	\begin{aligned}
-		\Delta V_\eks^{n + 1} &= \alpha_\eks^n \cdot \beta^+ \cdot (1 - V_\eks^n + \overline{V_\eks^n}) \cdot \left| \rho^n \right| & \text{if } \rho^n \geq 0 \\
+		\Delta V_\eks^{n + 1} &= \alpha_\eks^n \cdot \beta^+ \cdot (1 - V_\eks^n + \overline{V_\eks^n}) \cdot \left| \rho^n \right| & \text{if } \rho^n > 0 \\
 		 \Delta \overline{V_\eks^{n + 1}} &= \alpha_\eks^n \cdot \beta^- \cdot (1 - \overline{V_\eks^n} + V_\eks^n) \cdot \left| \rho^n \right| & \text{if } \rho^n < 0\\
          \rho^n &= \lambda - \left( \textstyle\sum_i V_i^n - \textstyle\sum_i \overline{V_i^n} \right) 
 	\end{aligned} \\[1em]
