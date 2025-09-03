@@ -554,7 +554,7 @@ def main():
         for envvar in ("QT_AUTO_SCREEN_SCALE_FACTOR","QT_SCALE_FACTOR", "QT_SCREEN_SCALE_FACTORS","QT_DEVICE_PIXEL_RATIO"):
             logging.info(f'Env {envvar}: {os.environ.get(envvar)}')
 
-        dpi = 1.4 * app.primaryScreen().logicalDotsPerInch()
+        dpi = app.primaryScreen().logicalDotsPerInch()
         if forceRatio:
             logging.info('Multiplying DPI ratio to devicePixelRatio')
             dpi *= app.primaryScreen().devicePixelRatio()
