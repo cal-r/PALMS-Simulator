@@ -221,7 +221,7 @@ class ActionButtons(QWidget):
         layout = QVBoxLayout()
         layout.addWidget(phaseOptionsGroupBox)
         layout.addWidget(plotOptionsGroupBox)
-        layout.addWidget(fileOptionsGroupBox)
+        layout.addWidget(fileOptionsGroupBox, alignment = Qt.AlignmentFlag.AlignTop)
         self.setLayout(layout)
 
         logging.info(f'Experiment path set to ' + str(self.getExperimentPath()))
