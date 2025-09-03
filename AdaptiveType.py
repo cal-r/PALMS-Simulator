@@ -45,7 +45,7 @@ class AdaptiveType:
             'Rescorla Wagner': RescorlaWagner,
             'Rescorla Wagner w/ Variable Learning Rate': RescorlaWagnerLinear,
             'Pearce Kaye Hall': PearceKayeHall,
-            'Mackintosh Extended': LePelley,
+            'Mackintosh Extended': MackExtended,
             'LePelley\'s Hybrid': LePelleyHybrid,
             # 'MLAB Hybrid': MlabHybrid,
         }
@@ -196,7 +196,7 @@ class PearceKayeHall(AdaptiveType):
         s.alpha = self.gamma * abs(rho) + (1 - self.gamma) * s.alpha
         s.assoc = s.Ve - s.Vi
 
-class LePelley(AdaptiveType):
+class MackExtended(AdaptiveType):
     image_filename: ClassVar[str] = 'Extended_Mack.png'
 
     @classmethod

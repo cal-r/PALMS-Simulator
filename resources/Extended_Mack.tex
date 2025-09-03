@@ -12,8 +12,9 @@
 
 \begin{document}
 \newcommand{\eks}{\textsf{x}}
-\newcommand{\longlambda}{\rlap{$\,\lambda$}\phantom{\left| \rho \right|}}
+\newcommand{\longlambda}{\rlap{$\,\lambda$}\phantom{\left| \rho^n \right|}}
 \newcommand{\longI}{\rlap{\textsubscript{I}}\phantom{\textsubscript{E}}}
+\newcommand{\VNet}{\mathbb{V}}
 
 \begin{center}
 	\huge
@@ -22,23 +23,18 @@
 \end{center}
 \begin{gather*}
 	\begin{aligned}
-		\rho &= \lambda - \left( \textstyle\sum_i V_i^{n - 1} - \textstyle\sum_i \overline{V_i^{n - 1}} \right)
-	\end{aligned} \\
-	\begin{aligned}
-		\Delta V_\eks^n &= \alpha_\eks^{n - 1} \cdot \beta^+ \cdot (1 - V_\eks^{n - 1} + \overline{V_\eks^{n - 1}}) \cdot \left| \rho \right| & \text{if } \rho > 0 \\
-		 \Delta \overline{V_\eks^n} &= \alpha_\eks^{n - 1} \cdot \beta^- \cdot (1 - \overline{V_\eks^{n - 1}} + V_\eks^{n - 1}) \cdot \left| \rho \right| & \text{if } \rho < 0
-	\end{aligned} \\
-	\Lambda^{n - 1}_\eks = \sum_{i \neq \eks} V^{n - 1}_i \qquad
-	\overline{\Lambda^{n - 1}_\eks} = \sum_{i \neq \eks} \overline{V^{n - 1}_i} \\
-	\alpha_\eks^n =
-		\begin{cases}
-			- \theta_E \cdot \left( \left| \longlambda{} - V^{n - 1}_\eks + \overline{V^{n - 1}_\eks} \right| - \left| \longlambda{} - \Lambda^{n - 1}_\eks + \overline{\Lambda^{n - 1}_\eks} \right| \right) &\text{if } \rho > 0 \\[1ex]
-			- \theta_{\longI{}} \cdot \left( \left| \left| \rho \right| - \overline{V^{n - 1}_\eks} + V^{n - 1}_\eks \right| - \left| \left| \rho \right| - \overline{\Lambda^{n - 1}_\eks} + \Lambda^{n - 1}_\eks \right| \right) &\text{if } \rho < 0
-		\end{cases} \\[1ex]
-	{V^{\text{\tiny\scshape NET}}}_\eks^n = V_\eks^n - \overline{V_\eks^n}
+		\Delta V_\eks^{n + 1} &= \alpha_\eks^n \cdot \beta^+ \cdot (1 - V_\eks^n + \overline{V_\eks^n}) \cdot \left| \rho^n \right| & \text{if } \rho^n \geq 0 \\
+		 \Delta \overline{V_\eks^{n + 1}} &= \alpha_\eks^n \cdot \beta^- \cdot (1 - \overline{V_\eks^n} + V_\eks^n) \cdot \left| \rho^n \right| & \text{if } \rho^n < 0\\
+         \rho^n &= \lambda - \left( \textstyle\sum_i V_i^n - \textstyle\sum_i \overline{V_i^n} \right) 
+	\end{aligned} \\[1em]
+	\alpha_\eks^{n + 1} = \begin{cases}
+		\alpha^n_\eks -\theta^E \cdot \left( \left| \longlambda - V_\eks^n + \overline{V_\eks^n} \right|- \left| \longlambda - \textstyle\sum_i^{i \neq \eks} \left( - V_i^n + \overline{V_i^n} \right) \right| \right) & \text{if } \rho^n > 0 \\[1ex]
+		\alpha^n_\eks -\theta\longI{} \cdot \left( \left| \left| \rho^n \right| - \overline{V_\eks^n} + V_\eks^n \right| - \left| \left| \rho^n \right| - \textstyle\sum_i^{i \neq \eks} \left( - \overline{V_i^n} + V_i^n \right) \right| \right) & \text{if } \rho^n < 0
+	\end{cases} \\[1em]
+	\VNet{}_\eks^{n + 1} =  V_\eks^{n + 1} - \overline{V_\eks^{n + 1}}
 \end{gather*}
 
-\nocite{mackintosh_original}
+\nocite{LePelley2004}
 \bibliography{bibliography}
 
 \end{document}
