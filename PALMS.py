@@ -13,7 +13,7 @@ from argparse import ArgumentParser
 from collections import defaultdict
 from itertools import zip_longest
 from pathlib import Path
-from PySide6.QtCore import QTimer, Qt
+from PySide6.QtCore import QTimer, Qt, QSize
 from PySide6.QtGui import QFont, QPixmap, QGuiApplication
 from PySide6.QtWidgets import *
 
@@ -149,7 +149,14 @@ class PavlovianApp(QMainWindow):
         self.adaptiveTypeButtons.buttonGroup.button(0).click()
 
         self.adjustSize()
-        self.resize(int(self.width() * 1.1), int(self.height() * 1.1))
+
+        windowSize = QSize(self.width() * 1.25, self.height() * 1.1)
+
+        screen = self.screen()
+        if screen:
+            windowSize = windowSize.boundedTo(screen.availableGeometry().size())
+
+        self.resize(windowSize)
 
     def loadFile(self, filename):
         lines = []
