@@ -27,11 +27,11 @@ from matplotlib import pyplot
 
 from GUIUtils import *
 
-forceRatio = False
+pyInstalled = False
 try:
     import pyi_splash
     pyi_splash.close()
-    forceRatio = True
+    pyInstalled = True
 except:
     pass
 
@@ -526,6 +526,15 @@ def parse_args():
 
     return gui_parser.parse_args()
 
+def logScreenInfo(app):
+    logging.info(f'Is PyInstaller? {pyInstalled}')
+    logging.info(f'Logical DPI: {app.primaryScreen().logicalDotsPerInch()}.')
+    logging.info(f'Device pixel ratio: {app.primaryScreen().devicePixelRatio()}.')
+    logging.info(f'Pyplot backend: {pyplot.get_backend()}.')
+    logging.info(f'Primary screen height: {app.primaryScreen().size().height()}')
+    for envvar in ("QT_AUTO_SCREEN_SCALE_FACTOR","QT_SCALE_FACTOR", "QT_SCREEN_SCALE_FACTORS","QT_DEVICE_PIXEL_RATIO"):
+        logging.info(f'Env {envvar}: {os.environ.get(envvar)}')
+
 def main():
     args = parse_args()
     logging.basicConfig(level = logging.WARN, format = '[%(relativeCreated)d] %(message)s')
@@ -535,9 +544,10 @@ def main():
     logging.info('Starting')
 
     app = QApplication(sys.argv)
+    logScreenInfo(app)
 
     if args.fontsize is None:
-        args.fontsize = app.primaryScreen().size().height() // 100
+        args.fontsize = 13
 
     font = QFont()
     font.setPointSize(args.fontsize)
@@ -545,19 +555,9 @@ def main():
 
     dpi = args.dpi
     if dpi is None:
-        QGuiApplication.setHighDpiScaleFactorRoundingPolicy(
-            Qt.HighDpiScaleFactorRoundingPolicy.PassThrough,
-        )
-        logging.info(f'Logical DPI: {app.primaryScreen().logicalDotsPerInch()}.')
-        logging.info(f'Device pixel ratio: {app.primaryScreen().devicePixelRatio()}.')
-        logging.info(f'Pyplot backend: {pyplot.get_backend()}.')
-        for envvar in ("QT_AUTO_SCREEN_SCALE_FACTOR","QT_SCALE_FACTOR", "QT_SCREEN_SCALE_FACTORS","QT_DEVICE_PIXEL_RATIO"):
-            logging.info(f'Env {envvar}: {os.environ.get(envvar)}')
-
-        dpi = app.primaryScreen().logicalDotsPerInch()
-        if forceRatio:
-            logging.info('Multiplying DPI ratio to devicePixelRatio')
-            dpi *= app.primaryScreen().devicePixelRatio()
+        dpi = 238
+        if not pyInstalled:
+            dpi /= app.primaryScreen().devicePixelRatio()
 
         logging.info(f'Final DPI: {dpi}')
 
