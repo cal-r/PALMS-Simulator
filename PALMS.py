@@ -416,7 +416,7 @@ class PavlovianApp(QMainWindow):
 
         for ax in current_figure.get_axes():
             for line in ax.get_lines():
-                label = line.get_label().split(': ')[-1]
+                label = line.get_label().split(': ')[-1].strip()
                 line.set_alpha(0 if self.line_hidden[label] else 1)
 
             if ax.get_legend() is not None:
@@ -444,7 +444,7 @@ class PavlovianApp(QMainWindow):
         self.actionButtons.phaseLambdaButton.setChecked(any_lambda)
 
     def pickLine(self, event):
-        label = event.artist.get_label().split(':')[-1].strip()
+        label = event.artist.get_label().split(': ')[-1].strip()
         if label == '':
             return
 
