@@ -686,7 +686,6 @@ class PlotBox(QGroupBox):
         self.parent = parent
 
         self.plotCanvas = FigureCanvasQTAgg()
-        logging.info(f'Pixel Ratio F: {self.plotCanvas.devicePixelRatioF()}')
 
         self.phaseBox = PhaseBox(parent, screenshot_ready = False)
 
