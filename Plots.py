@@ -255,7 +255,7 @@ def save_plots(
     if singular_legend:
         legend_fig = generate_legend(data, plot_stimuli, dpi)
         legend_fig.set_size_inches(plot_width, .1)
-        legend_fig.savefig(f'{filename}_legend.png', dpi = dpi or 150, bbox_inches = 'tight', pad_inches = 0)
+        legend_fig.savefig(f'{filename}_legend.png', bbox_inches = 'tight', pad_inches = 0)
 
     for phase_num, fig in enumerate(figures, start = plot_phase or 1):
         dep = 1.3
@@ -267,4 +267,4 @@ def save_plots(
         fig.set_size_inches(plot_width / dep, plot_height / dep)
         # widths = {1: 5, 2: 2, 3: 5}
         # fig.set_size_inches(widths[phase_num] / dep, 2 / dep)
-        fig.savefig(f'{filename}_{phase_num}.png', dpi = dpi or 150, bbox_inches = 'tight')
+        fig.savefig(f'{filename}_{phase_num}.png', bbox_inches = 'tight')
