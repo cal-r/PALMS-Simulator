@@ -421,9 +421,6 @@ class PavlovianApp(QMainWindow):
         current_figure = self.figures[self.phaseNum - 1]
         self.plotCanvas.figure = current_figure
 
-        logging.info(f'Fig width: {current_figure.get_figwidth()}; fig DPI: {current_figure.dpi}')
-        logging.info(f'Canvas width: {self.plotCanvas.width()}')
-
         for ax in current_figure.get_axes():
             for line in ax.get_lines():
                 label = line.get_label().split(': ')[-1].strip()
@@ -452,6 +449,17 @@ class PavlovianApp(QMainWindow):
 
         any_lambda = any(p[self.phaseNum - 1].lamda is not None for p in self.phases.values())
         self.actionButtons.phaseLambdaButton.setChecked(any_lambda)
+
+        fig = self.plotCanvas.figure
+        logging.info(f'{fig.dpi=}')
+        logging.info(f'{fig.get_size_inches()=}')
+        logging.info(f'{self.plotCanvas.get_width_height()=}')
+
+        logging.info(f'DPI ratio: {getattr(self.plotCanvas, "_dpi_ratio", None)}')
+        logging.info(f'{self.plotCanvas.devicePixelRatioF()=}')
+
+        # app = self.plotCanvas.window().windowHandle().screen().context().screen().virtualSiblings()[0].context().screen().parent()  # if you don't already have `app`
+        # app = QApplication.instance()
 
     def pickLine(self, event):
         label = event.artist.get_label().split(': ')[-1].strip()
@@ -537,29 +545,33 @@ def parse_args():
     return gui_parser.parse_args()
 
 def logScreenInfo(app):
-    # logging.info(f'Is PyInstaller? {pyInstalled}')
-    # logging.info(f'Logical DPI: {app.primaryScreen().logicalDotsPerInch()}.')
-    # logging.info(f'Logical DPI: {app.primaryScreen().physicalDotsPerInch()}.')
-    # logging.info(f'Device pixel ratio: {app.primaryScreen().devicePixelRatio()}.')
-    # logging.info(f'Pyplot backend: {pyplot.get_backend()}.')
-    # logging.info(f'Primary screen height: {app.primaryScreen().size().height()}')
-    # for envvar in ("QT_AUTO_SCREEN_SCALE_FACTOR","QT_SCALE_FACTOR", "QT_SCREEN_SCALE_FACTORS","QT_DEVICE_PIXEL_RATIO"):
-    #     logging.info(f'Env {envvar}: {os.environ.get(envvar)}')
+    logging.info(f'Is PyInstaller? {pyInstalled}')
+    logging.info(f'Logical DPI: {app.primaryScreen().logicalDotsPerInch()}.')
+    logging.info(f'Logical DPI: {app.primaryScreen().physicalDotsPerInch()}.')
+    logging.info(f'Device pixel ratio: {app.primaryScreen().devicePixelRatio()}.')
+    logging.info(f'Pyplot backend: {pyplot.get_backend()}.')
+    logging.info(f'Primary screen height: {app.primaryScreen().size().height()}')
+    for envvar in ("QT_AUTO_SCREEN_SCALE_FACTOR","QT_SCALE_FACTOR", "QT_SCREEN_SCALE_FACTORS","QT_DEVICE_PIXEL_RATIO"):
+        logging.info(f'Env {envvar}: {os.environ.get(envvar)}')
 
-    every = dict()
-    for data in dir(app.primaryScreen()):
-        if data.startswith('__') or data == 'thread':
-            continue
+    # logging.info("Qt rounding policy:", getattr(app, "highDpiScaleFactorRoundingPolicy", lambda: None)())
+    # logging.info("AA_EnableHighDpiScaling:", app.testAttribute(Qt.ApplicationAttribute.AA_EnableHighDpiScaling))
+    # logging.info("AA_UseHighDpiPixmaps:", app.testAttribute(Qt.ApplicationAttribute.AA_UseHighDpiPixmaps))
 
-        try:
-            thing = getattr(app.primaryScreen(), data)
-            every[data] = thing()
-        except:
-            continue
+    # every = dict()
+    # for data in dir(app.primaryScreen()):
+    #     if data.startswith('__') or data == 'thread':
+    #         continue
 
-    import pprint
-    logging.info('Logging primary screen data')
-    pprint.pprint(every)
+    #     try:
+    #         thing = getattr(app.primaryScreen(), data)
+    #         every[data] = thing()
+    #     except:
+    #         continue
+
+    # import pprint
+    # logging.info('Logging primary screen data')
+    # pprint.pprint(every)
 
 def main():
     args = parse_args()
