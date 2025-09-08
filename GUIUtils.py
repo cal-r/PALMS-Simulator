@@ -336,6 +336,7 @@ class ActionButtons(QWidget):
 
     def toggleAlphasBox(self):
         if not self.parent.alphasBox.isVisible():
+            self.parent.resize(self.parent.width() + self.parent.alphasBox.width(), self.parent.height())
             self.parent.alphasBox.setVisible(True)
 
             for perc, form in self.parent.per_cs_param.items():
@@ -344,6 +345,7 @@ class ActionButtons(QWidget):
                     local_val = global_val ** len(cs.strip('()'))
                     pair.setText(f'{local_val:.2g}', set_modified = False)
         else:
+            self.parent.resize(self.parent.width() - self.parent.alphasBox.width(), self.parent.height())
             self.parent.alphasBox.setVisible(False)
             self.parent.refreshExperiment()
 
