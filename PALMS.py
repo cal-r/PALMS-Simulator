@@ -23,6 +23,7 @@ from Environment import StimulusHistory, Stimulus
 from AdaptiveType import AdaptiveType
 from CoolTable import CoolTable
 
+import matplotlib
 from matplotlib import pyplot
 
 from GUIUtils import *
@@ -544,6 +545,8 @@ def logScreenInfo(app):
     for envvar in ("QT_AUTO_SCREEN_SCALE_FACTOR","QT_SCALE_FACTOR", "QT_SCREEN_SCALE_FACTORS","QT_DEVICE_PIXEL_RATIO"):
         logging.info(f'Env {envvar}: {os.environ.get(envvar)}')
 
+    logging.info(f'{matplotlib.rcParams["figure.dpi"]=}')
+
 def main():
     args = parse_args()
     logging.basicConfig(level = logging.WARN, format = '[%(relativeCreated)d] %(message)s')
@@ -564,7 +567,7 @@ def main():
 
     dpi = args.dpi
     if dpi is None:
-        dpi = 238
+        dpi = 240
         if not pyInstalled:
             dpi /= app.primaryScreen().devicePixelRatio()
 
