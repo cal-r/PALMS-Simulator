@@ -537,14 +537,29 @@ def parse_args():
     return gui_parser.parse_args()
 
 def logScreenInfo(app):
-    logging.info(f'Is PyInstaller? {pyInstalled}')
-    logging.info(f'Logical DPI: {app.primaryScreen().logicalDotsPerInch()}.')
-    logging.info(f'Logical DPI: {app.primaryScreen().physicalDotsPerInch()}.')
-    logging.info(f'Device pixel ratio: {app.primaryScreen().devicePixelRatio()}.')
-    logging.info(f'Pyplot backend: {pyplot.get_backend()}.')
-    logging.info(f'Primary screen height: {app.primaryScreen().size().height()}')
-    for envvar in ("QT_AUTO_SCREEN_SCALE_FACTOR","QT_SCALE_FACTOR", "QT_SCREEN_SCALE_FACTORS","QT_DEVICE_PIXEL_RATIO"):
-        logging.info(f'Env {envvar}: {os.environ.get(envvar)}')
+    # logging.info(f'Is PyInstaller? {pyInstalled}')
+    # logging.info(f'Logical DPI: {app.primaryScreen().logicalDotsPerInch()}.')
+    # logging.info(f'Logical DPI: {app.primaryScreen().physicalDotsPerInch()}.')
+    # logging.info(f'Device pixel ratio: {app.primaryScreen().devicePixelRatio()}.')
+    # logging.info(f'Pyplot backend: {pyplot.get_backend()}.')
+    # logging.info(f'Primary screen height: {app.primaryScreen().size().height()}')
+    # for envvar in ("QT_AUTO_SCREEN_SCALE_FACTOR","QT_SCALE_FACTOR", "QT_SCREEN_SCALE_FACTORS","QT_DEVICE_PIXEL_RATIO"):
+    #     logging.info(f'Env {envvar}: {os.environ.get(envvar)}')
+
+    every = dict()
+    for data in dir(app.primaryScreen()):
+        if data.startswith('__') or data == 'thread':
+            continue
+
+        try:
+            thing = getattr(app.primaryScreen(), data)
+            every[data] = thing()
+        except:
+            continue
+
+    import pprint
+    logging.info('Logging primary screen data')
+    pprint.pprint(every)
 
 def main():
     args = parse_args()
