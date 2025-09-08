@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 # os.environ["QT_QPA_PLATFORM"] = "xcb"
-os.environ['QT_AUTO_SCREEN_SCALE_FACTOR'] = '1'
+# os.environ['QT_AUTO_SCREEN_SCALE_FACTOR'] = '1'
 os.environ["QT_API"] = "PySide6"
 
 import logging
@@ -458,9 +458,6 @@ class PavlovianApp(QMainWindow):
         logging.info(f'DPI ratio: {getattr(self.plotCanvas, "_dpi_ratio", None)}')
         logging.info(f'{self.plotCanvas.devicePixelRatioF()=}')
 
-        # app = self.plotCanvas.window().windowHandle().screen().context().screen().virtualSiblings()[0].context().screen().parent()  # if you don't already have `app`
-        # app = QApplication.instance()
-
     def pickLine(self, event):
         label = event.artist.get_label().split(': ')[-1].strip()
         if label == '':
@@ -593,7 +590,7 @@ def main():
 
     dpi = args.dpi
     if dpi is None:
-        dpi = 240
+        dpi = app.primaryScreen().physicalDotsPerInch()
         if not pyInstalled:
             dpi /= app.primaryScreen().devicePixelRatio()
 
