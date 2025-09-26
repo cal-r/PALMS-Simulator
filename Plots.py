@@ -230,6 +230,7 @@ def save_plots(
     singular_legend: bool = False,
     plot_width: int = 11,
     plot_height: int = 2,
+    hide_lines: set[str] = set(),
 ):
     if filename is not None:
         filename = filename.removesuffix('.png')
@@ -239,6 +240,12 @@ def save_plots(
         title = filename
     else:
         phases = None
+
+    # Do not plot lines that are to be hidden.
+    data = [
+        {cs: phase[cs] for cs in phase.keys() if cs not in hide_lines}
+        for phase in data
+    ]
 
     figures = generate_figures(
         data = data,

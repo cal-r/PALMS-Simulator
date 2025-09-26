@@ -513,6 +513,7 @@ class PavlovianApp(QMainWindow):
             plot_width = width,
             plot_height = height,
             singular_legend = singular_legend,
+            hide_lines = {k for k, v in self.line_hidden.items() if v},
         )
 
 def parse_args():
@@ -590,9 +591,9 @@ def main():
 
     dpi = args.dpi
     if dpi is None:
-        dpi = app.primaryScreen().physicalDotsPerInch()
+        dpi = app.primaryScreen().logicalDotsPerInch()
         if not pyInstalled:
-            dpi /= app.primaryScreen().devicePixelRatio()
+            dpi *= app.primaryScreen().devicePixelRatio()
 
         logging.info(f'Final DPI: {dpi}')
 
