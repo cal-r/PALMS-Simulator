@@ -14,6 +14,66 @@ jobs:
           os: windows-latest
           artifact-name: windows-latest-release
 
+  test-windows:
+    name: Test Windows Executable
+    runs-on: windows-latest
+    needs: build-windows
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-latest-release
+          path: release/
+
+      - name: Extract .zip
+        shell: powershell
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          Expand-Archive -Path "release/release_windows.zip" -DestinationPath "dist" -Force
+
+      - name: Run app, screenshot, and check for errors
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Write-Host "Start time: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss.fff')"
+
+          # Find the built executable
+          $exe = Get-ChildItem -Path dist -Recurse -Filter PALMS.exe | Select-Object -First 1
+          if (-not $exe) { throw "PALMS.exe not found under dist/" }
+          $exePath = $exe.FullName
+
+          # Launch smoke test
+          $args = @('--smoke-test','Experiments/Haselgrove_etal_2010_exp1.rw')
+          $p = Start-Process -FilePath $exePath -ArgumentList $args -PassThru
+
+          Start-Sleep -Seconds 30
+          Write-Host "Making screenshot"
+
+          Add-Type -AssemblyName System.Windows.Forms
+          Add-Type -AssemblyName System.Drawing
+          $bounds = [System.Windows.Forms.SystemInformation]::VirtualScreen
+          $bmp = New-Object System.Drawing.Bitmap($bounds.Width, $bounds.Height)
+          $g = [System.Drawing.Graphics]::FromImage($bmp)
+          $g.CopyFromScreen($bounds.Location, [System.Drawing.Point]::Empty, $bounds.Size)
+          $bmp.Save("screenshot.png", [System.Drawing.Imaging.ImageFormat]::Png)
+          $g.Dispose(); $bmp.Dispose()
+
+          Wait-Process -Id $p.Id
+          $exitCode = $p.ExitCode
+          Write-Host "End time: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss.fff')"
+          Write-Host "App exited with code $exitCode"
+          if ($exitCode -ne 0) { throw "App failed with exit code $exitCode" }
+
+      - name: Upload screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshot-windows
+          path: screenshot.png
+
       - name: Create or update "latest" tag
         run: |
           git config user.name "github-actions[bot]"
