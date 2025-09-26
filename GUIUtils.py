@@ -123,7 +123,7 @@ class ActionButtons(QWidget):
 
         self.parent = parent
 
-        checkedStyle = "QPushButton:checked { background-color: lightblue; font-weight: bold; border: 2px solid #0057D8; }"
+        checkedStyle = "QPushButton:checked { background-color: lightblue; font-weight: bold; border: 0.2ex solid #0057D8; }"
 
         fileButton = QPushButton('Load file')
         fileButton.clicked.connect(self.openFileDialog)
