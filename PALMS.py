@@ -573,8 +573,8 @@ def main():
 
     dpi = args.dpi
     if dpi is None:
-        dpi = app.primaryScreen().logicalDotsPerInch()
-        dpi *= app.primaryScreen().devicePixelRatio()
+        dpi = 1.1 ** 4 * app.primaryScreen().logicalDotsPerInch()
+        dpi *= 1.1 ** -1 * app.primaryScreen().devicePixelRatio()
 
         logging.info(f'Final DPI: {dpi}')
 
