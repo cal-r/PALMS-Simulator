@@ -99,6 +99,24 @@ If you have any questions, contact any of the authors.
         '''
         QMessageBox.information(self, 'About', about)
 
+class SquareButton(QPushButton):
+    def __init__(self, *a, **kw):
+        super().__init__(*a, **kw)
+        sp = self.sizePolicy()
+        sp.setHeightForWidth(True)
+        self.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
+    def hasHeightForWidth(self):
+        return True
+
+    def heightForWidth(self, w):
+        return w
+
+    def sizeHint(self):
+        s = super().sizeHint()
+        side = min(s.width(), s.height())
+        return QSize(side, side)
+
 class ActionButtons(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
@@ -188,6 +206,25 @@ class ActionButtons(QWidget):
         modelInfoButton.clicked.connect(self.showModelInfo)
         modelInfoButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
+        dpiOptionsLayout = QHBoxLayout()
+        dpiPlus = SquareButton('+')
+        dpiPlus.clicked.connect(lambda: self.changeDPI(1.1))
+        dpiPlus.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
+        dpiLabel = QToolButton()
+        dpiLabel.setText('Dots Per Inch')
+        dpiLabel.setEnabled(False)
+        dpiLabel.setAutoRaise(True)
+
+        dpiMinus = SquareButton('-')
+        dpiMinus.clicked.connect(lambda: self.changeDPI(1 / 1.1))
+        dpiMinus.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+
+        dpiOptionsLayout.addWidget(dpiMinus)
+        dpiOptionsLayout.addWidget(dpiLabel)
+        dpiOptionsLayout.addWidget(dpiPlus)
+        dpiOptionsLayout.setSpacing(0)
+
         phaseOptionsLayout = QVBoxLayout()
         phaseOptionsLayout.addWidget(self.toggleRandButton)
         phaseOptionsLayout.addWidget(self.phaseBetaButton)
@@ -206,6 +243,7 @@ class ActionButtons(QWidget):
         plotOptionsLayout.addWidget(hideButton)
         plotOptionsLayout.addWidget(clearButton)
         plotOptionsLayout.addWidget(modelInfoButton)
+        plotOptionsLayout.addLayout(dpiOptionsLayout)
         plotOptionsLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
         plotOptionsGroupBox = QGroupBox("Plot Options")
         plotOptionsGroupBox.setLayout(plotOptionsLayout)
@@ -476,6 +514,10 @@ Selecting "separate legend" removes the legend from these plots, and creates a n
             image.show()
         except (FileNotFoundError, IsADirectoryError):
              QMessageBox.warning(self, '', 'Rendered formula file not found')
+
+    def changeDPI(self, ratio):
+        self.parent.dpi *= ratio
+        self.parent.refreshExperiment()
 
 class ParametersGroupBox(QGroupBox):
     def __init__(self, parent):
