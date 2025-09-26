@@ -78,7 +78,7 @@ jobs:
             echo '<details><summary>Show screenshot</summary>' >> "$GITHUB_STEP_SUMMARY"
             echo "" >> "$GITHUB_STEP_SUMMARY"
             echo -n '<img alt="screenshot-macos" src="data:image/png;base64,' >> "$GITHUB_STEP_SUMMARY"
-            base64 screenshot-macos.png | tr -d '\n' >> "$GITHUB_STEP_SUMMARY"
+            base64 -i screenshot-macos.png -b 0 >> "$GITHUB_STEP_SUMMARY"
             echo '" />' >> "$GITHUB_STEP_SUMMARY"
             echo "" >> "$GITHUB_STEP_SUMMARY"
             echo '</details>' >> "$GITHUB_STEP_SUMMARY"
