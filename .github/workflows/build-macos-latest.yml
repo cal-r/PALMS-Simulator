@@ -71,21 +71,25 @@ jobs:
         if: always()
         shell: bash
         run: |
-          {
-            echo "## macOS Smoke Test"
-            echo
-            if [[ -f screenshot-macos.png ]]; then
-              echo "### Screenshot"
-              echo "![screenshot](screenshot-macos.png)"
-              echo
-            else
-              echo "> (No screenshot produced)"
-            fi
-            echo "### Logs"
-            echo '```text'
-            if [[ -f run.log ]]; then cat run.log; fi
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
+          echo "## macOS Smoke Test" >> "$GITHUB_STEP_SUMMARY"
+          if [[ -f screenshot-macos.png ]]; then
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "### Screenshot" >> "$GITHUB_STEP_SUMMARY"
+            echo '<details><summary>Show screenshot</summary>' >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo -n '<img alt="screenshot-macos" src="data:image/png;base64,' >> "$GITHUB_STEP_SUMMARY"
+            base64 screenshot-macos.png | tr -d '\n' >> "$GITHUB_STEP_SUMMARY"
+            echo '" />' >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo '</details>' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "> (No screenshot produced)" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Logs" >> "$GITHUB_STEP_SUMMARY"
+          echo '```text' >> "$GITHUB_STEP_SUMMARY"
+          if [[ -f run.log ]]; then cat run.log >> "$GITHUB_STEP_SUMMARY"; fi
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
 
       - name: Create or update "latest" tag
         run: |

@@ -77,14 +77,19 @@ jobs:
         shell: powershell
         run: |
           Add-Content $env:GITHUB_STEP_SUMMARY "## Windows Smoke Test"
-          Add-Content $env:GITHUB_STEP_SUMMARY ""
           if (Test-Path "screenshot-windows.png") {
-            Add-Content $env:GITHUB_STEP_SUMMARY "### Screenshot"
-            Add-Content $env:GITHUB_STEP_SUMMARY "![screenshot](screenshot-windows.png)"
+            $b64 = [Convert]::ToBase64String([IO.File]::ReadAllBytes("screenshot-windows.png"))
             Add-Content $env:GITHUB_STEP_SUMMARY ""
+            Add-Content $env:GITHUB_STEP_SUMMARY "### Screenshot"
+            Add-Content $env:GITHUB_STEP_SUMMARY "<details><summary>Show screenshot</summary>"
+            Add-Content $env:GITHUB_STEP_SUMMARY ""
+            Add-Content $env:GITHUB_STEP_SUMMARY "<img alt=""screenshot-windows"" src=""data:image/png;base64,$b64"" />"
+            Add-Content $env:GITHUB_STEP_SUMMARY ""
+            Add-Content $env:GITHUB_STEP_SUMMARY "</details>"
           } else {
             Add-Content $env:GITHUB_STEP_SUMMARY "> (No screenshot produced)"
           }
+          Add-Content $env:GITHUB_STEP_SUMMARY ""
           Add-Content $env:GITHUB_STEP_SUMMARY "### Logs"
           Add-Content $env:GITHUB_STEP_SUMMARY '```text'
           if (Test-Path run.log) { Get-Content run.log | ForEach-Object { Add-Content $env:GITHUB_STEP_SUMMARY $_ } }
