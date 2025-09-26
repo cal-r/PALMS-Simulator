@@ -12,7 +12,7 @@ class CoolTable(QWidget):
         self.freeze = True
 
         self.table = QTableWidget(rows, cols)
-        self.table.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        self.table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
         self.table.verticalHeader().sectionDoubleClicked.connect(self.editExperimentNames) # type: ignore
         self.table.horizontalHeader().setMinimumSectionSize(150) # type: ignore
@@ -38,12 +38,12 @@ class CoolTable(QWidget):
         self.cButton.setFixedSize(20, 20)
 
         self.mainLayout = QGridLayout(parent = self)
-        self.mainLayout.addWidget(self.table, 0, 0, Qt.AlignmentFlag.AlignBottom)
-        self.mainLayout.addWidget(self.rightPlus, 0, 1, Qt.AlignmentFlag.AlignLeft)
-        self.mainLayout.addWidget(self.bottomPlus, 1, 0, Qt.AlignmentFlag.AlignTop)
-        self.mainLayout.addWidget(self.cButton, 1, 1, Qt.AlignmentFlag.AlignLeft)
-        self.mainLayout.setColumnStretch(1, 1)
-        self.mainLayout.setRowStretch(1, 1)
+        self.mainLayout.addWidget(self.table, 0, 0)
+        self.mainLayout.addWidget(self.rightPlus, 0, 1, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        self.mainLayout.addWidget(self.bottomPlus, 1, 0, Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
+        self.mainLayout.addWidget(self.cButton, 1, 1, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+        self.mainLayout.setColumnStretch(0, 1)
+        self.mainLayout.setRowStretch(0, 1)
         self.mainLayout.setSpacing(0)
         self.mainLayout.setContentsMargins(0, 0, 0, 0)
 
