@@ -38,41 +38,57 @@ jobs:
         shell: powershell
         run: |
           $ErrorActionPreference = 'Stop'
-          Write-Host "Start time: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss.fff')"
+          $log = "run.log"
+          function Log($m) { $ts = Get-Date -Format 'yyyy-MM-dd HH:mm:ss.fff'; "$ts  $m" | Tee-Object -File $log -Append | Out-Null }
 
-          # Find the built executable
+          Log "Start"
           $exe = Get-ChildItem -Path dist -Recurse -Filter PALMS.exe | Select-Object -First 1
           if (-not $exe) { throw "PALMS.exe not found under dist/" }
           $exePath = $exe.FullName
 
-          # Launch smoke test
           $args = @('--smoke-test','Experiments/Haselgrove_etal_2010_exp1.rw')
           $p = Start-Process -FilePath $exePath -ArgumentList $args -PassThru
 
           Start-Sleep -Seconds 30
-          Write-Host "Making screenshot"
-
+          Log "Making screenshot"
           Add-Type -AssemblyName System.Windows.Forms
           Add-Type -AssemblyName System.Drawing
           $bounds = [System.Windows.Forms.SystemInformation]::VirtualScreen
           $bmp = New-Object System.Drawing.Bitmap($bounds.Width, $bounds.Height)
           $g = [System.Drawing.Graphics]::FromImage($bmp)
           $g.CopyFromScreen($bounds.Location, [System.Drawing.Point]::Empty, $bounds.Size)
-          $bmp.Save("screenshot.png", [System.Drawing.Imaging.ImageFormat]::Png)
+          $bmp.Save("screenshot-windows.png", [System.Drawing.Imaging.ImageFormat]::Png)
           $g.Dispose(); $bmp.Dispose()
 
           Wait-Process -Id $p.Id
           $exitCode = $p.ExitCode
-          Write-Host "End time: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss.fff')"
-          Write-Host "App exited with code $exitCode"
+          Log "End  (exit=$exitCode)"
           if ($exitCode -ne 0) { throw "App failed with exit code $exitCode" }
 
-      - name: Upload screenshot
+      - name: Upload screenshot artifact (will download as screenshot-windows.zip)
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: screenshot-windows
-          path: screenshot.png
+          path: screenshot-windows.png
+
+      - name: Add screenshot and logs to Job Summary
+        if: always()
+        shell: powershell
+        run: |
+          Add-Content $env:GITHUB_STEP_SUMMARY "## Windows Smoke Test"
+          Add-Content $env:GITHUB_STEP_SUMMARY ""
+          if (Test-Path "screenshot-windows.png") {
+            Add-Content $env:GITHUB_STEP_SUMMARY "### Screenshot"
+            Add-Content $env:GITHUB_STEP_SUMMARY "![screenshot](screenshot-windows.png)"
+            Add-Content $env:GITHUB_STEP_SUMMARY ""
+          } else {
+            Add-Content $env:GITHUB_STEP_SUMMARY "> (No screenshot produced)"
+          }
+          Add-Content $env:GITHUB_STEP_SUMMARY "### Logs"
+          Add-Content $env:GITHUB_STEP_SUMMARY '```text'
+          if (Test-Path run.log) { Get-Content run.log | ForEach-Object { Add-Content $env:GITHUB_STEP_SUMMARY $_ } }
+          Add-Content $env:GITHUB_STEP_SUMMARY '```'
 
       - name: Create or update "latest" tag
         run: |
@@ -90,3 +106,4 @@ jobs:
           files: release/release_windows.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
