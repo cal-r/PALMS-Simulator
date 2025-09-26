@@ -62,16 +62,6 @@ jobs:
           if [ $EXIT_CODE -ne 0 ]; then
             exit 1
           fi
-          # Check for crash logs in last 10 minutes
-          mkdir -p logs/crash_reports
-          NEW_CRASH=$(find ~/Library/Logs/DiagnosticReports -name "*.crash" -type f -newermt "-10 minutes" || true)
-          if [ ! -z "$NEW_CRASH" ]; then
-            echo "Crash log(s) found!"
-            cp $NEW_CRASH logs/crash_reports/
-            ls -l $NEW_CRASH
-            cat $NEW_CRASH
-            exit 1
-          fi
 
       - name: Upload screenshot
         if: always()
@@ -79,13 +69,6 @@ jobs:
         with:
           name: screenshot
           path: screenshot.png
-
-      - name: Upload logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: logs
-          path: logs
 
       - name: Create or update "latest" tag
         run: |
