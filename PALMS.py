@@ -115,6 +115,9 @@ class PavlovianApp(QMainWindow):
 
         iconLabel = QLabel(self)
         iconLabel.setPixmap(self.getPixmap('palms.png'))
+        iconLabel.setScaledContents(True)
+        iconLabel.setFixedSize(130, 130)
+        iconLabel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         iconLabel.setToolTip('Pavlovian\N{bellhop bell} \N{dog face} Associative\N{handshake} Learning\N{brain} Models\N{bar chart} Simulator\N{desktop computer}.')
 
         self.plotBox = PlotBox(self)
@@ -123,7 +126,7 @@ class PavlovianApp(QMainWindow):
         self.actionButtons = ActionButtons(self)
 
         mainLayout = QGridLayout()
-        mainLayout.setContentsMargins(4, 0, 0, 4)
+        mainLayout.setContentsMargins(5, 5, 0, 5)
         mainLayout.setSpacing(0)
         mainLayout.addWidget(self.tableWidget, 0, 0, 1, 4)
         mainLayout.addWidget(iconLabel, 0, 4, 1, 1, alignment = Qt.AlignmentFlag.AlignCenter)
