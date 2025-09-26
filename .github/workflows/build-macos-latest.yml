@@ -43,32 +43,49 @@ jobs:
       - name: Run app, screenshot, and check for errors
         shell: bash
         run: |
-          set -euxo pipefail
+          set -euo pipefail
+          {
+            echo "Start time: $(date '+%Y-%m-%d %H:%M:%S.%3N')"
+            dist/PALMS.app/Contents/MacOS/PALMS --smoke-test Experiments/Haselgrove_etal_2010_exp1.rw &
+            PID=$!
+            sleep 30
+            echo "Making screenshot"
+            screencapture -x screenshot-macos.png
+            wait $PID
+            EXIT_CODE=$?
+            echo "End time: $(date '+%Y-%m-%d %H:%M:%S.%3N')"
+            echo "App exited with code $EXIT_CODE"
+            if [ $EXIT_CODE -ne 0 ]; then
+              exit 1
+            fi
+          } 2>&1 | tee run.log
 
-          echo "Start time: $(date '+%Y-%m-%d %H:%M:%S.%3N')"
-          dist/PALMS.app/Contents/MacOS/PALMS --smoke-test Experiments/Haselgrove_etal_2010_exp1.rw &
-
-          PID=$!
-          sleep 30
-          echo "Making screenshot"
-          screencapture -x screenshot.png
-          wait $PID
-
-          EXIT_CODE=$?
-          echo "End time: $(date '+%Y-%m-%d %H:%M:%S.%3N')"
-
-          echo "App exited with code $EXIT_CODE"
-
-          if [ $EXIT_CODE -ne 0 ]; then
-            exit 1
-          fi
-
-      - name: Upload screenshot
+      - name: Upload screenshot artifact (will download as screenshot-macos.zip)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: screenshot
-          path: screenshot.png
+          name: screenshot-macos
+          path: screenshot-macos.png
+
+      - name: Add screenshot and logs to Job Summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## macOS Smoke Test"
+            echo
+            if [[ -f screenshot-macos.png ]]; then
+              echo "### Screenshot"
+              echo "![screenshot](screenshot-macos.png)"
+              echo
+            else
+              echo "> (No screenshot produced)"
+            fi
+            echo "### Logs"
+            echo '```text'
+            if [[ -f run.log ]]; then cat run.log; fi
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Create or update "latest" tag
         run: |
@@ -86,3 +103,4 @@ jobs:
           files: release/release_macos.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
