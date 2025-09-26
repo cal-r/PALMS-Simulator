@@ -232,6 +232,7 @@ class ActionButtons(QWidget):
         phaseOptionsLayout.addWidget(self.toggleAlphasButton)
         phaseOptionsLayout.addWidget(self.configuralButton)
         phaseOptionsLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        phaseOptionsLayout.setSpacing(1)
         phaseOptionsGroupBox = QGroupBox('Phase Options')
         phaseOptionsGroupBox.setLayout(phaseOptionsLayout)
 
@@ -245,6 +246,7 @@ class ActionButtons(QWidget):
         plotOptionsLayout.addWidget(modelInfoButton)
         plotOptionsLayout.addLayout(dpiOptionsLayout)
         plotOptionsLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        plotOptionsLayout.setSpacing(1)
         plotOptionsGroupBox = QGroupBox("Plot Options")
         plotOptionsGroupBox.setLayout(plotOptionsLayout)
 
@@ -253,6 +255,7 @@ class ActionButtons(QWidget):
         fileOptionsLayout.addWidget(saveButton)
         fileOptionsLayout.addWidget(exportDataButton)
         fileOptionsLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        fileOptionsLayout.setSpacing(1)
         fileOptionsGroupBox = QGroupBox("File Options")
         fileOptionsGroupBox.setLayout(fileOptionsLayout)
 
@@ -521,7 +524,7 @@ Selecting "separate legend" removes the legend from these plots, and creates a n
 
 class ParametersGroupBox(QGroupBox):
     def __init__(self, parent):
-        super().__init__('Parameters')
+        super().__init__('Params')
 
         short_names = dict(
             alpha = "α ",
