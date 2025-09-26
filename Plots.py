@@ -137,6 +137,8 @@ def generate_figures(
                 ax.plot(hist.alpha_mack, label='Mack: ' + str(key), color = colors[key],     marker='$M$', markersize=6, alpha=1, picker = ticker_threshold)
                 ax.plot(hist.alpha_hall, label='Hall: ' + str(key), color = colors_alt[key], marker='$H$', markersize=6, alpha=1, picker = ticker_threshold)
 
+        longFormat = lambda x, _: f'{x:.0e}' if abs(x) >= 1000 else f'{x:.1f}'
+
         # Matplotlib makes it hard to start a plot with xticks = [1, t].
         # Instead of fixing the ticks ourselves, we plot in [0, t - 1] and format
         # the ticks to appear as the next number.
@@ -146,7 +148,7 @@ def generate_figures(
         axes[0].tick_params(axis = 'both', labelsize = 'x-small', pad = 1)
         axes[0].xaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x + 1:.0f}'))
         axes[0].xaxis.set_major_locator(MaxNLocator(integer = True, min_n_ticks = 1))
-        axes[0].yaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x:.1f}'))
+        axes[0].yaxis.set_major_formatter(FuncFormatter(longFormat))
 
         if plot_V:
             axes[0].set_ylabel('Associative Strength', fontsize = 'small', labelpad = 3)
@@ -166,7 +168,7 @@ def generate_figures(
             axes[1].xaxis.set_major_locator(MaxNLocator(integer = True))
             axes[1].xaxis.set_major_locator(MaxNLocator(integer = True, min_n_ticks = 1))
             axes[1].yaxis.set_label_position('right')
-            axes[1].yaxis.set_major_formatter(FuncFormatter(lambda x, _: f'{x:.1f}'))
+            axes[1].yaxis.set_major_formatter(FuncFormatter(longFormat))
             axes[1].yaxis.tick_right()
 
         if not singular_legend and len(experiments) < 50:
