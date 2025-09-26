@@ -123,7 +123,7 @@ class PavlovianApp(QMainWindow):
         self.actionButtons = ActionButtons(self)
 
         mainLayout = QGridLayout()
-        mainLayout.setContentsMargins(0, 0, 0, 0)
+        mainLayout.setContentsMargins(4, 0, 0, 4)
         mainLayout.setSpacing(0)
         mainLayout.addWidget(self.tableWidget, 0, 0, 1, 4)
         mainLayout.addWidget(iconLabel, 0, 4, 1, 1, alignment = Qt.AlignmentFlag.AlignCenter)

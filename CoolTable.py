@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QRect
 from PySide6.QtWidgets import *
 
 import re
@@ -38,7 +38,7 @@ class CoolTable(QWidget):
         self.cButton.setFixedSize(20, 20)
 
         self.mainLayout = QGridLayout(parent = self)
-        self.mainLayout.addWidget(self.table, 0, 0, Qt.AlignmentFlag.AlignLeft)
+        self.mainLayout.addWidget(self.table, 0, 0, Qt.AlignmentFlag.AlignBottom)
         self.mainLayout.addWidget(self.rightPlus, 0, 1, Qt.AlignmentFlag.AlignLeft)
         self.mainLayout.addWidget(self.bottomPlus, 1, 0, Qt.AlignmentFlag.AlignTop)
         self.mainLayout.addWidget(self.cButton, 1, 1, Qt.AlignmentFlag.AlignLeft)
@@ -120,7 +120,7 @@ class CoolTable(QWidget):
         self.setHeaderNames()
         width = 2 + min(max(self.table.horizontalHeader().length(), 150), 1000) + self.table.verticalHeader().width()
         height = 2 + self.table.verticalHeader().length() + self.table.horizontalHeader().height()
-        
+
         self.table.setFixedSize(width, height)
         self.rightPlus.setFixedHeight(height)
         self.bottomPlus.setFixedWidth(width)
