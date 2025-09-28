@@ -6,7 +6,7 @@ This simulator will be presented in the paper ``PALMS: Pavlovian Associative Lea
 
 ## Runnable executable bundled with the prerequisites.
 
-https://github.com/mfixman/rw-model/releases
+https://github.com/cal-r/PALMS-Simulator
 
 > I DON'T CARE ABOUT THE CODE! WHY IS THERE CODE? MAKE AN .EXE FILE AND GIVE IT TO ME YOU SMELLY NERDS.
 
@@ -16,7 +16,7 @@ Each version of PALMS has releases bundled with Python and its respective librar
 
 While convenient, these executables are considerably large. We recommend downloading and running the Python source code if you already have the dependencies set up and aren't stuck in Python version hell.
 
-The latest releases can be found in [this link]((https://github.com/cal-r/PALMS-Simulator/releases/tag/latest)).
+The latest releases can be found in [this link] https://github.com/cal-r/PALMS-Simulator/releases/tag/latest.
 
 ## Running the Python code
 
