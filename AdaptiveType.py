@@ -46,7 +46,7 @@ class AdaptiveType:
             'Rescorla Wagner w/ Variable Learning Rate': RescorlaWagnerLinear,
             'Pearce Kaye Hall': PearceKayeHall,
             'Mackintosh Extended': MackExtended,
-            'LePelley\'s Hybrid': LePelleyHybrid,
+            'Le Pelley\'s Hybrid': LePelleyHybrid,
             # 'MLAB Hybrid': MlabHybrid,
         }
 

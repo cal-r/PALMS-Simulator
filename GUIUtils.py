@@ -557,8 +557,8 @@ class ParametersGroupBox(QGroupBox):
             beta = "Associativity of positive US.",
             betan = "Associativity of negative US.",
             gamma = "Weight parameter for past trials.",
-            thetaE = "Excitory theta based on LePelley's model.",
-            thetaI = "Inhibitory theta based on LePelley's model.",
+            thetaE = "Excitory theta based on Le Pelley's model.",
+            thetaI = "Inhibitory theta based on Le Pelley's model.",
             num_trials = "Number of random trials per experiment.",
         )
 
