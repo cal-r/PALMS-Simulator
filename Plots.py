@@ -22,7 +22,7 @@ def titleify(title: None | str, phases: dict[str, list[Phase]], phase_num: int) 
 
     if title is not None:
         title = re.sub(r'.*\/|\..+', '', re.sub(r'[-_]', ' ', title))
-        title = title.title().replace('Lepelley', 'LePelley').replace('Dualv', 'DualV')
+        title = title.title().replace('Dualv', 'DualV')
         titles.append(title)
 
     q = max(len(v) for v in phases.values())
