@@ -46,7 +46,7 @@ jobs:
           set -euo pipefail
           {
             echo "Start time: $(date '+%Y-%m-%d %H:%M:%S.%3N')"
-            cp dist/PALMS.app ~/Desktop
+            cp -r dist/PALMS.app ~/Desktop
             screencapture -x screenshot-icon.png
             echo "Opening time: $(date '+%Y-%m-%d %H:%M:%S.%3N')"
             dist/PALMS.app/Contents/MacOS/PALMS --smoke-test Experiments/Haselgrove_etal_2010_exp1.rw &
