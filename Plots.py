@@ -172,12 +172,14 @@ def generate_figures(
             axes[1].yaxis.set_major_formatter(FuncFormatter(longFormat))
             axes[1].yaxis.tick_right()
 
-        if not singular_legend and len(experiments) < 50:
+        if not singular_legend:
             properties: dict[str, Any]
-            if len(experiments) >= 6:
+            if len(experiments) < 6:
+                properties = dict(fontsize = 'x-small')
+            elif len(experiments) < 50:
                 properties = dict(fontsize = 7, ncol = 2)
             else:
-                properties = dict(fontsize = 'x-small')
+                properties = dict(fontsize = 4, ncol = 4)
 
             for ax in axes:
                 legend = ax.legend(**properties)

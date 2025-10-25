@@ -178,6 +178,13 @@ class ActionButtons(QWidget):
         partStimuliButton.clicked.connect(self.togglePlotPartStimuli)
         partStimuliButton.setCheckable(True)
 
+        toggleLegendButton = QPushButton('Hide Legend')
+        toggleLegendButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        toggleLegendButton.setStyleSheet(checkedStyle)
+        toggleLegendButton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        toggleLegendButton.clicked.connect(self.toggleLegend)
+        toggleLegendButton.setCheckable(True)
+
         exportDataButton = QPushButton("Export Data")
         exportDataButton.clicked.connect(self.exportData)
         exportDataButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
@@ -239,6 +246,7 @@ class ActionButtons(QWidget):
         plotOptionsLayout = QVBoxLayout()
         plotOptionsLayout.addWidget(plotAlphaButton)
         plotOptionsLayout.addWidget(partStimuliButton)
+        plotOptionsLayout.addWidget(toggleLegendButton)
         plotOptionsLayout.addWidget(printButton)
         plotOptionsLayout.addWidget(savePlotButton)
         plotOptionsLayout.addWidget(hideButton)
@@ -398,6 +406,10 @@ class ActionButtons(QWidget):
 
     def togglePlotPartStimuli(self):
         self.parent.plot_part_stimuli = not self.parent.plot_part_stimuli
+        self.parent.refreshExperiment()
+
+    def toggleLegend(self):
+        self.parent.show_legend = not self.parent.show_legend
         self.parent.refreshExperiment()
 
     def exportData(self):
