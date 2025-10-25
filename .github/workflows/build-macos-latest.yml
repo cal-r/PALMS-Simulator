@@ -47,7 +47,7 @@ jobs:
           {
             echo "Start time: $(date '+%Y-%m-%d %H:%M:%S.%3N')"
             cp -r dist/PALMS.app ~/Desktop
-            screencapture -x screenshot-icon.png
+            screencapture -x screenshot-desktop.png
             echo "Opening time: $(date '+%Y-%m-%d %H:%M:%S.%3N')"
             dist/PALMS.app/Contents/MacOS/PALMS --smoke-test Experiments/Haselgrove_etal_2010_exp1.rw &
             PID=$!
@@ -67,8 +67,11 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: screenshot-macos
-          path: screenshot-macos.png
+          name: screenshots-macos
+          path: |
+            palms-macos.png
+            desktop-macos.png
+          compression-level: 0
 
       - name: Add screenshot and logs to Job Summary
         if: always()

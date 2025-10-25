@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import random
 import re
 import seaborn
 import matplotlib
@@ -48,12 +49,12 @@ def titleify(title: None | str, phases: dict[str, list[Phase]], phase_num: int) 
     return ''
 
 def get_css(data: list[dict[str, StimulusHistory]]) -> tuple[list[str], dict[str, Color], dict[str, Color], dict[str, str]]:
-    css = sorted(set(chain.from_iterable([x.keys() for x in data])), key = lambda x: (len(x), x))
+    css = list(set(chain.from_iterable([x.keys() for x in data])))
+    random.shuffle(css)
 
     colors = dict(zip(css, seaborn.husl_palette(len(css), s=.9, l=.5)))
     colors_alt = dict(zip(css, seaborn.hls_palette(len(css), l=.7)))
 
-    # markers = ['*', 'X', 'D', 's', 'o', 'd', 'p', 'h', '^', 'v', '<', '>']
     markers = ['o', 's', 'D', '^', 'v', '<', '>', 'p', '*', 'h', 'X', 'd']
     marker_dict = dict(zip(css, [markers[i % len(markers)] for i in range(len(css))]))
 
