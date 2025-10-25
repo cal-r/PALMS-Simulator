@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import colorcet
 import random
 import re
 import seaborn
+from itertools import islice, cycle
+
 import matplotlib
 matplotlib.use('QtAgg')
 
@@ -49,17 +52,16 @@ def titleify(title: None | str, phases: dict[str, list[Phase]], phase_num: int) 
     return ''
 
 def get_css(data: list[dict[str, StimulusHistory]]) -> tuple[list[str], dict[str, Color], dict[str, Color], dict[str, str]]:
-    css = list(set(chain.from_iterable([x.keys() for x in data])))
-    random.shuffle(css)
+    css = sorted(set(chain.from_iterable([x.keys() for x in data])), key = lambda x: (len(x), x))
 
-    colors = dict(zip(css, seaborn.husl_palette(len(css), s=.9, l=.5)))
-    colors_alt = dict(zip(css, seaborn.hls_palette(len(css), l=.7)))
+    color_list = list(islice(cycle(colorcet.glasbey), len(css)))
+    colors = dict(zip(css, color_list))
 
     markers = ['o', 's', 'D', '^', 'v', '<', '>', 'p', '*', 'h', 'X', 'd']
     marker_dict = dict(zip(css, [markers[i % len(markers)] for i in range(len(css))]))
 
     colors['Real-world Group - X'], colors['Real-world Group - Y'] = seaborn.husl_palette(2)
-    return css, colors, colors_alt, marker_dict
+    return css, colors, marker_dict
 
 def generate_figures(
         data: list[dict[str, StimulusHistory]],
@@ -80,7 +82,7 @@ def generate_figures(
     if plot_phase is not None:
         data = [data[plot_phase - 1]]
 
-    experiment_css, colors, colors_alt, markers = get_css(data)
+    experiment_css, colors, markers = get_css(data)
 
     figures = []
     for phase_num, experiments in enumerate(data, start = 1):
@@ -135,8 +137,9 @@ def generate_figures(
                 ax.plot(hist.alpha, label='α: '+str(key), **plot_options) # type: ignore
 
             if not hist.compound[0] and plot_macknhall:
-                ax.plot(hist.alpha_mack, label='Mack: ' + str(key), color = colors[key],     marker='$M$', markersize=6, alpha=1, picker = ticker_threshold)
-                ax.plot(hist.alpha_hall, label='Hall: ' + str(key), color = colors_alt[key], marker='$H$', markersize=6, alpha=1, picker = ticker_threshold)
+                common_options = dict(markersize = 6, alpha = 1, picker = ticker_threshold)
+                ax.plot(hist.alpha_mack, label='Mack: ' + str(key), color = colors[key], marker='$M$', **common_options)
+                ax.plot(hist.alpha_hall, label='Hall: ' + str(key), color = colors[key], marker='$H$', **common_options)
 
         longFormat = lambda x, _: f'{x:.0e}' if abs(x) >= 1000 else f'{x:.1f}'
 
