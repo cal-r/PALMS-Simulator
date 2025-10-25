@@ -47,13 +47,13 @@ jobs:
           {
             echo "Start time: $(date '+%Y-%m-%d %H:%M:%S.%3N')"
             cp -r dist/PALMS.app ~/Desktop
-            screencapture -x screenshot-desktop.png
+            screencapture -x desktop-macos.png
             echo "Opening time: $(date '+%Y-%m-%d %H:%M:%S.%3N')"
             dist/PALMS.app/Contents/MacOS/PALMS --smoke-test Experiments/Haselgrove_etal_2010_exp1.rw &
             PID=$!
             sleep 30
             echo "Making screenshot"
-            screencapture -x screenshot-macos.png
+            screencapture -x palms-macos.png
             wait $PID
             EXIT_CODE=$?
             echo "End time: $(date '+%Y-%m-%d %H:%M:%S.%3N')"

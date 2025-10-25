@@ -56,6 +56,7 @@ class PavlovianApp(QMainWindow):
     line_hidden: dict[str, bool]
     plot_alpha: bool
     plot_part_stimuli: bool
+    show_legend: bool
 
     dpi: int
 
@@ -86,6 +87,7 @@ class PavlovianApp(QMainWindow):
         self.configural_cues = False
         self.plot_alpha = False
         self.plot_part_stimuli = False
+        self.show_legend = True
 
         self.line_hidden = {}
         self.dpi = dpi
@@ -374,6 +376,7 @@ class PavlovianApp(QMainWindow):
             plot_macknhall = args.plot_macknhall and AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
             dpi = self.dpi,
             ticker_threshold = True,
+            singular_legend = not self.show_legend
         )
 
         for fig in figures:
@@ -411,6 +414,7 @@ class PavlovianApp(QMainWindow):
             plot_macknhall = args.plot_macknhall and AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
             dpi = self.dpi,
             ticker_threshold = True,
+            singular_legend = not self.show_legend,
         )
         for f in self.figures:
             f.set_canvas(self.plotCanvas)
