@@ -204,11 +204,16 @@ class PavlovianApp(QMainWindow):
 
         if percs_changes:
             self.refreshExperiment()
-            self.actionButtons.toggleAlphasButton.click()
+            if not self.alphasBox.isVisible():
+                self.actionButtons.toggleAlphasButton.click()
 
             for name, value in percs_changes.items():
                 perc, cs = name.rsplit('_', 1)
                 self.per_cs_param[perc][cs].setText(value, set_modified = True)
+        elif self.alphasBox.isVisible():
+            self.actionButtons.toggleAlphasButton.click()
+
+        self.refreshExperiment()
 
     def getPixmap(self, filename):
         here = Path(__file__).resolve().parent
