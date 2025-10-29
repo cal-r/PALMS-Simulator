@@ -187,6 +187,7 @@ class PavlovianApp(QMainWindow):
                 name = replacements.get(name, name)
 
                 if name == 'adaptive_type':
+                    value = value.replace('LePelley', 'Le Pelley')
                     self.adaptiveTypeButtons.clickAdaptiveTypeButton(value)
                 elif name == 'configural_cues':
                     self.actionButtons.configuralButton.click()

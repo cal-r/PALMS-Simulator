@@ -722,7 +722,7 @@ class AdaptiveTypeButtons(QGroupBox):
                 return
 
         print(f'Secret adaptive type! {adaptive_type}')
-        buttonGroup.checkedButton.release()
+        self.buttonGroup.checkedButton.release()
         self.changeAdaptiveType(self, adaptive_type)
 
     def changeAdaptiveType(self, adaptive_type):
