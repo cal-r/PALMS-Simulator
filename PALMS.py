@@ -560,7 +560,7 @@ def parse_args():
 def logScreenInfo(app):
     logging.info(f'Is PyInstaller? {pyInstalled}')
     logging.info(f'Logical DPI: {app.primaryScreen().logicalDotsPerInch()}.')
-    logging.info(f'Logical DPI: {app.primaryScreen().physicalDotsPerInch()}.')
+    logging.info(f'Physical DPI: {app.primaryScreen().physicalDotsPerInch()}.')
     logging.info(f'Device pixel ratio: {app.primaryScreen().devicePixelRatio()}.')
     logging.info(f'Pyplot backend: {pyplot.get_backend()}.')
     logging.info(f'Platform name: {QGuiApplication.platformName()}')
@@ -588,9 +588,7 @@ def main():
 
     dpi = args.dpi
     if dpi is None:
-        dpi = 1.1 ** 4 * app.primaryScreen().logicalDotsPerInch()
-        dpi *= 1.1 ** -1 * app.primaryScreen().devicePixelRatio()
-
+        dpi = 1.1 ** (5 * app.primaryScreen().devicePixelRatio()) * app.primaryScreen().logicalDotsPerInch()
         logging.info(f'Final DPI: {dpi}')
 
     logging.info('Creating gallery')
