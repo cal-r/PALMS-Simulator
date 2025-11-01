@@ -3,6 +3,7 @@ from __future__ import annotations
 import colorcet
 import random
 import re
+import math
 import seaborn
 from itertools import islice, cycle
 
@@ -19,7 +20,7 @@ from typing import Any, TypeAlias
 
 from Experiment import Phase
 
-from matplotlib.widgets import Button
+from matplotlib.lines import Line2D
 
 Color: TypeAlias = tuple[float, float, float]
 
@@ -199,17 +200,10 @@ class PaginatedLegend:
         self.ax, self.fig = ax, ax.figure
         self.handles, self.labels = handles, labels
         self.page, self.page_size = 0, 20
-
-        pyplot.subplots_adjust(bottom = .12)
-        self.bprev = Button(self.fig.add_axes([0.82, 0.01, 0.07, 0.05]), '<')
-        self.bnext = Button(self.fig.add_axes([0.90, 0.01, 0.07, 0.05]), '>')
-        self.bprev.on_clicked(lambda _: self.flip(-1))
-        self.bnext.on_clicked(lambda _: self.flip(1))
-        self.fig.canvas.mpl_connect('key_press_event', self.key)
+        self._cid_pick = self.fig.canvas.mpl_connect('pick_event', self._on_pick)
         self.show()
 
     def flip(self, step):
-        print(f'Called flip {step}')
         n = len(self.handles)
         new = self.page + step
         if 0 <= new * self.page_size < n:
@@ -221,31 +215,60 @@ class PaginatedLegend:
         if self.ax.legend_:
             self.ax.legend_.remove()
 
-        self.legend = self.ax.legend(
-            self.handles[s:e],
-            self.labels[s:e],
-            fontsize = 7,
-            ncol = 3,
-        )
-        self.legend.set_draggable(True)
-        for legend_line in self.legend.get_lines():
-            legend_line.set_alpha(1)
+        h = list(self.handles[s:e])
+        l = list(self.labels[s:e])
 
-        for line, text in zip(self.legend.get_lines(), self.legend.get_texts()):
-            line.set_picker(5)
-            text.set_picker(5)
-            text.set_label(line.get_label())
+        prev_handle = Line2D([], [], lw=0)  # invisible line
+        next_handle = Line2D([], [], lw=0)
+
+        h.extend([prev_handle, next_handle])
+        l.extend([f"< Prev ({self.page+1})", f"Next > ({self.num_pages()})"])
+
+        self.legend = self.ax.legend(h, l, fontsize=7, ncol=3)
+        self.legend.set_draggable(True)
+
+        texts = self.legend.get_texts()
 
         self.fig.canvas.draw_idle()
 
-    def get_legend(self):
-        return self.legend
+    def num_pages(self):
+        return max(1, math.ceil(len(self.handles) / self.page_size))
 
-    def key(self, e):
-        if e.key == 'left':
-            self.flip(-1)
-        elif e.key == 'right':
-            self.flip(1)
+    def _on_pick(self, event):
+        # Only respond if the pick came from our legend
+        if getattr(event, "artist", None) in self.legend.get_texts()[-2:]:
+            idx = self.legend.get_texts().index(event.artist)
+            if idx == len(self.legend.get_texts()) - 2:   # Prev
+                self.flip(-1)
+            else:                                          # Next
+                self.flip(1)
+
+class MyPaginatedLegend:
+    def __init__(self, ax):
+        self.page = 0
+
+        self.handles, self.labels = ax.get_legend_handles_labels()
+        self.showPage(ax, 0)
+
+    def showPage(self, ax, page_num):
+        prev = Line2D([], [], marker = '<', linestyle = 'None', markersize = 6)
+        nexy = Line2D([], [], marker = '>', linestyle = 'None', markersize = 6)
+
+        prev.set_label('Prev')
+        nexy.set_label('Next')
+
+        size = 18
+        self.legend = ax.legend(
+            [prev, nexy] + self.handles[size * page_num : size * (page_num + 1)],
+            ['Prev', 'Next'] + self.labels[size * page_num : size * (page_num + 1)],
+            fontsize = 7,
+            ncol = 3,
+        )
+        self.legend.paginator = self
+
+        self.num_pages = len(self.handles) // size
+        self.legend.set_title(f'Page {page_num + 1}/{self.num_pages}')
+        return self.legend
 
 def generate_legend(experiments, axes, ticker_threshold):
     gen_legend = None
@@ -254,7 +277,7 @@ def generate_legend(experiments, axes, ticker_threshold):
     elif len(experiments) < 50:
         gen_legend = lambda ax: ax.legend(fontsize = 7, ncol = 2)
     else:
-        gen_legend = lambda ax: PaginatedLegend(ax).get_legend()
+        gen_legend = lambda ax: MyPaginatedLegend(ax).legend
 
     for ax in axes:
         legend = gen_legend(ax)

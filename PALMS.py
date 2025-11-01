@@ -53,6 +53,7 @@ class PavlovianApp(QMainWindow):
 
     configural_cues: bool
 
+    legend_page: int
     line_hidden: dict[str, bool]
     plot_alpha: bool
     plot_part_stimuli: bool
@@ -89,6 +90,7 @@ class PavlovianApp(QMainWindow):
         self.plot_part_stimuli = False
         self.show_legend = True
 
+        self.legend_page = 0
         self.line_hidden = {}
         self.dpi = dpi
         self.screenshot_ready = screenshot_ready
@@ -439,12 +441,18 @@ class PavlovianApp(QMainWindow):
         for ax in current_figure.get_axes():
             for line in ax.get_lines():
                 label = line.get_label().split(': ')[-1].strip()
-                line.set_alpha(0 if self.line_hidden[label] else 1)
+                if label in self.line_hidden:
+                    line.set_alpha(0 if self.line_hidden[label] else 1)
 
             if ax.get_legend() is not None:
+                if ax.get_legend().get_title().get_text().startswith('Page'):
+                    print('Doing smething')
+                    ax.get_legend().paginator.showPage(ax, self.legend_page)
+
                 for line in ax.get_legend().get_lines():
                     label = line.get_label().split(': ')[-1]
-                    line.set_alpha(.25 if self.line_hidden[label] else 1)
+                    if label in self.line_hidden:
+                        line.set_alpha(.25 if self.line_hidden[label] else 1)
 
         self.plotCanvas.resize(self.plotCanvas.width() + 1, self.plotCanvas.height() + 1)
         self.plotCanvas.resize(self.plotCanvas.width() - 1, self.plotCanvas.height() - 1)
@@ -455,7 +463,6 @@ class PavlovianApp(QMainWindow):
         self.plotCanvas.draw()
 
         self.tableWidget.selectColumn(self.phaseNum - 1)
-
         self.plotBox.phaseBox.setInfo(self.phaseNum, self.numPhases)
 
         any_rand = any(p[self.phaseNum - 1].rand for p in self.phases.values())
@@ -475,10 +482,17 @@ class PavlovianApp(QMainWindow):
 
     def pickLine(self, event):
         label = event.artist.get_label().split(': ')[-1].strip()
-        if label == '':
-            return
 
-        self.line_hidden[label] = not self.line_hidden[label]
+        match label:
+            case '':
+                return
+            case 'Next':
+                self.legend_page += 1
+            case 'Prev':
+                self.legend_page -= 1
+            case _:
+                self.line_hidden[label] = not self.line_hidden[label]
+
         self.refreshFigure()
 
     def mouseMove(self, event):
