@@ -141,7 +141,7 @@ def generate_figures(
                 ax.plot(hist.alpha_mack, label='Mack: ' + str(key), color = colors[key], marker='$M$', **common_options)
                 ax.plot(hist.alpha_hall, label='Hall: ' + str(key), color = colors[key], marker='$H$', **common_options)
 
-        longFormat = lambda x, _: f'{x:.0e}' if abs(x) >= 1000 else f'{x:.1f}'
+        longFormat = lambda x, _: f'{x:.0e}' if abs(x) >= 1000 else f'{x:.2f}'
 
         # Matplotlib makes it hard to start a plot with xticks = [1, t].
         # Instead of fixing the ticks ourselves, we plot in [0, t - 1] and format
