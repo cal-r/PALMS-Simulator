@@ -19,6 +19,8 @@ from typing import Any, TypeAlias
 
 from Experiment import Phase
 
+from matplotlib.widgets import Button
+
 Color: TypeAlias = tuple[float, float, float]
 
 def titleify(title: None | str, phases: dict[str, list[Phase]], phase_num: int) -> str:
@@ -176,25 +178,7 @@ def generate_figures(
             axes[1].yaxis.tick_right()
 
         if not singular_legend:
-            properties: dict[str, Any]
-            if len(experiments) < 6:
-                properties = dict(fontsize = 'x-small')
-            elif len(experiments) < 50:
-                properties = dict(fontsize = 7, ncol = 2)
-            else:
-                properties = dict(fontsize = 4, ncol = 4)
-
-            for ax in axes:
-                legend = ax.legend(**properties)
-                legend.set_draggable(True)
-                for legend_line in legend.get_lines():
-                    legend_line.set_alpha(1)
-
-                if ticker_threshold:
-                    for line, text in zip(legend.get_lines(), legend.get_texts()):
-                        line.set_picker(5)
-                        text.set_picker(5)
-                        text.set_label(line.get_label())
+            generate_legend(experiments, axes, ticker_threshold)
 
         if phases is not None:
             title = titleify(title, phases, phase_num)
@@ -209,7 +193,82 @@ def generate_figures(
 
     return figures
 
-def generate_legend(data, plot_stimuli, dpi):
+class PaginatedLegend:
+    def __init__(self, ax):
+        handles, labels = ax.get_legend_handles_labels()
+        self.ax, self.fig = ax, ax.figure
+        self.handles, self.labels = handles, labels
+        self.page, self.page_size = 0, 20
+
+        pyplot.subplots_adjust(bottom = .12)
+        self.bprev = Button(self.fig.add_axes([0.82, 0.01, 0.07, 0.05]), '<')
+        self.bnext = Button(self.fig.add_axes([0.90, 0.01, 0.07, 0.05]), '>')
+        self.bprev.on_clicked(lambda _: self.flip(-1))
+        self.bnext.on_clicked(lambda _: self.flip(1))
+        self.fig.canvas.mpl_connect('key_press_event', self.key)
+        self.show()
+
+    def flip(self, step):
+        print(f'Called flip {step}')
+        n = len(self.handles)
+        new = self.page + step
+        if 0 <= new * self.page_size < n:
+            self.page = new
+            self.show()
+
+    def show(self):
+        s, e = self.page * self.page_size, (self.page + 1) * self.page_size
+        if self.ax.legend_:
+            self.ax.legend_.remove()
+
+        self.legend = self.ax.legend(
+            self.handles[s:e],
+            self.labels[s:e],
+            fontsize = 7,
+            ncol = 3,
+        )
+        self.legend.set_draggable(True)
+        for legend_line in self.legend.get_lines():
+            legend_line.set_alpha(1)
+
+        for line, text in zip(self.legend.get_lines(), self.legend.get_texts()):
+            line.set_picker(5)
+            text.set_picker(5)
+            text.set_label(line.get_label())
+
+        self.fig.canvas.draw_idle()
+
+    def get_legend(self):
+        return self.legend
+
+    def key(self, e):
+        if e.key == 'left':
+            self.flip(-1)
+        elif e.key == 'right':
+            self.flip(1)
+
+def generate_legend(experiments, axes, ticker_threshold):
+    gen_legend = None
+    if len(experiments) < 6:
+        gen_legend = lambda ax: ax.legend(fontsize = 'x-small')
+    elif len(experiments) < 50:
+        gen_legend = lambda ax: ax.legend(fontsize = 7, ncol = 2)
+    else:
+        gen_legend = lambda ax: PaginatedLegend(ax).get_legend()
+
+    for ax in axes:
+        legend = gen_legend(ax)
+        legend.set_draggable(True)
+        for legend_line in legend.get_lines():
+            legend_line.set_alpha(1)
+
+        if ticker_threshold:
+            for line, text in zip(legend.get_lines(), legend.get_texts()):
+                line.set_picker(5)
+                text.set_picker(5)
+                text.set_label(line.get_label())
+
+def generate_singular_legend(data, plot_stimuli, dpi):
     css, colors, _, markers = get_css(data)
     fig = pyplot.figure(dpi = dpi)
     pyplot.axis('off')
@@ -268,7 +327,7 @@ def save_plots(
     )
 
     if singular_legend:
-        legend_fig = generate_legend(data, plot_stimuli, dpi)
+        legend_fig = generate_singular_legend(data, plot_stimuli, dpi)
         legend_fig.set_size_inches(plot_width, .1)
         legend_fig.savefig(f'{filename}_legend.png', bbox_inches = 'tight', pad_inches = 0)
 
