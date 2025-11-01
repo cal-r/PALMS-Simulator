@@ -203,13 +203,12 @@ class PavlovianApp(QMainWindow):
             self.params[name].setText(value, set_modified = True)
 
         if percs_changes:
-            self.refreshExperiment()
             if not self.alphasBox.isVisible():
                 self.actionButtons.toggleAlphasButton.click()
 
-            for name, value in percs_changes.items():
-                perc, cs = name.rsplit('_', 1)
-                self.per_cs_param[perc][cs].setText(value, set_modified = True)
+            values = {tuple(key.rsplit('_', 1)): val for key, val in percs_changes.items()}
+            self.alphasBox.refresh(values)
+
         elif self.alphasBox.isVisible():
             self.actionButtons.toggleAlphasButton.click()
 
@@ -390,7 +389,10 @@ class PavlovianApp(QMainWindow):
             fig.show()
         return strengths
 
-    def refreshExperiment(self):
+    def refreshExperiment(self, caller = None):
+        if caller is not None:
+            logging.info(f'Called refreshExperiment from {caller}')
+
         self.tableWidget.updateSizes()
 
         for fig in self.figures:
@@ -599,7 +601,6 @@ def main():
     logging.info('Loading file')
     if args.load_file:
         gallery.loadFile(args.load_file)
-        gallery.refreshExperiment()
 
     logging.info('Executing app')
     code = app.exec()
