@@ -635,7 +635,14 @@ class AlphasBox(QGroupBox):
     def clear(self):
         self.refresh(set())
 
-    def refresh(self, css: set[str]):
+    def refresh(self, css_or_values: set[str] | dict[tuple[str, str], float]):
+        if type(css_or_values) is set:
+            css = css_or_values
+            values = dict()
+        else:
+            css = {cs for _, cs in css_or_values.keys()}
+            values = css_or_values
+
         parent = self.parent
 
         shortnames = {
@@ -670,6 +677,9 @@ class AlphasBox(QGroupBox):
                         hoverText = hoverText,
                         maximumWidth = 50,
                     ).addRow(layout)
+
+                    if (perc, cs) in values.keys():
+                        form[cs].setText(values[(perc, cs)], set_modified = True)
 
     def clearFields(self, vals, only_unmodified = False):
         common_keys = vals.keys() & self.per_cs_param.keys()
