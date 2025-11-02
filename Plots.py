@@ -5,7 +5,7 @@ import random
 import re
 import math
 import seaborn
-from itertools import islice, cycle
+from itertools import islice, cycle, chain
 
 import matplotlib
 matplotlib.use('QtAgg')
@@ -197,63 +197,95 @@ class PaginatedLegend:
         self.page = 0
 
         self.handles, self.labels = ax.get_legend_handles_labels()
-        self.showPage(ax, 0)
 
-    def showPage(self, ax, page_num):
-        prev = Line2D([], [], marker = '<', linestyle = 'None', markersize = 6)
-        page = Line2D([], [], marker =  '', linestyle = 'None', markersize = 6)
-        nexy = Line2D([], [], marker = '>', linestyle = 'None', markersize = 6)
+        if len(self.handles) > 30:
+            self.showPage(ax, 0)
+            return
+        
+        properties = dict()
+        if len(self.handles) < 6:
+            properties = dict(fontsize = 'x-small')
+        else:
+            properties = dict(fontsize = 7, ncols = 2)
 
-        prev.set_label('Prev')
-        page.set_label('')
-        nexy.set_label('Next')
+        self.legend = ax.legend(self.handles, self.labels, **properties)
+        self.num_pages = 1
+        self.legend.paginated = False
+        self.legend.paginator = None
+        self.decorate_legend()
 
-        size = 15
-        line = size // 3
-        start = size * page_num
-        h_l = list(zip(self.handles, self.labels))
-        h_l = \
-            [(prev, 'Prev')] + h_l[start : start + line] + \
-            [(page, f'Page {1 + page_num}/{len(h_l) // size}')] + h_l[start + line : start + 2 * line] + \
-            [(nexy, 'Next')] + h_l[start + 2 * line : start + 3 * line]
-
-        assert len(h_l) == size + 3, 'Incorrect page size, tell Martin to fix this'
-
-        handles, labels = map(list, zip(*h_l))
-        self.legend = ax.legend(handles, labels, fontsize = 7, ncol = 3)
-        self.legend.paginator = self
-
+    def decorate_legend(self):
+        self.legend.set_draggable(True)
         lines, texts = self.legend.get_lines(), self.legend.get_texts()
-        texts[line + 1].set(
-            fontfamily = 'serif',
-            position = (-100, 0),
-            fontweight = 'semibold',
-        )
 
         for line, text in zip(lines, texts):
             line.set_picker(5)
             text.set_picker(5)
-            text.set_label(line.get_label())
+            text.set_label(text.get_text())
+
+    def showPage(self, ax, page_num):
+        empty = Line2D([], [], linestyle = 'None', marker = None, linewidth = 0)
+
+        size = 15
+        line_size = size // 3
+        start = size * page_num
+        self.num_pages = (len(self.handles) - 1) // size + 1
+
+        h_l = list(zip(self.handles, self.labels))
+        lines = [
+            [(empty, '◀     Prev')] + h_l[start : start + line_size],
+            [(empty, f'Page {1 + page_num}/{self.num_pages}')] + h_l[start + line_size : start + 2 * line_size],
+            [(empty, 'Next     ▶')] + h_l[start + 2 * line_size : start + 3 * line_size],
+        ]
+        lines = [line + [(empty, '')] * max(0, 6 - len(line)) for line in lines]
+
+        handles, labels = map(list, zip(*chain.from_iterable(lines)))
+        self.legend = ax.legend(handles, labels, fontsize = 7, ncol = 3, prop = {'family': 'DejaVu Sans', 'size': 7})
+        self.decorate_legend()
+
+        self.legend.paginated = True
+        self.legend.paginator = self
+
+        lines = self.legend.get_lines()
+        texts = self.legend.get_texts()
+        # longest_right = max(texts[x].get_window_extent() for x in texts[2 * (line_size + 1) + 1:])
+
+        print(f'Legend extent: {self.legend.get_tightbbox().x1}')
+
+        transform = texts[2 * (line_size + 1)].get_transform().inverted().transform
+        print(f'Transform extent: {transform((self.legend.get_tightbbox().x1 - 6, 0))}')
+
+        prev_id, page_id, next_id = 0, line_size + 1, 2 * (line_size + 1)
+
+        widest_prev = max(x.get_window_extent().x1 for x in texts[prev_id : page_id])
+        texts[prev_id].set(
+            fontweight = 'black',
+            label = 'Prev',
+            verticalalignment = 'bottom',
+            x = widest_prev / 2 - texts[prev_id].get_window_extent().x1,
+        )
+
+        widest_mid = max(x.get_window_extent().x1 for x in texts[page_id + 1 : next_id])
+        texts[page_id].set(
+            fontfamily = 'serif',
+            fontweight = 'semibold',
+            verticalalignment = 'bottom',
+            x = widest_mid / 2 - texts[page_id].get_window_extent().x1 / 2,
+        )
+
+        widest_next = max(x.get_window_extent().x1 for x in texts[2 * (line_size + 1) + 1 :])
+        texts[next_id].set(
+            verticalalignment = 'bottom',
+            fontweight = 'black',
+            label = 'Next',
+            x = widest_next / 2 - texts[next_id].get_window_extent().x1 / 2,
+        )
 
         return self.legend
 
 def generate_legend(experiments, axes):
-    gen_legend = None
-    if len(experiments) < 6:
-        gen_legend = lambda ax: ax.legend(fontsize = 'x-small')
-    elif len(experiments) < 30:
-        gen_legend = lambda ax: ax.legend(fontsize = 7, ncol = 2)
-    else:
-        gen_legend = lambda ax: PaginatedLegend(ax).legend
-
     for ax in axes:
-        legend = gen_legend(ax)
-        legend.set_draggable(True)
-
-        for line, text in zip(legend.get_lines(), legend.get_texts()):
-            line.set_picker(5)
-            text.set_picker(5)
-            text.set_label(line.get_label())
+        PaginatedLegend(ax)
 
 def generate_singular_legend(data, plot_stimuli, dpi):
     css, colors, _, markers = get_css(data)
