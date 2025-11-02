@@ -382,7 +382,6 @@ class PavlovianApp(QMainWindow):
             plot_alpha = args.plot_alpha and not AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
             plot_macknhall = args.plot_macknhall and AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
             dpi = self.dpi,
-            ticker_threshold = True,
             singular_legend = not self.show_legend
         )
 
@@ -410,8 +409,8 @@ class PavlovianApp(QMainWindow):
             self.refreshFigure()
             return
 
-        css = set.union(*[phase.cs() for group in phases.values() for phase in group])
-        self.alphasBox.refresh(css)
+        self.css = set.union(*[phase.cs() for group in phases.values() for phase in group])
+        self.alphasBox.refresh(self.css)
 
         self.numPhases = max(len(v) for v in phases.values())
         self.phaseNum = min(self.phaseNum, self.numPhases)
@@ -423,7 +422,6 @@ class PavlovianApp(QMainWindow):
             plot_alpha = args.plot_alpha and not AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
             plot_macknhall = args.plot_macknhall and AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
             dpi = self.dpi,
-            ticker_threshold = True,
             singular_legend = not self.show_legend,
         )
         for f in self.figures:
@@ -445,8 +443,7 @@ class PavlovianApp(QMainWindow):
                     line.set_alpha(0 if self.line_hidden[label] else 1)
 
             if ax.get_legend() is not None:
-                if ax.get_legend().get_title().get_text().startswith('Page'):
-                    print('Doing smething')
+                if hasattr(ax.get_legend(), 'paginator'):
                     ax.get_legend().paginator.showPage(ax, self.legend_page)
 
                 for line in ax.get_legend().get_lines():
@@ -487,9 +484,9 @@ class PavlovianApp(QMainWindow):
             case '':
                 return
             case 'Next':
-                self.legend_page += 1
+                self.legend_page = min(len(self.css), self.legend_page + 1)
             case 'Prev':
-                self.legend_page -= 1
+                self.legend_page = max(0, self.legend_page - 1)
             case _:
                 self.line_hidden[label] = not self.line_hidden[label]
 
