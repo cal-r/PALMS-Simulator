@@ -443,7 +443,9 @@ class PavlovianApp(QMainWindow):
                     line.set_alpha(0 if self.line_hidden[label] else 1)
 
             if ax.get_legend() is not None:
-                if hasattr(ax.get_legend(), 'paginator'):
+                if ax.get_legend().paginated:
+                    print(f'Limit: {ax.get_legend().paginator.num_pages - 1}')
+                    self.legend_page = max(0, min(self.legend_page, ax.get_legend().paginator.num_pages - 1))
                     ax.get_legend().paginator.showPage(ax, self.legend_page)
 
                 for line in ax.get_legend().get_lines():
@@ -484,9 +486,9 @@ class PavlovianApp(QMainWindow):
             case '':
                 return
             case 'Next':
-                self.legend_page = min(len(self.css), self.legend_page + 1)
+                self.legend_page += 1
             case 'Prev':
-                self.legend_page = max(0, self.legend_page - 1)
+                self.legend_page -= 1
             case _:
                 self.line_hidden[label] = not self.line_hidden[label]
 
