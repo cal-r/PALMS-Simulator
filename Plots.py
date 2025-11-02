@@ -246,14 +246,7 @@ class PaginatedLegend:
         self.legend.paginated = True
         self.legend.paginator = self
 
-        lines = self.legend.get_lines()
         texts = self.legend.get_texts()
-        # longest_right = max(texts[x].get_window_extent() for x in texts[2 * (line_size + 1) + 1:])
-
-        print(f'Legend extent: {self.legend.get_tightbbox().x1}')
-
-        transform = texts[2 * (line_size + 1)].get_transform().inverted().transform
-        print(f'Transform extent: {transform((self.legend.get_tightbbox().x1 - 6, 0))}')
 
         prev_id, page_id, next_id = 0, line_size + 1, 2 * (line_size + 1)
 

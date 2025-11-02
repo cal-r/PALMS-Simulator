@@ -8,6 +8,7 @@ import re
 class CoolTable(QWidget):
     def __init__(self, rows: int, cols: int, parent: None | QWidget = None):
         super().__init__(parent = parent)
+        self.parent = parent
 
         self.freeze = True
 
@@ -62,7 +63,7 @@ class CoolTable(QWidget):
             item.name = editor.text()
             self.setHeaderNames()
             editor.deleteLater()
-            self.parent().refreshExperiment()
+            self.parent.refreshExperiment()
 
         editor.editingFinished.connect(setHeader)
         editor.show()

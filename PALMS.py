@@ -444,7 +444,6 @@ class PavlovianApp(QMainWindow):
 
             if ax.get_legend() is not None:
                 if ax.get_legend().paginated:
-                    print(f'Limit: {ax.get_legend().paginator.num_pages - 1}')
                     self.legend_page = max(0, min(self.legend_page, ax.get_legend().paginator.num_pages - 1))
                     ax.get_legend().paginator.showPage(ax, self.legend_page)
 
