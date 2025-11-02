@@ -104,13 +104,18 @@ def generate_figures(
             caller = re.search(r'{.*}', key)
             caller = -1000 if caller is None else -len(caller.group())
 
-            priority = -len(cs)
-            if cs.startswith('q'):
-                priority = 0
-
+            prescript = re.sub(r'\^\d+', '', cs)
             superscript = max([int(x) for x in re.findall(r'\^(\d+)', cs)], default = 0)
 
-            return group, plus, caller, superscript, priority, cs
+            priority = -len(prescript)
+
+            if superscript:
+                priority = 0
+
+            if cs.startswith('q'):
+                priority = 1
+
+            return group, plus, caller, priority, prescript, superscript, cs
 
         sorted_exp = sorted(experiments, key = sort_key)
         for num, key in enumerate(sorted_exp):
