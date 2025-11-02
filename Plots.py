@@ -108,7 +108,9 @@ def generate_figures(
             if cs.startswith('q'):
                 priority = 0
 
-            return group, plus, caller, priority, cs
+            superscript = max([int(x) for x in re.findall(r'\^(\d+)', cs)], default = 0)
+
+            return group, plus, caller, superscript, priority, cs
 
         sorted_exp = sorted(experiments, key = sort_key)
         for num, key in enumerate(sorted_exp):
@@ -252,26 +254,27 @@ class PaginatedLegend:
 
         widest_prev = max(x.get_window_extent().x1 for x in texts[prev_id : page_id])
         texts[prev_id].set(
-            fontweight = 'black',
             label = 'Prev',
+            fontweight = 'black',
             verticalalignment = 'bottom',
-            x = widest_prev / 2 - texts[prev_id].get_window_extent().x1,
+            x = widest_prev / 2 - texts[prev_id].get_window_extent().x1 * (5/4),
         )
 
         widest_mid = max(x.get_window_extent().x1 for x in texts[page_id + 1 : next_id])
         texts[page_id].set(
+            label = '',
             fontfamily = 'serif',
             fontweight = 'semibold',
             verticalalignment = 'bottom',
-            x = widest_mid / 2 - texts[page_id].get_window_extent().x1 / 2,
+            x = widest_mid / 2 - texts[page_id].get_window_extent().x1 * (2/3),
         )
 
         widest_next = max(x.get_window_extent().x1 for x in texts[2 * (line_size + 1) + 1 :])
         texts[next_id].set(
+            label = 'Next',
             verticalalignment = 'bottom',
             fontweight = 'black',
-            label = 'Next',
-            x = widest_next / 2 - texts[next_id].get_window_extent().x1 / 2,
+            x = widest_next / 2 - texts[next_id].get_window_extent().x1 * (2/3),
         )
 
         return self.legend
@@ -281,7 +284,7 @@ def generate_legend(experiments, axes):
         PaginatedLegend(ax)
 
 def generate_singular_legend(data, plot_stimuli, dpi):
-    css, colors, _, markers = get_css(data)
+    css, colors, markers = get_css(data)
     fig = pyplot.figure(dpi = dpi)
     pyplot.axis('off')
     for exp in css:
