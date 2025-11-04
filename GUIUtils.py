@@ -641,8 +641,8 @@ class AlphasBox(QGroupBox):
     def refresh(self, css_or_values: set[str] | dict[tuple[str, str], float]):
         if type(css_or_values) is set:
             css = css_or_values
-            values: dict[tuple[str, str]] = dict()
-        else:
+            values: dict[tuple[str, str], float] = dict()
+        elif type(css_or_values) is dict:
             css = {cs for _, cs in css_or_values.keys()}
             values = css_or_values
 
