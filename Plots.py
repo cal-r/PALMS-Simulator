@@ -78,7 +78,7 @@ def generate_figures(
         plot_stimuli: None | list[str] = None,
         dpi: None | float = None,
         singular_legend: bool = False,
-        legend_locs: None | list[list[tuple[float, float]]],
+        legend_locs: None | list[list[tuple[float, float]]] = None,
     ) -> list[pyplot.Figure]:
     seaborn.set()
 
