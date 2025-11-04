@@ -78,6 +78,7 @@ def generate_figures(
         plot_stimuli: None | list[str] = None,
         dpi: None | float = None,
         singular_legend: bool = False,
+        legend_locs: None | list[list[tuple[float, float]]],
     ) -> list[pyplot.Figure]:
     seaborn.set()
 
@@ -184,8 +185,12 @@ def generate_figures(
             axes[1].yaxis.tick_right()
 
         if not singular_legend:
-            for ax in axes:
-                PaginatedLegend(ax)
+            for ax_num, ax in enumerate(axes):
+                loc = None
+                if legend_locs:
+                    loc = legend_locs[phase_num - 1][ax_num]
+
+                PaginatedLegend(ax, loc = loc)
 
         if phases is not None:
             title = titleify(title, phases, phase_num)
@@ -201,8 +206,9 @@ def generate_figures(
     return figures
 
 class PaginatedLegend:
-    def __init__(self, ax):
+    def __init__(self, ax, loc = None):
         self.page = 0
+        self.loc = loc
 
         self.handles, self.labels = ax.get_legend_handles_labels()
 
@@ -216,14 +222,19 @@ class PaginatedLegend:
         else:
             properties = dict(fontsize = 7, ncols = 2)
 
-        self.legend = ax.legend(self.handles, self.labels, **properties)
+        self.legend = ax.legend(
+            self.handles,
+            self.labels,
+            loc = self.loc or 'best',
+            **properties,
+        )
         self.num_pages = 1
         self.legend.paginated = False
         self.legend.paginator = None
         self.decorate_legend()
 
     def decorate_legend(self):
-        self.legend.set_draggable(True, use_blit = True)
+        self.legend.set_draggable(True, use_blit = True, update = 'loc')
         lines, texts = self.legend.get_lines(), self.legend.get_texts()
 
         for line, text in zip(lines, texts):
@@ -248,7 +259,14 @@ class PaginatedLegend:
         lines = [line + [(empty, '')] * max(0, 6 - len(line)) for line in lines]
 
         handles, labels = map(list, zip(*chain.from_iterable(lines)))
-        self.legend = ax.legend(handles, labels, fontsize = 7, ncol = 3, prop = {'family': 'DejaVu Sans', 'size': 7})
+        self.legend = ax.legend(
+            handles,
+            labels,
+            loc = self.loc or 'best',
+            fontsize = 7,
+            ncol = 3,
+            prop = {'family': 'DejaVu Sans', 'size': 7}
+        ),
         self.decorate_legend()
 
         self.legend.paginated = True
