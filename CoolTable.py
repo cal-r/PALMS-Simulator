@@ -3,6 +3,9 @@ from __future__ import annotations
 from PySide6.QtCore import Qt, QRect
 from PySide6.QtWidgets import *
 
+# We do this so that mypy stops complaining
+from PySide6.QtWidgets import QGridLayout, QPushButton, QSizePolicy, QTableWidget, QWidget
+
 import re
 
 class CoolTable(QWidget):

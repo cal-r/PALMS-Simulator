@@ -17,6 +17,9 @@ from pathlib import Path
 from AdaptiveType import AdaptiveType
 from Environment import StimulusHistory
 
+# Putting this here so mypy stops complaining.
+from PySide6.QtWidgets import QFormLayout, QGroupBox, QPushButton, QWidget
+
 class PhaseBox(QGroupBox):
     def __init__(self, parent = None, screenshot_ready = False):
         super().__init__(parent)
@@ -638,7 +641,7 @@ class AlphasBox(QGroupBox):
     def refresh(self, css_or_values: set[str] | dict[tuple[str, str], float]):
         if type(css_or_values) is set:
             css = css_or_values
-            values = dict()
+            values: dict[tuple[str, str]] = dict()
         else:
             css = {cs for _, cs in css_or_values.keys()}
             values = css_or_values

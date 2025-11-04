@@ -54,7 +54,7 @@ def titleify(title: None | str, phases: dict[str, list[Phase]], phase_num: int) 
     
     return ''
 
-def get_css(data: list[dict[str, StimulusHistory]]) -> tuple[list[str], dict[str, Color], dict[str, Color], dict[str, str]]:
+def get_css(data: list[dict[str, StimulusHistory]]) -> tuple[list[str], dict[str, Color], dict[str, str]]:
     css = sorted(set(chain.from_iterable([x.keys() for x in data])), key = lambda x: (len(x), x))
 
     color_list = list(islice(cycle(colorcet.glasbey), len(css)))
@@ -146,7 +146,7 @@ def generate_figures(
                 ax.plot(hist.alpha, label='α: '+str(key), **plot_options) # type: ignore
 
             if not hist.compound[0] and plot_macknhall:
-                common_options = dict(markersize = 6, alpha = 1)
+                common_options: dict[str, Any] = dict(markersize = 6, alpha = 1)
                 ax.plot(hist.alpha_mack, label='Mack: ' + str(key), color = colors[key], marker='$M$', **common_options)
                 ax.plot(hist.alpha_hall, label='Hall: ' + str(key), color = colors[key], marker='$H$', **common_options)
 

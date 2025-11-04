@@ -28,6 +28,8 @@ from matplotlib import pyplot
 
 from GUIUtils import *
 
+from PySide6.QtWidgets import QLabel, QLineEdit, QMainWindow, QMessageBox, QWidget
+
 pyInstalled = False
 try:
     import pyi_splash
@@ -45,10 +47,10 @@ class PavlovianApp(QMainWindow):
     phaseNum: int
     numPhases: int
 
-    params: dict[str, PavlovianApp.DualLabel]
+    params: dict[str, 'PavlovianApp.DualLabel']
 
     per_cs_box: dict[str, QWidget]
-    per_cs_param: dict[str, dict[str, PavlovianApp.DualLabel]]
+    per_cs_param: dict[str, dict[str, 'PavlovianApp.DualLabel']]
     enabled_params: set[str]
 
     configural_cues: bool

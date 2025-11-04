@@ -3,7 +3,7 @@ from __future__ import annotations
 import random
 import re
 from dataclasses import dataclass
-from typing import get_type_hints, get_args
+from typing import Any, get_type_hints, get_args
 from types import UnionType
 
 from Group import Group
