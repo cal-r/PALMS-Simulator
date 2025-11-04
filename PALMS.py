@@ -396,6 +396,11 @@ class PavlovianApp(QMainWindow):
 
         self.tableWidget.updateSizes()
 
+        # Get the locations of the legends of all axes of all figures.
+        legend_locs = [[ax.get_legend()._loc for ax in fig.get_axes()] for fig in self.figures]
+        if not legend_locs or not any(legend_locs):
+            legend_locs = None
+
         for fig in self.figures:
             pyplot.close(fig)
 
@@ -415,11 +420,6 @@ class PavlovianApp(QMainWindow):
         self.numPhases = max(len(v) for v in phases.values())
         self.phaseNum = min(self.phaseNum, self.numPhases)
         self.phases = phases
-
-        # Get the locations of the legends of all axes of all figures.
-        legend_locs = [[ax.get_legend()._loc for ax in fig.get_axes()] for fig in self.figures]
-        if not legend_locs or not any(legend_locs):
-            legend_locs = None
 
         self.figures = generate_figures(
             strengths,
