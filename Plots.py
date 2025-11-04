@@ -187,7 +187,7 @@ def generate_figures(
         if not singular_legend:
             for ax_num, ax in enumerate(axes):
                 loc = None
-                if legend_locs:
+                if legend_locs and legend_locs[phase_num - 1]:
                     loc = legend_locs[phase_num - 1][ax_num]
 
                 PaginatedLegend(ax, loc = loc)
@@ -233,15 +233,6 @@ class PaginatedLegend:
         self.legend.paginator = None
         self.decorate_legend()
 
-    def decorate_legend(self):
-        self.legend.set_draggable(True, use_blit = True, update = 'loc')
-        lines, texts = self.legend.get_lines(), self.legend.get_texts()
-
-        for line, text in zip(lines, texts):
-            line.set_picker(5)
-            text.set_picker(5)
-            text.set_label(text.get_text())
-
     def showPage(self, ax, page_num):
         empty = Line2D([], [], linestyle = 'None', marker = None, linewidth = 0)
 
@@ -266,7 +257,7 @@ class PaginatedLegend:
             fontsize = 7,
             ncol = 3,
             prop = {'family': 'DejaVu Sans', 'size': 7}
-        ),
+        )
         self.decorate_legend()
 
         self.legend.paginated = True
@@ -302,6 +293,16 @@ class PaginatedLegend:
         )
 
         return self.legend
+
+    def decorate_legend(self):
+        self.legend.set_draggable(True, use_blit = True, update = 'loc')
+        lines, texts = self.legend.get_lines(), self.legend.get_texts()
+
+        for line, text in zip(lines, texts):
+            line.set_picker(5)
+            text.set_picker(5)
+            text.set_label(text.get_text())
+
 
 def generate_singular_legend(data, plot_stimuli, dpi):
     css, colors, markers = get_css(data)
