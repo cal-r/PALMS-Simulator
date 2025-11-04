@@ -416,6 +416,11 @@ class PavlovianApp(QMainWindow):
         self.phaseNum = min(self.phaseNum, self.numPhases)
         self.phases = phases
 
+        # Get the locations of the legends of all axes of all figures.
+        legend_locs = [[ax.get_legend()._loc for ax in fig.get_axes()] for fig in self.figures]
+        if not legend_locs or not any(legend_locs):
+            legend_locs = None
+
         self.figures = generate_figures(
             strengths,
             plot_V = not args.plot_alpha and not args.plot_macknhall,
@@ -423,6 +428,7 @@ class PavlovianApp(QMainWindow):
             plot_macknhall = args.plot_macknhall and AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
             dpi = self.dpi,
             singular_legend = not self.show_legend,
+            legend_locs = legend_locs,
         )
         for f in self.figures:
             f.set_canvas(self.plotCanvas)
