@@ -184,7 +184,8 @@ def generate_figures(
             axes[1].yaxis.tick_right()
 
         if not singular_legend:
-            generate_legend(experiments, axes)
+            for ax in axes:
+                PaginatedLegend(ax)
 
         if phases is not None:
             title = titleify(title, phases, phase_num)
@@ -222,7 +223,7 @@ class PaginatedLegend:
         self.decorate_legend()
 
     def decorate_legend(self):
-        self.legend.set_draggable(True)
+        self.legend.set_draggable(True, use_blit = True)
         lines, texts = self.legend.get_lines(), self.legend.get_texts()
 
         for line, text in zip(lines, texts):
@@ -283,10 +284,6 @@ class PaginatedLegend:
         )
 
         return self.legend
-
-def generate_legend(experiments, axes):
-    for ax in axes:
-        PaginatedLegend(ax)
 
 def generate_singular_legend(data, plot_stimuli, dpi):
     css, colors, markers = get_css(data)
