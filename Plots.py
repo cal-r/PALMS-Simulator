@@ -295,7 +295,7 @@ class PaginatedLegend:
         return self.legend
 
     def decorate_legend(self):
-        self.legend.set_draggable(True, use_blit = True, update = 'loc')
+        self.legend.set_draggable(True, use_blit = False, update = 'loc')
         lines, texts = self.legend.get_lines(), self.legend.get_texts()
 
         for line, text in zip(lines, texts):
