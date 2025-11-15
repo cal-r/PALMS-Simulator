@@ -6,6 +6,7 @@ from typing import Any, ClassVar
 from csv import DictWriter
 
 import re
+import operator
 
 class Stimulus:
     name: str
@@ -66,9 +67,9 @@ class Stimulus:
         return str(self.assoc)
 
     def join(self, other: Stimulus, op) -> Stimulus:
-        ret: dict[str, Any] = dict(
-            name = ''.join(sorted(set(self.splitName() + other.splitName())))
-        )
+        ret: dict[str, Any] = dict(name = self.name)
+        if self.name != other.name:
+            ret[name] = ''.join(sorted(set(self.splitName() + other.splitName())))
 
         for prop in self.__dict__.keys():
             if prop == 'name':
@@ -94,7 +95,7 @@ class Stimulus:
         return Stimulus(**ret)
 
     def __add__(self, other: Stimulus) -> Stimulus:
-        return self.join(other, lambda a, b: a + b)
+        return self.join(other, operator.add)
 
     def __truediv__(self, quot: int) -> Stimulus:
         ret: dict[str, Any] = dict(name = self.name)
@@ -232,7 +233,7 @@ class Environment:
         if key in self.s:
             return self.s[key]
 
-        return reduce(lambda a, b: a + b, [self.s[k] for k in self.list_cs(key)])
+        return reduce(operator.add, [self.s[k] for k in self.list_cs(key)])
 
     def filter_keys(self, keys: list[str]) -> list[str]:
         return [k for k in keys if all(t in self.s for t in self.list_cs(k))]
@@ -255,7 +256,7 @@ class Environment:
 
         # We use reduce rather than sum since we don't have a zero value.
         # Python reduce is the equivalent of Haskell foldl1'.
-        return reduce(lambda a, b: a + b, val_quot)
+        return reduce(operator.add, val_quot)
 
     def assocs(self) -> dict[str, float]:
         return {k: v.assoc for k, v in self.s.items()}

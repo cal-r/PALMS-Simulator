@@ -9,6 +9,12 @@ from types import UnionType
 from Group import Group
 from Environment import Stimulus, Environment, StimulusHistory
 
+from concurrent.futures import ProcessPoolExecutor
+from functools import partial
+import os
+
+import logging
+
 class Phase:
     # elems contains a list of ([CS], US) of an experiment.
     elems: list[tuple[str, str]]
@@ -176,6 +182,10 @@ class Experiment:
 
         return g
 
+    def run_single_trial(self, g: Group, phase: Phase):
+        strength_hist = g.runPhase(phase.elems, phase.beta, phase.lamda)
+        return strength_hist, g.s
+
     def run_group_experiments(self, g: Group, num_trials: int) -> list[list[Environment]]:
         results = []
 
@@ -184,24 +194,29 @@ class Experiment:
                 strength_hist = g.runPhase(phase.elems, phase.beta, phase.lamda)
                 results.append(strength_hist)
             else:
-                initial_strengths = g.s.copy()
                 final_strengths = []
                 hist = []
 
-                for trial in range(num_trials):
-                    random.shuffle(phase.elems)
+                logging.info('Randoming phases')
+                random_phases = [phase for _ in range(num_trials)]
+                for p in random_phases:
+                    p.elems = random.sample(p.elems, len(p.elems))
 
-                    g.s = initial_strengths.copy()
-                    strength_hist = g.runPhase(phase.elems, phase.beta, phase.lamda)
-                    hist.append(strength_hist)
-                    final_strengths.append(g.s.copy())
+                max_workers = os.process_cpu_count()
+                logging.info(f'Running {len(random_phases)} trials with {max_workers} workers')
+                with ProcessPoolExecutor(max_workers = max_workers) as executor:
+                    hist, final_strengths = list(zip(*executor.map(partial(self.run_single_trial, g), random_phases)))
 
+                logging.info(f'Appending results')
                 results.append([
                     Environment.avg([h[x] for h in hist if x < len(h)])
                     for x in range(max(len(h) for h in hist))
                 ])
 
+                logging.info(f'Averaging environment')
                 g.s = Environment.avg(final_strengths)
+
+                logging.info(f'Done!')
 
         return results
 
