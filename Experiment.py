@@ -182,9 +182,10 @@ class Experiment:
 
         return g
 
-    def run_single_trial(self, g: Group, phase: Phase):
+    def run_random_trial(self, g: Group, phase: Phase):
+        random.shuffle(phase.elems)
         strength_hist = g.runPhase(phase.elems, phase.beta, phase.lamda)
-        return strength_hist, g.s
+        return strength_hist, g.s, os.getpid()
 
     def run_group_experiments(self, g: Group, num_trials: int) -> list[list[Environment]]:
         results = []
@@ -197,16 +198,13 @@ class Experiment:
                 final_strengths = []
                 hist = []
 
-                logging.info('Randoming phases')
-                random_phases = [phase for _ in range(num_trials)]
-                for p in random_phases:
-                    p.elems = random.sample(p.elems, len(p.elems))
-
                 max_workers = os.process_cpu_count()
-                logging.info(f'Running {len(random_phases)} trials with {max_workers} workers')
+                logging.info(f'Running {num_trials} trials with {max_workers} workers')
                 with ProcessPoolExecutor(max_workers = max_workers) as executor:
-                    hist, final_strengths = list(zip(*executor.map(partial(self.run_single_trial, g), random_phases)))
+                    futures = [executor.submit(self.run_random_trial, g, phase) for _ in range(num_trials)]
+                    hist, final_strengths, pids = list(zip(*[f.result() for f in futures]))
 
+                logging.info(f'There were {len(set(pids))} different pids')
                 logging.info(f'Appending results')
                 results.append([
                     Environment.avg([h[x] for h in hist if x < len(h)])
