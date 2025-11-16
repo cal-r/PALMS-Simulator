@@ -30,14 +30,6 @@ from GUIUtils import *
 
 from PySide6.QtWidgets import QLabel, QLineEdit, QMainWindow, QMessageBox, QWidget
 
-pyInstalled = False
-try:
-    import pyi_splash
-    pyi_splash.close()
-    pyInstalled = True
-except:
-    pass
-
 class PavlovianApp(QMainWindow):
     adaptive_types: list[str]
     current_adaptive_type: str
@@ -571,17 +563,12 @@ def parse_args():
     gui_parser.add_argument('--verbose', '-v', action = 'store_true', help = 'Verbose logging.')
     gui_parser.add_argument('load_file', nargs = '?', help = 'File to load initially')
 
-    # MacOS' spawn calls this arg when using multiprocessing.
-    gui_parser.add_argument("--multiprocessing-fork", nargs="*")
-    cli_parser.add_argument("--multiprocessing-fork", nargs="*")
-
     if len(sys.argv) > 1 and sys.argv[1] in ['-h', '--help']:
         print(parser.format_help())
 
     return gui_parser.parse_args()
 
 def logScreenInfo(app):
-    logging.info(f'Is PyInstaller? {pyInstalled}')
     logging.info(f'Logical DPI: {app.primaryScreen().logicalDotsPerInch()}.')
     logging.info(f'Physical DPI: {app.primaryScreen().physicalDotsPerInch()}.')
     logging.info(f'Device pixel ratio: {app.primaryScreen().devicePixelRatio()}.')
@@ -630,6 +617,15 @@ def main():
     sys.exit(code)
 
 if __name__ == '__main__':
+    # Handle spawn processes fine (damn you Tim Cook).
     import multiprocessing
     multiprocessing.freeze_support()
+
+    # Close the splash screen.
+    try:
+        import pyi_splash
+        pyi_splash.close()
+    except:
+        pass
+
     main()
