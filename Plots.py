@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import colorcet
-import random
 import re
 import math
 import seaborn
@@ -12,15 +11,11 @@ matplotlib.use('QtAgg')
 
 from matplotlib import pyplot
 from Environment import StimulusHistory
-from matplotlib.ticker import MaxNLocator, IndexLocator, LinearLocator
-from matplotlib.ticker import FuncFormatter
-from matplotlib.axes import Axes
+from Experiment import Phase
+from matplotlib.ticker import MaxNLocator, FuncFormatter
+from matplotlib.lines import Line2D
 from itertools import chain
 from typing import Any, TypeAlias
-
-from Experiment import Phase
-
-from matplotlib.lines import Line2D
 
 Color: TypeAlias = tuple[float, float, float]
 

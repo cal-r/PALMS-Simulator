@@ -15,6 +15,7 @@ import Simulator
 from argparse import ArgumentParser
 from collections import defaultdict
 from itertools import zip_longest
+from matplotlib import pyplot
 from pathlib import Path
 from PySide6.QtCore import QTimer, Qt, QSize
 from PySide6.QtGui import QFont, QPixmap, QGuiApplication
@@ -25,10 +26,6 @@ from Plots import generate_figures, save_plots
 from Environment import StimulusHistory, Stimulus
 from AdaptiveType import AdaptiveType
 from CoolTable import CoolTable
-
-import matplotlib
-from matplotlib import pyplot
-
 from GUIUtils import *
 
 from PySide6.QtWidgets import QLabel, QLineEdit, QMainWindow, QMessageBox, QWidget
