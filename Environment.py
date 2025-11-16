@@ -70,7 +70,7 @@ class Stimulus:
     def __add__(self, other: Stimulus) -> Stimulus:
         ret: dict[str, Any] = dict(name = self.name)
         if self.name != other.name:
-            ret[name] = ''.join(sorted(set(self.splitName() + other.splitName())))
+            ret['name'] = ''.join(sorted(set(self.splitName() + other.splitName())))
 
         for prop in self.__dict__.keys():
             if prop == 'name':
