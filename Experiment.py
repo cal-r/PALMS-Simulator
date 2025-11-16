@@ -226,7 +226,10 @@ class Experiment:
                 final_strengths = []
                 hist = []
 
-                max_workers = min(os.process_cpu_count(), num_trials)
+                if hasattr(os, 'process_cpu_count'):
+                    max_workers = min(os.process_cpu_count(), num_trials)
+                else:
+                    max_workers = min(os.cpu_count(), num_trials)
 
                 clock = Clock()
                 print(f'[{0:3d}]\tRunning {num_trials} trials with {max_workers} workers')
