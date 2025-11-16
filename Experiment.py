@@ -195,10 +195,25 @@ class Experiment:
 
         return g
 
-    def run_random_trial(self, g: Group, phase: Phase):
-        random.shuffle(phase.elems)
-        strength_hist = g.runPhase(phase.elems, phase.beta, phase.lamda)
-        return strength_hist, g.s, os.getpid()
+    def run_random_trials(self, g: Group, phase: Phase, trials: int, total_trials: int):
+        initial_strengths = g.s.copy()
+
+        hists = []
+        final_strengths = []
+        for t in range(trials):
+            random.shuffle(phase.elems)
+
+            g.s = initial_strengths.copy()
+            hists.append(g.runPhase(phase.elems, phase.beta, phase.lamda))
+            final_strengths.append(g.s)
+
+        avg_hists = [
+            Environment.avg([h[x] for h in hists if x < len(h)], total_trials)
+            for x in range(max(len(h) for h in hists))
+        ]
+        avg_strengths = Environment.avg(final_strengths, total_trials)
+
+        return avg_hists, avg_strengths
 
     def run_group_experiments(self, g: Group, num_trials: int) -> list[list[Environment]]:
         results = []
@@ -211,25 +226,26 @@ class Experiment:
                 final_strengths = []
                 hist = []
 
-                max_workers = os.process_cpu_count()
+                max_workers = min(os.process_cpu_count(), num_trials)
 
                 clock = Clock()
                 print(f'[{0:3d}]\tRunning {num_trials} trials with {max_workers} workers')
                 with ProcessPoolExecutor(max_workers = max_workers) as executor:
-                    futures = [executor.submit(self.run_random_trial, g, phase) for _ in range(num_trials)]
-                    hist, final_strengths, pids = list(zip(*[f.result() for f in futures]))
+                    if num_trials % max_workers != 0:
+                        raise RuntimeError(f'Uneven amount of trials not implemented; ensure num_trials is a multiple of {max_workers}')
 
-                if len(set(pids)) != max_workers:
-                    logging.warn(f'Warning: {max_workers} workers but {len(set(pids))} PIDs')
+                    trials_per_worker = num_trials // max_workers
+                    futures = [executor.submit(self.run_random_trials, g, phase, trials_per_worker, num_trials) for _ in range(max_workers)]
+                    hist, final_strengths = list(zip(*[f.result() for f in futures]))
 
                 print(f'[{clock.click():3d}]\tAppending results')
                 results.append([
-                    Environment.avg([h[x] for h in hist if x < len(h)])
+                    Environment.summ([h[x] for h in hist if x < len(h)])
                     for x in range(max(len(h) for h in hist))
                 ])
 
                 print(f'[{clock.click():3d}]\tAveraging environment')
-                g.s = Environment.avg(final_strengths)
+                g.s = Environment.summ(final_strengths)
 
                 print(f'[{clock.click():3d}]\tDone!')
 
