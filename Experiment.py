@@ -195,7 +195,7 @@ class Experiment:
 
         return g
 
-    def run_random_trials(self, g: Group, phase: Phase, trials: int, total_trials: int):
+    def run_random_trials(self, g: Group, phase: Phase, trials: int, total_trials: int) -> tuple[list[Environment], Environment]:
         initial_strengths = g.s.copy()
 
         hists = []
@@ -223,23 +223,15 @@ class Experiment:
                 strength_hist = g.runPhase(phase.elems, phase.beta, phase.lamda)
                 results.append(strength_hist)
             else:
-                final_strengths = []
-                hist = []
-
-                if hasattr(os, 'process_cpu_count'):
-                    max_workers = min(os.process_cpu_count(), num_trials)
-                else:
-                    max_workers = min(os.cpu_count(), num_trials)
+                cpu_count = getattr(os, 'process_cpu_count', os.cpu_count)() or 1
+                max_workers = min(cpu_count, num_trials)
 
                 clock = Clock()
                 print(f'[{0:3d}]\tRunning {num_trials} trials with {max_workers} workers')
                 with ProcessPoolExecutor(max_workers = max_workers) as executor:
                     trials_per_worker = lambda t: num_trials // max_workers + (1 if t < num_trials % max_workers else 0)
                     futures = [executor.submit(self.run_random_trials, g, phase, trials_per_worker(t), num_trials) for t in range(max_workers)]
-                    hist, final_strengths = list(zip(*[f.result() for f in futures]))
-
-                    sum_trials = sum(trials_per_worker(x) for x in range(max_workers))
-                    assert sum_trials == num_trials
+                    hist, final_strengths = (list(x) for x in zip(*[f.result() for f in futures]))
 
                 print(f'[{clock.click():3d}]\tAppending results')
                 results.append([
