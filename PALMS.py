@@ -571,6 +571,10 @@ def parse_args():
     gui_parser.add_argument('--verbose', '-v', action = 'store_true', help = 'Verbose logging.')
     gui_parser.add_argument('load_file', nargs = '?', help = 'File to load initially')
 
+    # MacOS' spawn calls this arg when using multiprocessing.
+    gui_parser.add_argument("--multiprocessing-fork", nargs="*")
+    cli_parser.add_argument("--multiprocessing-fork", nargs="*")
+
     if len(sys.argv) > 1 and sys.argv[1] in ['-h', '--help']:
         print(parser.format_help())
 
@@ -626,4 +630,6 @@ def main():
     sys.exit(code)
 
 if __name__ == '__main__':
+    import multiprocessing
+    multiprocessing.freeze_support()
     main()
