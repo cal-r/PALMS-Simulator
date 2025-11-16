@@ -66,7 +66,8 @@ class Stimulus:
     def __repr__(self) -> str:
         return str(self.assoc)
 
-    def join(self, other: Stimulus, op) -> Stimulus:
+
+    def __add__(self, other: Stimulus) -> Stimulus:
         ret: dict[str, Any] = dict(name = self.name)
         if self.name != other.name:
             ret[name] = ''.join(sorted(set(self.splitName() + other.splitName())))
@@ -81,21 +82,18 @@ class Stimulus:
             if this is None and that is None:
                 ret[prop] = None
             elif type(this) is float or type(this) is int:
-                ret[prop] = op(this, that)
+                ret[prop] = this + that
             elif type(this) is deque:
                 size = max(len(this), len(that))
                 this = deque([0] * (size - len(this))) + this
                 that = deque([0] * (size - len(that))) + that
-                ret[prop] = deque([op(a, b) for a, b in zip(this, that)])
+                ret[prop] = deque([a + b for a, b in zip(this, that)])
             elif prop == 'compound':
                 ret[prop] = this or that or self.name != other.name
             else:
                 raise ValueError(f'Unknown type {type(this)} for {prop}, which is equal to {this} and {that}')
 
         return Stimulus(**ret)
-
-    def __add__(self, other: Stimulus) -> Stimulus:
-        return self.join(other, operator.add)
 
     def __truediv__(self, quot: int) -> Stimulus:
         ret: dict[str, Any] = dict(name = self.name)
