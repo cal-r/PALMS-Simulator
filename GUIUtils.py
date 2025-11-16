@@ -18,6 +18,8 @@ from Environment import StimulusHistory
 # Putting this here so mypy stops complaining.
 from PySide6.QtWidgets import QFormLayout, QGroupBox, QPushButton, QWidget
 
+from PySide6.QtCore import QTimer, Qt, QSize
+
 class PhaseBox(QGroupBox):
     def __init__(self, parent = None, screenshot_ready = False):
         super().__init__(parent)
@@ -360,13 +362,7 @@ class ActionButtons(QWidget):
                 file.write(line + '\n')
 
     def togglePlotAlpha(self):
-        if self.parent.plot_alpha:
-            self.parent.plot_alpha = False
-            # self.parent.resize(int(self.parent.width() - self.parent.plotCanvas.width() / 0.5), self.parent.height())
-        else:
-            self.parent.plot_alpha = True
-            # self.parent.resize(int(self.parent.width() + self.parent.plotCanvas.width() * 0.5), self.parent.height())
-
+        self.parent.plot_alpha = not self.parent.plot_alpha
         self.parent.refreshExperiment()
 
     def toggleRand(self):
@@ -386,7 +382,7 @@ class ActionButtons(QWidget):
 
     def toggleAlphasBox(self):
         if not self.parent.alphasBox.isVisible():
-            self.parent.resize(self.parent.width() + self.parent.alphasBox.width(), self.parent.height())
+            # self.parent.resize(self.parent.width() + self.parent.alphasBox.width(), self.parent.height())
             self.parent.alphasBox.setVisible(True)
 
             for perc, form in self.parent.per_cs_param.items():
@@ -395,11 +391,19 @@ class ActionButtons(QWidget):
                     local_val = global_val ** len(cs.strip('()'))
                     pair.setText(f'{local_val:.2g}', set_modified = False)
         else:
-            self.parent.resize(self.parent.width() - self.parent.alphasBox.width(), self.parent.height())
+            # self.parent.resize(self.parent.width() - self.parent.alphasBox.width(), self.parent.height())
             self.parent.alphasBox.setVisible(False)
             self.parent.refreshExperiment()
 
         self.parent.enableParams()
+
+        QTimer.singleShot(100, self.debugViewports)
+
+    def debugViewports(self):
+        widget = next(iter(self.parent.per_cs_box.values()))
+        while widget:
+            print(f'{widget.__class__.__name__} {widget.width()} {widget.minimumWidth()} {widget.sizePolicy().horizontalPolicy()}')
+            widget = widget.parentWidget()
 
     def toggleConfiguralCues(self):
         self.parent.configural_cues = not self.parent.configural_cues
@@ -599,14 +603,27 @@ class ParametersGroupBox(QGroupBox):
                 self.params[key].setText(self.params['alpha'].box.text(), set_modified = True)
 
 class AlphasBox(QGroupBox):
+    class VerticalScrollArea(QScrollArea):
+        def minimumSizeHint(self):
+            hint = super().minimumSizeHint()
+            new = QSize(500, hint.height())
+            print(f'{hint} -> {new}')
+            return hint
+
+        def sizeHint(self):
+            return self.minimumSizeHint()
+
     def __init__(self, parent):
         super().__init__('Per-CS', parent = parent)
         self.parent = parent
         self.per_cs_param = parent.per_cs_param
 
-        scrollArea = QWidget()
-        layout = QHBoxLayout(scrollArea)
-        layout.setContentsMargins(5, 5, 5, 5)
+        box = QWidget()
+        # box.setContentsMargins(0, 0, 0, 0)
+        # box.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        box.setStyleSheet("border: 2px solid green;")
+
+        layout = QHBoxLayout(box)
         for perc in parent.per_cs_param.keys():
             boxLayout = QFormLayout()
             boxLayout.setContentsMargins(0, 0, 0, 0)
@@ -619,8 +636,24 @@ class AlphasBox(QGroupBox):
             parent.per_cs_box[perc].setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Preferred)
             layout.addWidget(parent.per_cs_box[perc])
 
+        scrollArea = self.VerticalScrollArea()
+        # scrollArea.setWidget(box)
+        scrollArea.setContentsMargins(0, 0, 0, 0)
+        scrollArea.viewport().setContentsMargins(0, 0, 0, 0)
+        # scrollArea.setFrameShape(QFrame.NoFrame)
+        # scrollArea.setLineWidth(0)
+        scrollArea.setWidgetResizable(True)
+        scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scrollArea.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        scrollArea.viewport().setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+
+        scrollArea.setStyleSheet("border: 2px solid blue;")
+        scrollArea.viewport().setStyleSheet("border: 2px solid yellow;")
+
         mainLayout = QVBoxLayout(self)
-        mainLayout.addWidget(scrollArea)
+        mainLayout.addWidget(box)
+        # mainLayout.setContentsMargins(0, 0, 0, 0)
+        # mainLayout.setSpacing(0)
 
         self.setLayout(mainLayout)
         self.setVisible(False)
