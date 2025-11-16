@@ -6,6 +6,7 @@ from typing import Any, ClassVar
 from csv import DictWriter
 
 import re
+import operator
 
 class Stimulus:
     name: str
@@ -65,10 +66,11 @@ class Stimulus:
     def __repr__(self) -> str:
         return str(self.assoc)
 
-    def join(self, other: Stimulus, op) -> Stimulus:
-        ret: dict[str, Any] = dict(
-            name = ''.join(sorted(set(self.splitName() + other.splitName())))
-        )
+
+    def __add__(self, other: Stimulus) -> Stimulus:
+        ret: dict[str, Any] = dict(name = self.name)
+        if self.name != other.name:
+            ret['name'] = ''.join(sorted(set(self.splitName() + other.splitName())))
 
         for prop in self.__dict__.keys():
             if prop == 'name':
@@ -80,21 +82,18 @@ class Stimulus:
             if this is None and that is None:
                 ret[prop] = None
             elif type(this) is float or type(this) is int:
-                ret[prop] = op(this, that)
+                ret[prop] = this + that
             elif type(this) is deque:
                 size = max(len(this), len(that))
                 this = deque([0] * (size - len(this))) + this
                 that = deque([0] * (size - len(that))) + that
-                ret[prop] = deque([op(a, b) for a, b in zip(this, that)])
+                ret[prop] = deque([a + b for a, b in zip(this, that)])
             elif prop == 'compound':
                 ret[prop] = this or that or self.name != other.name
             else:
                 raise ValueError(f'Unknown type {type(this)} for {prop}, which is equal to {this} and {that}')
 
         return Stimulus(**ret)
-
-    def __add__(self, other: Stimulus) -> Stimulus:
-        return self.join(other, lambda a, b: a + b)
 
     def __truediv__(self, quot: int) -> Stimulus:
         ret: dict[str, Any] = dict(name = self.name)
@@ -232,7 +231,7 @@ class Environment:
         if key in self.s:
             return self.s[key]
 
-        return reduce(lambda a, b: a + b, [self.s[k] for k in self.list_cs(key)])
+        return reduce(operator.add, [self.s[k] for k in self.list_cs(key)])
 
     def filter_keys(self, keys: list[str]) -> list[str]:
         return [k for k in keys if all(t in self.s for t in self.list_cs(k))]
@@ -247,15 +246,22 @@ class Environment:
     def copy(self) -> Environment:
         return Environment({k: v.copy() for k, v in self.s.items()})
 
+    # Convenience function: sum all elements of val.
     @staticmethod
-    def avg(val: list[Environment]) -> Environment:
+    def summ(val: list[Environment]) -> Enviroment:
+        return sum(val[1:], val[0])
+
+    @staticmethod
+    def avg(val: list[Environment], total_elem: None | int = None) -> Environment:
+        if total_elem is None:
+            total_elem = len(val)
+
         # We average doing `avg(X) = sum(X / n)` rather than `avg(X) = sum(X) / n`
         # since assoc values could be truncated on summation.
-        val_quot = [x / len(val) for x in val]
+        val_quot = [x / total_elem for x in val]
 
-        # We use reduce rather than sum since we don't have a zero value.
-        # Python reduce is the equivalent of Haskell foldl1'.
-        return reduce(lambda a, b: a + b, val_quot)
+        # Environment is a semigroup, but not a monoid.
+        return sum(val_quot[1:], val_quot[0])
 
     def assocs(self) -> dict[str, float]:
         return {k: v.assoc for k, v in self.s.items()}
