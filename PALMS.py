@@ -162,6 +162,8 @@ class PavlovianApp(QMainWindow):
 
         self.resize(windowSize)
 
+        QTimer.singleShot(500, self.actionButtons.toggleAlphasButton.click)
+
     def loadFile(self, filename):
         lines = []
         changes = {}
