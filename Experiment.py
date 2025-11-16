@@ -17,17 +17,6 @@ import logging
 
 import time
 
-class Clock:
-    time: int
-
-    def __init__(self):
-        self.time = int(time.time())
-
-    def click(self):
-        old_time = self.time
-        self.time = int(time.time())
-        return self.time - old_time
-
 class Phase:
     # elems contains a list of ([CS], US) of an experiment.
     elems: list[tuple[str, str]]
@@ -226,23 +215,22 @@ class Experiment:
                 cpu_count = getattr(os, 'process_cpu_count', os.cpu_count)() or 1
                 max_workers = min(cpu_count, num_trials)
 
-                clock = Clock()
-                print(f'[{0:3d}]\tRunning {num_trials} trials with {max_workers} workers')
+                logging.info(f'Running {num_trials} trials with {max_workers} workers')
                 with ProcessPoolExecutor(max_workers = max_workers) as executor:
                     trials_per_worker = lambda t: num_trials // max_workers + (1 if t < num_trials % max_workers else 0)
                     futures = [executor.submit(self.run_random_trials, g, phase, trials_per_worker(t), num_trials) for t in range(max_workers)]
                     hist, final_strengths = (list(x) for x in zip(*[f.result() for f in futures]))
 
-                print(f'[{clock.click():3d}]\tAppending results')
+                logging.info(f'Appending results')
                 results.append([
                     Environment.summ([h[x] for h in hist if x < len(h)])
                     for x in range(max(len(h) for h in hist))
                 ])
 
-                print(f'[{clock.click():3d}]\tAveraging environment')
+                logging.info(f'Averaging environment')
                 g.s = Environment.summ(final_strengths)
 
-                print(f'[{clock.click():3d}]\tDone!')
+                logging.info(f'Done!')
 
         return results
 
