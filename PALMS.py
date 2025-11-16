@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import os
-# os.environ["QT_QPA_PLATFORM"] = "xcb"
-# os.environ['QT_AUTO_SCREEN_SCALE_FACTOR'] = '1'
+import tempfile
 os.environ["QT_API"] = "PySide6"
+os.environ.setdefault(
+    "MPLCONFIGDIR",
+    os.path.join(tempfile.gettempdir(), "matplotlib-config")
+)
 
 import logging
 import sys

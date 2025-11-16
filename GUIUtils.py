@@ -606,7 +606,6 @@ class AlphasBox(QGroupBox):
         self.parent = parent
         self.per_cs_param = parent.per_cs_param
 
-        # scrollArea = QScrollArea()
         scrollArea = QWidget()
         layout = QHBoxLayout(scrollArea)
         layout.setContentsMargins(5, 5, 5, 5)
@@ -621,11 +620,6 @@ class AlphasBox(QGroupBox):
             parent.per_cs_box[perc].setLayout(boxLayout)
             parent.per_cs_box[perc].setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Preferred)
             layout.addWidget(parent.per_cs_box[perc])
-
-        # scrollArea.setLayout(layout)
-        # scrollArea.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Preferred)
-        # scrollArea.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
-        # scrollArea.setWidgetResizable(True)
 
         mainLayout = QVBoxLayout(self)
         mainLayout.addWidget(scrollArea)
