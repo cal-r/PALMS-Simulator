@@ -231,12 +231,12 @@ class Experiment:
                 clock = Clock()
                 print(f'[{0:3d}]\tRunning {num_trials} trials with {max_workers} workers')
                 with ProcessPoolExecutor(max_workers = max_workers) as executor:
-                    if num_trials % max_workers != 0:
-                        raise RuntimeError(f'Uneven amount of trials not implemented; ensure num_trials is a multiple of {max_workers}')
-
-                    trials_per_worker = num_trials // max_workers
-                    futures = [executor.submit(self.run_random_trials, g, phase, trials_per_worker, num_trials) for _ in range(max_workers)]
+                    trials_per_worker = lambda t: num_trials // max_workers + (1 if t < num_trials % max_workers else 0)
+                    futures = [executor.submit(self.run_random_trials, g, phase, trials_per_worker(t), num_trials) for t in range(max_workers)]
                     hist, final_strengths = list(zip(*[f.result() for f in futures]))
+
+                    sum_trials = sum(trials_per_worker(x) for x in range(max_workers))
+                    assert sum_trials == num_trials
 
                 print(f'[{clock.click():3d}]\tAppending results')
                 results.append([
