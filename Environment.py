@@ -246,15 +246,22 @@ class Environment:
     def copy(self) -> Environment:
         return Environment({k: v.copy() for k, v in self.s.items()})
 
+    # Convenience function: sum all elements of val.
     @staticmethod
-    def avg(val: list[Environment]) -> Environment:
+    def summ(val: list[Environment]) -> Enviroment:
+        return sum(val[1:], val[0])
+
+    @staticmethod
+    def avg(val: list[Environment], total_elem: None | int = None) -> Environment:
+        if total_elem is None:
+            total_elem = len(val)
+
         # We average doing `avg(X) = sum(X / n)` rather than `avg(X) = sum(X) / n`
         # since assoc values could be truncated on summation.
-        val_quot = [x / len(val) for x in val]
+        val_quot = [x / total_elem for x in val]
 
-        # We use reduce rather than sum since we don't have a zero value.
-        # Python reduce is the equivalent of Haskell foldl1'.
-        return reduce(operator.add, val_quot)
+        # Environment is a semigroup, but not a monoid.
+        return sum(val_quot[1:], val_quot[0])
 
     def assocs(self) -> dict[str, float]:
         return {k: v.assoc for k, v in self.s.items()}
