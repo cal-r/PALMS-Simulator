@@ -1,6 +1,5 @@
 from __future__ import annotations
 from collections import deque, defaultdict
-from functools import reduce
 
 from typing import Any, ClassVar
 from csv import DictWriter
@@ -231,7 +230,8 @@ class Environment:
         if key in self.s:
             return self.s[key]
 
-        return reduce(operator.add, [self.s[k] for k in self.list_cs(key)])
+        items = [self.s[k] for k in self.list_cs(key)]
+        return sum(items[1:], items[0])
 
     def filter_keys(self, keys: list[str]) -> list[str]:
         return [k for k in keys if all(t in self.s for t in self.list_cs(k))]
@@ -248,7 +248,7 @@ class Environment:
 
     # Convenience function: sum all elements of val.
     @staticmethod
-    def summ(val: list[Environment]) -> Enviroment:
+    def summ(val: list[Environment]) -> Environment:
         return sum(val[1:], val[0])
 
     @staticmethod
@@ -261,7 +261,7 @@ class Environment:
         val_quot = [x / total_elem for x in val]
 
         # Environment is a semigroup, but not a monoid.
-        return sum(val_quot[1:], val_quot[0])
+        return Environment.summ(val_quot)
 
     def assocs(self) -> dict[str, float]:
         return {k: v.assoc for k, v in self.s.items()}
