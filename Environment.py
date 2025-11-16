@@ -1,11 +1,10 @@
 from __future__ import annotations
-from collections import deque, defaultdict
 
+from collections import deque, defaultdict
 from typing import Any, ClassVar
 from csv import DictWriter
 
 import re
-import operator
 
 class Stimulus:
     name: str

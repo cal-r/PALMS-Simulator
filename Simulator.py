@@ -5,7 +5,7 @@ import random
 import re
 import sys
 from Experiment import Experiment, Phase, RWArgs
-from Environment import Environment, StimulusHistory
+from Environment import StimulusHistory
 from Plots import generate_figures, save_plots
 from AdaptiveType import AdaptiveType
 

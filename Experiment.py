@@ -1,21 +1,17 @@
 from __future__ import annotations
 
-import random
-import re
 from dataclasses import dataclass
 from typing import Any, get_type_hints, get_args
 from types import UnionType
+from concurrent.futures import ProcessPoolExecutor
 
 from Group import Group
 from Environment import Stimulus, Environment, StimulusHistory
 
-from concurrent.futures import ProcessPoolExecutor
-from functools import partial
 import os
-
+import random
+import re
 import logging
-
-import time
 
 class Phase:
     # elems contains a list of ([CS], US) of an experiment.

@@ -11,9 +11,7 @@ from PySide6.QtWidgets import *
 
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from PIL import Image
-
 from pathlib import Path
-
 from AdaptiveType import AdaptiveType
 from Environment import StimulusHistory
 
