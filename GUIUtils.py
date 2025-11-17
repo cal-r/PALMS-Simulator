@@ -17,7 +17,6 @@ from Environment import StimulusHistory
 
 # Putting this here so mypy stops complaining.
 from PySide6.QtWidgets import QFormLayout, QGroupBox, QPushButton, QWidget
-
 from PySide6.QtCore import QTimer, Qt, QSize
 
 class PhaseBox(QGroupBox):
@@ -397,11 +396,10 @@ class ActionButtons(QWidget):
 
         self.parent.enableParams()
 
-        # QTimer.singleShot(100, self.parent.alphasBox.fillScrollArea)
-        QTimer.singleShot(200, self.debugViewports)
+        # QTimer.singleShot(200, self.debugViewports)
 
     def debugViewports(self):
-        print(f'Box width is {self.parent.alphasBox.box.width()}')
+        logging.info(f'Box width is {self.parent.alphasBox.box.width()}')
 
         widget = next(iter(self.parent.per_cs_box.values()))
         while widget:
@@ -606,16 +604,6 @@ class ParametersGroupBox(QGroupBox):
                 self.params[key].setText(self.params['alpha'].box.text(), set_modified = True)
 
 class AlphasBox(QGroupBox):
-    class VerticalScrollArea(QScrollArea):
-        def minimumSizeHint(self):
-            hint = super().minimumSizeHint()
-            new = QSize(500, hint.height())
-            print(f'{hint} -> {new}')
-            return hint
-
-        def sizeHint(self):
-            return self.minimumSizeHint()
-
     def __init__(self, parent):
         super().__init__('Per-CS', parent = parent)
         self.parent = parent
@@ -625,17 +613,16 @@ class AlphasBox(QGroupBox):
         self.box.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Expanding)
 
         layout = QHBoxLayout(self.box)
-        # layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(10)
         for perc in parent.per_cs_param.keys():
             boxLayout = QFormLayout()
             boxLayout.setContentsMargins(0, 0, 0, 0)
             boxLayout.setSpacing(10)
             boxLayout.setFormAlignment(Qt.AlignmentFlag.AlignLeft)
-            # boxLayout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
+            boxLayout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
 
             parent.per_cs_box[perc] = QWidget()
             parent.per_cs_box[perc].setLayout(boxLayout)
-            # parent.per_cs_box[perc].setStyleSheet('border: 2px solid brown')
             parent.per_cs_box[perc].setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Expanding)
             layout.addWidget(parent.per_cs_box[perc])
 
@@ -644,14 +631,8 @@ class AlphasBox(QGroupBox):
         self.scrollArea.setWidget(self.box)
         self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
-        # self.scrollArea.setContentsMargins(0, 0, 0, 0)
-
         margins = self.contentsMargins()
         self.setContentsMargins(0, margins.top(), 0, margins.bottom())
-
-        # self.box.setStyleSheet("border: 2px solid green;")
-        # self.scrollArea.setStyleSheet("border: 2px solid blue;")
-        # self.scrollArea.viewport().setStyleSheet("border: 2px solid yellow;")
 
         mainLayout = QVBoxLayout(self)
         mainLayout.addWidget(self.scrollArea)
@@ -661,6 +642,8 @@ class AlphasBox(QGroupBox):
         self.setVisible(False)
         self.clear()
 
+    # Forces the scroll area to fit the box and scroll bar horizontally.
+    # This should happen automatically; I think a bug in Qt is preventing this.
     def fillScrollArea(self):
         self.scrollArea.setFixedWidth(self.box.width() + self.scrollArea.verticalScrollBar().width() + 5)
 
