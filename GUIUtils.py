@@ -619,9 +619,6 @@ class AlphasBox(QGroupBox):
         self.per_cs_param = parent.per_cs_param
 
         box = QWidget()
-        # box.setContentsMargins(0, 0, 0, 0)
-        # box.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        box.setStyleSheet("border: 2px solid green;")
 
         layout = QHBoxLayout(box)
         for perc in parent.per_cs_param.keys():
@@ -636,24 +633,17 @@ class AlphasBox(QGroupBox):
             parent.per_cs_box[perc].setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Preferred)
             layout.addWidget(parent.per_cs_box[perc])
 
-        scrollArea = self.VerticalScrollArea()
-        # scrollArea.setWidget(box)
-        scrollArea.setContentsMargins(0, 0, 0, 0)
-        scrollArea.viewport().setContentsMargins(0, 0, 0, 0)
-        # scrollArea.setFrameShape(QFrame.NoFrame)
-        # scrollArea.setLineWidth(0)
+        scrollArea = QScrollArea()
         scrollArea.setWidgetResizable(True)
+        scrollArea.setWidget(box)
         scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        scrollArea.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        scrollArea.viewport().setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
+        box.setStyleSheet("border: 2px solid green;")
         scrollArea.setStyleSheet("border: 2px solid blue;")
         scrollArea.viewport().setStyleSheet("border: 2px solid yellow;")
 
         mainLayout = QVBoxLayout(self)
-        mainLayout.addWidget(box)
-        # mainLayout.setContentsMargins(0, 0, 0, 0)
-        # mainLayout.setSpacing(0)
+        mainLayout.addWidget(scrollArea)
 
         self.setLayout(mainLayout)
         self.setVisible(False)

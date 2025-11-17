@@ -3,7 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, get_type_hints, get_args
 from types import UnionType
-from concurrent.futures import ProcessPoolExecutor
 
 from Group import Group
 from Environment import Stimulus, Environment, StimulusHistory
@@ -212,6 +211,8 @@ class Experiment:
                 max_workers = min(cpu_count, num_trials)
 
                 logging.info(f'Running {num_trials} trials with {max_workers} workers')
+
+                from concurrent.futures import ProcessPoolExecutor
                 with ProcessPoolExecutor(max_workers = max_workers) as executor:
                     trials_per_worker = lambda t: num_trials // max_workers + (1 if t < num_trials % max_workers else 0)
                     futures = [executor.submit(self.run_random_trials, g, phase, trials_per_worker(t), num_trials) for t in range(max_workers)]
