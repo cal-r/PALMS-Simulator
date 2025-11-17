@@ -207,8 +207,6 @@ class Experiment:
                 strength_hist = g.runPhase(phase.elems, phase.beta, phase.lamda)
                 results.append(strength_hist)
             else:
-                from concurrent.futures import ProcessPoolExecutor
-
                 cpu_count = getattr(os, 'process_cpu_count', os.cpu_count)() or 1
                 max_workers = min(cpu_count, num_trials)
 
