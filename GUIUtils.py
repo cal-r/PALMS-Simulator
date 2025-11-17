@@ -604,12 +604,30 @@ class ParametersGroupBox(QGroupBox):
                 self.params[key].setText(self.params['alpha'].box.text(), set_modified = True)
 
 class AlphasBox(QGroupBox):
+    class InnerBox(QWidget):
+        def __init__(self, parent):
+            super().__init__()
+            self.parent = parent
+
+        def resizeEvent(self, event):
+            super().resizeEvent(event)
+            self.parent.fillScrollAreaFast()
+
+    class CallbackScroll(QScrollArea):
+        def __init__(self, parent):
+            super().__init__()
+            self.parent = parent
+
+        def resizeEvent(self, event):
+            super().resizeEvent(event)
+            self.parent.fillScrollAreaFast()
+
     def __init__(self, parent):
         super().__init__('Per-CS', parent = parent)
         self.parent = parent
         self.per_cs_param = parent.per_cs_param
 
-        self.box = QWidget()
+        self.box = self.InnerBox(self)
         self.box.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Expanding)
 
         layout = QHBoxLayout(self.box)
@@ -626,7 +644,7 @@ class AlphasBox(QGroupBox):
             parent.per_cs_box[perc].setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Expanding)
             layout.addWidget(parent.per_cs_box[perc])
 
-        self.scrollArea = QScrollArea()
+        self.scrollArea = self.CallbackScroll(self)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setWidget(self.box)
         self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -642,10 +660,16 @@ class AlphasBox(QGroupBox):
         self.setVisible(False)
         self.clear()
 
-    # Forces the scroll area to fit the box and scroll bar horizontally.
-    # This should happen automatically; I think a bug in Qt is preventing this.
-    def fillScrollArea(self):
-        self.scrollArea.setFixedWidth(self.box.width() + self.scrollArea.verticalScrollBar().width() + 5)
+        # self.box.setStyleSheet('border: 2px solid green')
+        # self.scrollArea.setStyleSheet("border: 2px solid blue;")
+        # self.scrollArea.viewport().setStyleSheet("border: 2px solid yellow;")
+
+    def fillScrollAreaFast(self):
+        width = self.box.width()
+        if self.scrollArea.verticalScrollBar().isVisible():
+            width += self.scrollArea.verticalScrollBar().width()
+
+        self.scrollArea.setFixedWidth(width + 5)
 
     def clear(self):
         self.refresh(set())
