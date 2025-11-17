@@ -1,12 +1,8 @@
 from __future__ import annotations
 
 import os
-import tempfile
 os.environ["QT_API"] = "PySide6"
-os.environ.setdefault(
-    "MPLCONFIGDIR",
-    os.path.join(tempfile.gettempdir(), "matplotlib-config")
-)
+os.environ["MPLCONFIGDIR"] = "/dev/null"
 
 import logging
 import sys

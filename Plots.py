@@ -7,7 +7,7 @@ import seaborn
 from itertools import islice, cycle, chain
 
 import matplotlib
-# matplotlib.use('QtAgg')
+matplotlib.use('QtAgg')
 
 from matplotlib import pyplot
 from Environment import StimulusHistory
