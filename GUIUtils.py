@@ -680,7 +680,11 @@ class AlphasBox(QGroupBox):
                 layout.removeRow(rowNum)
                 del form[cs]
 
-            for cs in sorted(css):
+            def sort_key(x):
+                left, _, right = x.partition('^')
+                return (left, int(right or 0))
+
+            for cs in sorted(css, key = sort_key):
                 if cs not in form:
                     hoverText = parent.params[perc].hoverText.replace('of the stimuli', f' for stimulus {cs}')
                     local_val = global_val ** len(cs.strip('()'))
