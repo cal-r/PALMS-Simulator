@@ -3,6 +3,7 @@ os.environ["QT_API"] = "PySide6"
 
 import logging
 import sys
+import re
 from typing import cast
 
 from PySide6.QtCore import Qt, QSize
@@ -387,7 +388,7 @@ class ActionButtons(QWidget):
             for perc, form in self.parent.per_cs_param.items():
                 for cs, pair in form.items():
                     global_val = float(self.parent.params[perc].box.text())
-                    local_val = global_val ** len(cs.strip('()'))
+                    local_val = global_val ** len(re.sub(r"'|\(|\)|\^\d+", "", cs))
                     pair.setText(f'{local_val:.2g}', set_modified = False)
         else:
             self.parent.resize(self.parent.width() - self.parent.alphasBox.width(), self.parent.height())
@@ -731,7 +732,7 @@ class AlphasBox(QGroupBox):
             param = self.per_cs_param[key]
             for cs, pair in param.items():
                 if not only_unmodified or not pair.modified:
-                    val = default ** len(cs.strip('()'))
+                    val = default ** len(re.sub(r"'|\(|\)|\^\d+", "", cs))
                     pair.setText(f'{val:.3f}'.rstrip('0').rstrip('.'), set_modified = False)
 
                 if key.startswith('alpha_') and not pair.modified and self.per_cs_param['alpha'][cs].modified:
