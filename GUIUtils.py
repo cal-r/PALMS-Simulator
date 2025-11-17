@@ -43,7 +43,7 @@ class PhaseBox(QGroupBox):
         phaseBoxLayout = QHBoxLayout()
         phaseBoxLayout.addWidget(leftPhaseButton)
         phaseBoxLayout.addWidget(self.xCoordInfo, stretch = 1, alignment = Qt.AlignmentFlag.AlignLeft)
-        phaseBoxLayout.addWidget(self.phaseInfo, stretch = 1, alignment = Qt.AlignmentFlag.AlignCenter)
+        phaseBoxLayout.addWidget(self.phaseInfo, stretch = 2, alignment = Qt.AlignmentFlag.AlignCenter)
         phaseBoxLayout.addWidget(self.yCoordInfo, stretch = 1, alignment = Qt.AlignmentFlag.AlignRight)
         phaseBoxLayout.addWidget(rightPhaseButton)
         phaseBoxLayout.setSpacing(50)
@@ -56,8 +56,12 @@ class PhaseBox(QGroupBox):
         self.setLayout(phaseBoxLayout)
         # self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
 
+    def setLoading(self):
+        self.phaseInfo.setText('Simulating...')
+        self.repaint()
+
     def setInfo(self, phaseNum, numPhases):
-        self.phaseInfo.setText(f'Phase {phaseNum}/{numPhases}')
+        self.phaseInfo.setText(f'   Phase {phaseNum}/{numPhases}   ')
 
     def setCoordInfo(self, trial, ylabel, ydata):
         self.xCoordInfo.setText(f'Trial: {trial:.0f}')
