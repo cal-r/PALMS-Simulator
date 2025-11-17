@@ -3,7 +3,6 @@ from __future__ import annotations
 import colorcet
 import re
 import math
-import seaborn
 from itertools import islice, cycle, chain
 
 from Environment import StimulusHistory
@@ -44,6 +43,7 @@ def titleify(title: None | str, phases: dict[str, list[Phase]], phase_num: int) 
     return ''
 
 def get_css(data: list[dict[str, StimulusHistory]]) -> tuple[list[str], dict[str, Color], dict[str, str]]:
+    import seaborn
     css = sorted(set(chain.from_iterable([x.keys() for x in data])), key = lambda x: (len(x), x))
 
     color_list = list(islice(cycle(colorcet.glasbey), len(css)))
@@ -71,6 +71,7 @@ def generate_figures(
     ) -> list[pyplot.Figure]:
     from matplotlib import pyplot
     from matplotlib.ticker import MaxNLocator, FuncFormatter
+    import seaborn
     seaborn.set()
 
     if plot_phase is not None:
