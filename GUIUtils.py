@@ -382,7 +382,7 @@ class ActionButtons(QWidget):
 
     def toggleAlphasBox(self):
         if not self.parent.alphasBox.isVisible():
-            # self.parent.resize(self.parent.width() + self.parent.alphasBox.width(), self.parent.height())
+            self.parent.resize(self.parent.width() + self.parent.alphasBox.width(), self.parent.height())
             self.parent.alphasBox.setVisible(True)
 
             for perc, form in self.parent.per_cs_param.items():
@@ -391,15 +391,18 @@ class ActionButtons(QWidget):
                     local_val = global_val ** len(cs.strip('()'))
                     pair.setText(f'{local_val:.2g}', set_modified = False)
         else:
-            # self.parent.resize(self.parent.width() - self.parent.alphasBox.width(), self.parent.height())
+            self.parent.resize(self.parent.width() - self.parent.alphasBox.width(), self.parent.height())
             self.parent.alphasBox.setVisible(False)
             self.parent.refreshExperiment()
 
         self.parent.enableParams()
 
-        QTimer.singleShot(100, self.debugViewports)
+        # QTimer.singleShot(100, self.parent.alphasBox.fillScrollArea)
+        QTimer.singleShot(200, self.debugViewports)
 
     def debugViewports(self):
+        print(f'Box width is {self.parent.alphasBox.box.width()}')
+
         widget = next(iter(self.parent.per_cs_box.values()))
         while widget:
             print(f'{widget.__class__.__name__} {widget.width()} {widget.minimumWidth()} {widget.sizePolicy().horizontalPolicy()}')
@@ -618,37 +621,48 @@ class AlphasBox(QGroupBox):
         self.parent = parent
         self.per_cs_param = parent.per_cs_param
 
-        box = QWidget()
+        self.box = QWidget()
+        self.box.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Expanding)
 
-        layout = QHBoxLayout(box)
+        layout = QHBoxLayout(self.box)
+        # layout.setContentsMargins(0, 0, 0, 0)
         for perc in parent.per_cs_param.keys():
             boxLayout = QFormLayout()
             boxLayout.setContentsMargins(0, 0, 0, 0)
             boxLayout.setSpacing(10)
             boxLayout.setFormAlignment(Qt.AlignmentFlag.AlignLeft)
-            boxLayout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
+            # boxLayout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
 
             parent.per_cs_box[perc] = QWidget()
             parent.per_cs_box[perc].setLayout(boxLayout)
-            parent.per_cs_box[perc].setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Preferred)
+            # parent.per_cs_box[perc].setStyleSheet('border: 2px solid brown')
+            parent.per_cs_box[perc].setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Expanding)
             layout.addWidget(parent.per_cs_box[perc])
 
-        scrollArea = QScrollArea()
-        scrollArea.setWidgetResizable(True)
-        scrollArea.setWidget(box)
-        scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.scrollArea = QScrollArea()
+        self.scrollArea.setWidgetResizable(True)
+        self.scrollArea.setWidget(self.box)
+        self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
-        box.setStyleSheet("border: 2px solid green;")
-        scrollArea.setStyleSheet("border: 2px solid blue;")
-        scrollArea.viewport().setStyleSheet("border: 2px solid yellow;")
+        # self.scrollArea.setContentsMargins(0, 0, 0, 0)
+
+        margins = self.contentsMargins()
+        self.setContentsMargins(0, margins.top(), 0, margins.bottom())
+
+        # self.box.setStyleSheet("border: 2px solid green;")
+        # self.scrollArea.setStyleSheet("border: 2px solid blue;")
+        # self.scrollArea.viewport().setStyleSheet("border: 2px solid yellow;")
 
         mainLayout = QVBoxLayout(self)
-        mainLayout.addWidget(scrollArea)
+        mainLayout.addWidget(self.scrollArea)
+        mainLayout.setContentsMargins(0, 0, 0, 0)
 
         self.setLayout(mainLayout)
         self.setVisible(False)
-        self.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Preferred)
         self.clear()
+
+    def fillScrollArea(self):
+        self.scrollArea.setFixedWidth(self.box.width() + self.scrollArea.verticalScrollBar().width() + 5)
 
     def clear(self):
         self.refresh(set())

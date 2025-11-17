@@ -239,6 +239,9 @@ class PavlovianApp(QMainWindow):
             if hoverText:
                 self.label.setToolTip(hoverText)
 
+            # self.label.setStyleSheet('border: 2px solid red')
+            # self.box.setStyleSheet('border: 2px solid red')
+
         def setText(self, text: str, set_modified: None | bool = None):
             self.box.setText(text)
 
@@ -267,6 +270,10 @@ class PavlovianApp(QMainWindow):
                 widget.setDisabled(False)
             else:
                 self.per_cs_box[key].setVisible(True)
+
+        # Fill the scroll area in the alphas box with the content inside of it.
+        # Due to a bug (?), this does not happen automatically.
+        QTimer.singleShot(100, self.alphasBox.fillScrollArea)
 
     # Convenience function: convert a string to a float, or return None if empty.
     @classmethod
