@@ -10,7 +10,6 @@ from PySide6.QtCore import Qt, QSize
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import *
 
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from PIL import Image
 from pathlib import Path
 from AdaptiveType import AdaptiveType
@@ -796,6 +795,7 @@ class PlotBox(QGroupBox):
         # self.setContentsMargins(0, 0, 0, 0)
         self.parent = parent
 
+        from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
         self.plotCanvas = FigureCanvasQTAgg()
 
         self.phaseBox = PhaseBox(parent, screenshot_ready = False)

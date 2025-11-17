@@ -6,14 +6,8 @@ import math
 import seaborn
 from itertools import islice, cycle, chain
 
-import matplotlib
-matplotlib.use('QtAgg')
-
-from matplotlib import pyplot
 from Environment import StimulusHistory
 from Experiment import Phase
-from matplotlib.ticker import MaxNLocator, FuncFormatter
-from matplotlib.lines import Line2D
 from itertools import chain
 from typing import Any, TypeAlias
 
@@ -75,6 +69,8 @@ def generate_figures(
         singular_legend: bool = False,
         legend_locs: None | list[list[tuple[float, float]]] = None,
     ) -> list[pyplot.Figure]:
+    from matplotlib import pyplot
+    from matplotlib.ticker import MaxNLocator, FuncFormatter
     seaborn.set()
 
     if plot_phase is not None:
@@ -229,6 +225,7 @@ class PaginatedLegend:
         self.decorate_legend()
 
     def showPage(self, ax, page_num):
+        from matplotlib.lines import Line2D
         empty = Line2D([], [], linestyle = 'None', marker = None, linewidth = 0)
 
         size = 15
@@ -330,6 +327,8 @@ def save_plots(
     plot_height: int = 2,
     hide_lines: set[str] = set(),
 ):
+    from matplotlib import pyplot
+
     if filename is not None:
         filename = filename.removesuffix('.png')
 

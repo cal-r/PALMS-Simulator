@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import os
 os.environ["QT_API"] = "PySide6"
-os.environ["MPLCONFIGDIR"] = "/dev/null"
 
 import logging
 import sys
@@ -11,7 +10,6 @@ import Simulator
 from argparse import ArgumentParser
 from collections import defaultdict
 from itertools import zip_longest
-from matplotlib import pyplot
 from pathlib import Path
 from PySide6.QtCore import QTimer, Qt, QSize
 from PySide6.QtGui import QFont, QPixmap, QGuiApplication
@@ -30,7 +28,7 @@ class PavlovianApp(QMainWindow):
     adaptive_types: list[str]
     current_adaptive_type: str
 
-    figures: list[pyplot.Figure]
+    figures: list['pyplot.Figure']
     phases: dict[str, list[Phase]]
     phaseNum: int
     numPhases: int
@@ -386,6 +384,7 @@ class PavlovianApp(QMainWindow):
         return strengths
 
     def refreshExperiment(self, caller = None):
+        from matplotlib import pyplot
         if caller is not None:
             logging.info(f'Called refreshExperiment from {caller}')
 
@@ -573,7 +572,7 @@ def logScreenInfo(app):
     logging.info(f'Logical DPI: {app.primaryScreen().logicalDotsPerInch()}.')
     logging.info(f'Physical DPI: {app.primaryScreen().physicalDotsPerInch()}.')
     logging.info(f'Device pixel ratio: {app.primaryScreen().devicePixelRatio()}.')
-    logging.info(f'Pyplot backend: {pyplot.get_backend()}.')
+    # logging.info(f'Pyplot backend: {pyplot.get_backend()}.')
     logging.info(f'Platform name: {QGuiApplication.platformName()}')
     logging.info(f'Primary screen height: {app.primaryScreen().size().height()}')
     for envvar in ("QT_AUTO_SCREEN_SCALE_FACTOR","QT_SCALE_FACTOR", "QT_SCREEN_SCALE_FACTORS","QT_DEVICE_PIXEL_RATIO"):
