@@ -156,8 +156,6 @@ class PavlovianApp(QMainWindow):
 
         self.resize(windowSize)
 
-        QTimer.singleShot(500, self.actionButtons.toggleAlphasButton.click)
-
     def loadFile(self, filename):
         lines = []
         changes = {}
@@ -388,6 +386,7 @@ class PavlovianApp(QMainWindow):
         if caller is not None:
             logging.info(f'Called refreshExperiment from {caller}')
 
+        self.plotBox.phaseBox.setLoading()
         self.tableWidget.updateSizes()
 
         strengths, phases, args = self.generateResults()
