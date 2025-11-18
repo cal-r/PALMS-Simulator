@@ -25,6 +25,7 @@ class Stimulus:
     rho: float
     nu: float
 
+    alpha_0: float
     alpha_mack_0: float
     alpha_hall_0: float
 
@@ -37,6 +38,7 @@ class Stimulus:
             rho, nu,
             assoc = 0.,
             Ve = 0., Vi = 0.,
+            alpha_0 = None,
             alpha_mack_0 = None, alpha_hall_0 = None,
             compound = False,
         ):
@@ -58,6 +60,7 @@ class Stimulus:
         self.rho = rho
         self.nu = nu
 
+        self.alpha_0 = alpha_0 or self.alpha
         self.alpha_mack_0 = alpha_mack_0 or self.alpha_mack
         self.alpha_hall_0 = alpha_hall_0 or self.alpha_hall
 
