@@ -13,17 +13,18 @@
 \begin{center}
 	\huge
 	\sffamily
-	Rescorla-Wagner (Linear Variant)
+	Rescorla-Wagner \\ with Variable Learning Rate
 \end{center}
 \newcommand{\eks}{\textsf{x}}
 \begin{equation*}
-	\begin{aligned}
-		\alpha_\eks^{n + 1} &= \begin{cases}
-			\alpha_\eks^n \cdot \left(1 + d \right) & \text{if } \lambda > 0 \\
-			\alpha_\eks^n \cdot \left(1 - d \right) & \text{if } \lambda \leq 0
-		\end{cases} \\
-		\Delta V_{\eks}^{n+1} &= \alpha_\eks^{n + 1} \cdot \beta^+ \cdot \left( \lambda - \textstyle\sum_i V_i^{n} \right)
-	\end{aligned}
+	\begin{gathered}
+		d = 0.05 \\[1ex]
+		\alpha_\eks^{n + 1} = \begin{cases}
+			\alpha_\eks^n \cdot (1 - d) + \alpha_\eks^0 \cdot V_\eks \cdot \left( \lambda - \textstyle\sum_i \right) &\text{if } \lambda > 0 \\
+			\alpha_\eks^n \cdot (1 - d) - \alpha_\eks^0 \cdot V_\eks \cdot \left( \lambda - \textstyle\sum_i \right) &\text{otherwise}
+		\end{cases} \\[1ex]
+		\Delta V_{\eks}^{n+1} = \alpha_\eks^{n + 1} \cdot \beta^+ \cdot \left( \lambda - \textstyle\sum_i V_i^{n} \right)
+	\end{gathered}
 	\label{linear_alpha}
 \end{equation*}
 

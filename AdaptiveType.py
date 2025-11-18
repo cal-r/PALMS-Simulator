@@ -156,7 +156,13 @@ class RescorlaWagnerLinear(AdaptiveType):
         return ['alpha', 'beta', 'betan', 'lamda']
 
     def step(self, s: Stimulus, rp: RunParameters):
-        s.alpha *= 1 + rp.sign * 0.05
+        d = 0.05
+
+        if rp.lamda > 0:
+            s.alpha = s.alpha * (1 - d) + s.alpha_0 * s.assoc * (rp.lamda - rp.sigma)
+        else:
+            s.alpha = s.alpha * (1 - d) - s.alpha_0 * s.assoc * (rp.lamda - rp.sigma)
+
         s.alpha = min(max(s.alpha, 0.05), 1)
         s.assoc += s.alpha * self.delta_v_factor
 
