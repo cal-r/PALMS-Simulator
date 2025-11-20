@@ -150,7 +150,7 @@ class StimulusHistory:
 
     @classmethod
     def exportData(cls, strengths: list[dict[str, StimulusHistory]], file, should_plot_macknhall = False):
-        fieldnames = ['Phase', 'Group', 'CS', 'Trial', 'Assoc']
+        fieldnames = ['Phase', 'Group', 'CS', 'Trial', 'Assoc', 'Ve', 'Vi']
         if not should_plot_macknhall:
             fieldnames += ['Alpha']
         else:
@@ -169,6 +169,8 @@ class StimulusHistory:
                         'CS': cs,
                         'Trial': trial,
                         'Assoc': stimulus.assoc,
+                        'Ve': stimulus.Ve,
+                        'Vi': stimulus.Vi,
                         'Alpha': stimulus.alpha,
                         'Alpha Mack': stimulus.alpha_mack,
                         'Alpha Hall': stimulus.alpha_hall,
