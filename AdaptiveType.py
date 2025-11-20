@@ -224,16 +224,19 @@ class MackExtended(AdaptiveType):
         LomE = rp.sigmaE - s.Ve
         LomI = rp.sigmaI - s.Vi
 
+        DVe = 0.
+        DVi = 0.
         if rho > 0:
             DVe = s.alpha * betap * (1 - s.Ve + s.Vi) * abs(rho)
             s.alpha += -self.thetaE * (abs(rp.lamda - s.Ve + s.Vi) - abs(rp.lamda - LomE + LomI))
-            s.Ve += DVe
         elif rho < 0:
             DVi = s.alpha * self.betan * (1 - s.Vi + s.Ve) * abs(rho)
             s.alpha += -self.thetaI * (abs(abs(rho) - s.Vi + s.Ve) - abs(abs(rho) - LomI + LomE))
-            s.Vi += DVi
 
         s.alpha = min(max(s.alpha, 0.05), 1)
+
+        s.Ve += DVe
+        s.Vi += DVi
         s.assoc = s.Ve - s.Vi
 
 class LePelleyHybrid(AdaptiveType):
