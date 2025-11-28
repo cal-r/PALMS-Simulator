@@ -96,7 +96,7 @@ class Group:
     def runPhase(self, parts: list[tuple[str, str]], phase_beta: None | float, phase_lamda: None | float) -> list[Environment]:
         hist = StimulusHistory.emptydict()
 
-        for part, plus in parts:
+        for e, (part, plus) in enumerate(parts, start = 1):
             if plus == '++':
                 beta, lamda, sign = 2 * (phase_beta or self.adaptive_type.betap), phase_lamda or self.adaptive_type.lamda, 1
             elif plus == '+':
@@ -115,6 +115,7 @@ class Group:
                 sigmaI = sum(self.s[x].Vi for x in compounds),
                 count = len(compounds),
                 maxAssocRest = -1,
+                trial_num = e,
             )
 
             argmaxAssoc = max(compounds, key = lambda x: self.s[x].assoc)

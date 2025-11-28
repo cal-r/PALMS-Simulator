@@ -16,6 +16,7 @@ class RunParameters:
     sigmaI: float
     count: float
     maxAssocRest: float
+    trial_num: int
 
 class AdaptiveType:
     image_filename: ClassVar[str] = ''
@@ -218,7 +219,7 @@ class MackExtended(AdaptiveType):
 
     def step(self, s: Stimulus, rp: RunParameters):
         rho = rp.lamda - (rp.sigmaE - rp.sigmaI)
-        betap = rp.beta if rp.sign else self.betap
+        betap = rp.beta if rp.sign == 1 else self.betap
 
         # LomE and LomI are \Lambda and \overline{\Lambda} in the formulas.
         LomE = rp.sigmaE - s.Ve
@@ -263,7 +264,7 @@ class LePelleyHybrid(AdaptiveType):
         VXe = rp.sigmaE - s.Ve
         VXi = rp.sigmaI - s.Vi
 
-        betap = rp.beta if rp.sign else self.betap
+        betap = rp.beta if rp.sign == 1 else self.betap
 
         DVe = 0.
         DVi = 0.
