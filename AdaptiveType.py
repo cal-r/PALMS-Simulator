@@ -141,9 +141,9 @@ class RescorlaWagner(AdaptiveType):
     @classmethod
     def defaults(cls) -> dict[str, float]:
         return dict(
-            alpha = .5,
+            alpha = .2,
             beta = .5,
-            betan = .3,
+            betan = .4,
         )
 
     def step(self, s: Stimulus, rp: RunParameters):
@@ -155,6 +155,14 @@ class RescorlaWagnerLinear(AdaptiveType):
     @classmethod
     def parameters(cls) -> list[str]:
         return ['alpha', 'beta', 'betan', 'lamda']
+
+    @classmethod
+    def defaults(cls) -> dict[str, float]:
+        return dict(
+            alpha = .2,
+            beta = .5,
+            betan = .4,
+        )
 
     def step(self, s: Stimulus, rp: RunParameters):
         d = 0.05
@@ -187,9 +195,12 @@ class PearceKayeHall(AdaptiveType):
     @classmethod
     def defaults(cls) -> dict[str, float]:
         return dict(
-            salience = .1,
-            alpha = .5,
-            gamma = .15,
+            alpha = .9,
+            salience = .2,
+            beta = .3,
+            betan = .1,
+            gamma = .2,
+            lamda = .8,
         )
 
     def step(self, s: Stimulus, rp: RunParameters):
@@ -213,8 +224,12 @@ class MackExtended(AdaptiveType):
     @classmethod
     def defaults(cls) -> dict[str, float]:
         return dict(
-            thetaE = .1,
+            alpha = .9,
+            beta = .3,
+            betan = .1,
+            thetaE = .3,
             thetaI = .1,
+            lamda = .8,
         )
 
     def step(self, s: Stimulus, rp: RunParameters):
@@ -250,8 +265,13 @@ class LePelleyHybrid(AdaptiveType):
     @classmethod
     def defaults(cls) -> dict[str, float]:
         return dict(
-            alpha_mack = .5,
-            alpha_hall = .5,
+            alpha_mack = .9,
+            alpha_hall = .9,
+            beta = .3,
+            betan = .1,
+            thetaE = .3,
+            thetaI = .1,
+            lamda = .8,
         )
 
     def step(self, s: Stimulus, rp: RunParameters):
