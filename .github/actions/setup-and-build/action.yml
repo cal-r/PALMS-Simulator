@@ -35,7 +35,7 @@ runs:
           --exclude-module PySide6.Qt6.Qt6Network \
           --collect-data PySide6.Qt6.plugins
         "
-        COMMON_OPTIONS="--windowed --noconfirm --clean --optimize 2"
+        COMMON_OPTIONS="--windowed --noconfirm --clean"
 
         if [[ "${{ inputs.os }}" == "macos-latest" ]]
         then
@@ -44,7 +44,6 @@ runs:
             --onedir \
             --contents-directory 'PALMS Code' \
             --argv-emulation \
-            --strip \
             --icon resources/palms.icns \
             PALMS.py
           mkdir -p release
@@ -63,7 +62,6 @@ runs:
           pyinstaller ${EXCLUDED_MODULE_OPTIONS} ${COMMON_OPTIONS} \
             --add-data "resources:resources" \
             --onefile \
-            --strip \
             --icon resources/palms.png \
             --splash resources/splash.png \
             PALMS.py
