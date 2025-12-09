@@ -41,7 +41,6 @@ runs:
           pyinstaller ${EXCLUDED_MODULE_OPTIONS} ${COMMON_OPTIONS} \
             --add-data "resources:resources" \
             --onedir \
-            --argv-emulation \
             --icon resources/palms.icns \
             PALMS.py
           mkdir -p release
