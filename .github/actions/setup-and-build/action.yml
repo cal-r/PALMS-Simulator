@@ -41,11 +41,11 @@ runs:
           pyinstaller ${EXCLUDED_MODULE_OPTIONS} ${COMMON_OPTIONS} \
             --add-data "resources:resources" \
             --onedir \
-            --contents-directory 'PALMS Code' \
             --argv-emulation \
             --icon resources/palms.icns \
             PALMS.py
           mkdir -p release
+          mv dist/PALMS 'dist/PALMS Code'
           tar -czf release_macos.tar.gz Experiments -C dist ./
           mv release_macos.tar.gz release/
         elif [[ "${{ inputs.os }}" == "windows-latest" ]]
