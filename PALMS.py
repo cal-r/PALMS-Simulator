@@ -178,6 +178,7 @@ class PavlovianApp(QMainWindow):
 
                 if name == 'adaptive_type':
                     value = value.replace('LePelley', 'Le Pelley')
+                    value = value.replace('Rescorla Wagner w/ Variable Learning Rate', 'MLAB Model')
                     self.adaptiveTypeButtons.clickAdaptiveTypeButton(value)
                 elif name == 'configural_cues':
                     self.actionButtons.configuralButton.click()
