@@ -754,14 +754,14 @@ class AdaptiveTypeButtons(QGroupBox):
         self.buttonGroup.setExclusive(True)
 
         for i, adaptive_type in enumerate(parent.adaptive_types):
-            button = QPushButton(adaptive_type.replace('/ ', '/\n'))
+            button = QPushButton('  ' + adaptive_type.replace('/ ', '/\n') + '  ')
             button.adaptive_type = adaptive_type
             button.setCheckable(True)
             button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-            noMarginStyle = ""
+            marginStyle = ""
             checkedStyle = "QPushButton:checked { background-color: lightblue; font-weight: bold; border: 2px solid #0057D8; }"
-            button.setStyleSheet(noMarginStyle + checkedStyle)
+            button.setStyleSheet(marginStyle + checkedStyle)
             button.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
             self.buttonGroup.addButton(button, i)
