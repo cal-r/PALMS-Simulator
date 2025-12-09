@@ -350,7 +350,10 @@ class PavlovianApp(QMainWindow):
             try:
                 experiment = Experiment(name, phase_strs)
             except ValueError as e:
-                QMessageBox.critical(self, 'Syntax Error', str(e))
+                error = str(e)
+                if len(error) > 250:
+                    error = error[:250] + '…'
+                QMessageBox.critical(self, 'Syntax Error', str(error))
 
                 # Apologies for the Go-like code. This should be a sum type!
                 return [], {}, args
