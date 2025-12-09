@@ -39,7 +39,7 @@ runs:
 
         if [[ "${{ inputs.os }}" == "macos-latest" ]]
         then
-          pyinstaller ${EXCLUDED_MODULE_OPTIONS} ${COMMON_OPTIONS}\
+          pyinstaller ${EXCLUDED_MODULE_OPTIONS} ${COMMON_OPTIONS} \
             --add-data "resources:resources" \
             --onedir \
             --contents-directory 'PALMS Code' \
@@ -60,7 +60,13 @@ runs:
           7z a -tzip release_windows.zip Experiments
           mv release_windows.zip release/
         else
-          pyinstaller ${EXCLUDED_MODULE_OPTIONS} ${COMMON_OPTIONS} --add-data "resources:resources" --onefile --icon resources/palms.png --splash resources/splash.png PALMS.py
+          pyinstaller ${EXCLUDED_MODULE_OPTIONS} ${COMMON_OPTIONS} \
+            --add-data "resources:resources" \
+            --onefile \
+            --strip \
+            --icon resources/palms.png \
+            --splash resources/splash.png \
+            PALMS.py
           mkdir -p release
           chmod +x dist/PALMS
           tar -czf release_linux.tar.gz Experiments -C dist PALMS
