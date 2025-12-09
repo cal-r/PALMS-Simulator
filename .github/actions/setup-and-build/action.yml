@@ -30,6 +30,11 @@ runs:
         EXCLUDED_MODULE_OPTIONS=" \
           --exclude-module PySide5  \
           --exclude-module PySide6.Qt6.translations  \
+          --exclude-module PySide6.Qt3DCore \
+          --exclude-module PySide6.Qt3DAnimation \
+          --exclude-module PySide6.Qt3DRender \
+          --exclude-module PySide6.Qt3DInput \
+          --exclude-module PySide6.Qt3DLogic \
           --collect-data PySide6 \
           --collect-data PySide6.Qt6.plugins
         "
