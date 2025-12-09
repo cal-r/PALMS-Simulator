@@ -30,12 +30,8 @@ runs:
         EXCLUDED_MODULE_OPTIONS=" \
           --exclude-module PySide5  \
           --exclude-module PySide6.Qt6.translations  \
-          --exclude-module PySide6.Qt3DCore \
-          --exclude-module PySide6.Qt3DAnimation \
-          --exclude-module PySide6.Qt3DRender \
-          --exclude-module PySide6.Qt3DInput \
-          --exclude-module PySide6.Qt3DLogic \
-          --collect-data PySide6 \
+          --exclude-module PySide6.Qt6.lib.libQt6Pdf  \
+          --exclude-module PySide6.Qt6.Qt6Network \
           --collect-data PySide6.Qt6.plugins
         "
         COMMON_OPTIONS="--windowed --noconfirm --clean"
