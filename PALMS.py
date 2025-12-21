@@ -11,6 +11,7 @@ from argparse import ArgumentParser
 from collections import defaultdict
 from itertools import zip_longest
 from pathlib import Path
+from typing import Optional
 from PySide6.QtCore import QTimer, Qt, QSize
 from PySide6.QtGui import QFont, QPixmap, QGuiApplication
 from PySide6.QtWidgets import *
@@ -47,9 +48,18 @@ class PavlovianApp(QMainWindow):
     plot_part_stimuli: bool
     show_legend: bool
 
+    max_workers: Optional[int]
+    screenshot_ready: bool
     dpi: int
 
-    def __init__(self, dpi = 200, screenshot_ready = False, parent = None, smoke_test = False):
+    def __init__(
+        self,
+        dpi = 200,
+        screenshot_ready = False,
+        parent = None,
+        smoke_test = False,
+        max_workers = None,
+    ):
         super(PavlovianApp, self).__init__(parent)
 
         self.adaptive_types = AdaptiveType.types().keys()
@@ -81,6 +91,7 @@ class PavlovianApp(QMainWindow):
         self.legend_page = 0
         self.line_hidden = {}
         self.dpi = dpi
+        self.max_workers = max_workers
         self.screenshot_ready = screenshot_ready
 
         self.initUI()
@@ -288,6 +299,8 @@ class PavlovianApp(QMainWindow):
         return {cs: self.floatOr(pair.box.text(), value) for cs, pair in self.per_cs_param[perc].items()}
 
     def generateResults(self) -> tuple[list[dict[str, StimulusHistory]], dict[str, list[Phase]], RWArgs]:
+        logging.info('Called generateResults')
+
         should_plot_macknhall = AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall()
         args = RWArgs(
             adaptive_type = self.current_adaptive_type,
@@ -348,7 +361,7 @@ class PavlovianApp(QMainWindow):
                 continue
 
             try:
-                experiment = Experiment(name, phase_strs)
+                experiment = Experiment(name, phase_strs, max_workers = self.max_workers)
             except ValueError as e:
                 error = str(e)
                 if len(error) > 250:
@@ -363,6 +376,7 @@ class PavlovianApp(QMainWindow):
             strengths = [a | b for a, b in zip_longest(strengths, local_strengths, fillvalue = StimulusHistory.emptydict())]
             phases[name] = experiment.phases
 
+        logging.info('Finish generateResults')
         return strengths, phases, args
 
     def plotExperiment(self):
@@ -386,6 +400,8 @@ class PavlovianApp(QMainWindow):
         return strengths
 
     def refreshExperiment(self, caller = None):
+        logging.info('Call refreshExperiment')
+
         from matplotlib import pyplot
         if caller is not None:
             logging.info(f'Called refreshExperiment from {caller}')
@@ -433,6 +449,7 @@ class PavlovianApp(QMainWindow):
         self.line_hidden = {k: self.line_hidden.get(k, False) for k in line_names}
 
         self.refreshFigure()
+        logging.info('Finish refreshExperiment')
 
     def refreshFigure(self):
         current_figure = self.figures[self.phaseNum - 1]
@@ -564,6 +581,7 @@ def parse_args():
     gui_parser.add_argument('--debug', action = 'store_true', help = 'Whether to go to a debugging console if there is an exception')
     gui_parser.add_argument('--smoke-test', action = 'store_true', help = 'Run a smoke test: open the app, log everything, wait 5 seconds, close the app.')
     gui_parser.add_argument('--verbose', '-v', action = 'store_true', help = 'Verbose logging.')
+    gui_parser.add_argument('--max-workers', type = int, help = 'Maximum number of multiprocessing cores used in randomised phases. This is constrained by the total CPU count and number of trials.')
     gui_parser.add_argument('load_file', nargs = '?', help = 'File to load initially')
 
     if len(sys.argv) > 1 and sys.argv[1] in ['-h', '--help']:
@@ -606,7 +624,12 @@ def main():
 
     logging.info('Creating gallery')
 
-    gallery = PavlovianApp(dpi = dpi, screenshot_ready = args.screenshot_ready, smoke_test = args.smoke_test)
+    gallery = PavlovianApp(
+        dpi = dpi,
+        screenshot_ready = args.screenshot_ready,
+        smoke_test = args.smoke_test,
+        max_workers = args.max_workers,
+    )
     gallery.show()
 
     logging.info('Loading file')

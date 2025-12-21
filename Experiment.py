@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, get_type_hints, get_args
+from typing import Any, get_type_hints, get_args, Optional, ClassVar
 from types import UnionType
 
 from Group import Group
@@ -118,12 +118,15 @@ class RWArgs:
 class Experiment:
     name: str
     force_configural_cues: bool
+    max_workers: Optional[int]
     rest: list[str]
     phases: list[Phase]
 
-    def __init__(self, name: str, phase_strs: list[str]):
+    def __init__(self, name: str, phase_strs: list[str], max_workers: Optional[int] = None):
         self.name, *rest = name.split('/')
         self.force_configural_cues = False
+        self.max_workers = max_workers
+
         for option in rest:
             if option == 'conf' or option == 'configural' or option == 'cc':
                 self.force_configural_cues = True
@@ -210,7 +213,10 @@ class Experiment:
                 cpu_count = getattr(os, 'process_cpu_count', os.cpu_count)() or 1
                 max_workers = min(cpu_count, num_trials)
 
-                logging.info(f'Running {num_trials} trials with {max_workers} workers')
+                if self.max_workers is not None:
+                    max_workers = min(max_workers, self.max_workers)
+
+                logging.info(f'Running {num_trials} trials with {max_workers} worker{"s" if max_workers != 1 else ""}')
 
                 from concurrent.futures import ProcessPoolExecutor
                 with ProcessPoolExecutor(max_workers = max_workers) as executor:
