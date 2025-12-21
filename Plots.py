@@ -68,7 +68,7 @@ def generate_figures(
         dpi: None | float = None,
         singular_legend: bool = False,
         legend_locs: None | list[list[tuple[float, float]]] = None,
-    ) -> list[pyplot.Figure]:
+    ) -> list: # list[pyplot.Figure]
     from matplotlib import pyplot
     from matplotlib.ticker import MaxNLocator, FuncFormatter
     import seaborn

@@ -29,7 +29,8 @@ class PavlovianApp(QMainWindow):
     adaptive_types: list[str]
     current_adaptive_type: str
 
-    figures: list['pyplot.Figure']
+    figures: list # list[pyplot.Figure]
+    strengths: list[dict[str, StimulusHistory]]
     phases: dict[str, list[Phase]]
     phaseNum: int
     numPhases: int
@@ -68,6 +69,7 @@ class PavlovianApp(QMainWindow):
         self.current_adaptive_type = None
 
         self.figures = []
+        self.strengths = []
         self.phases = {}
         self.phaseNum = 1
         self.numPhases = 0
@@ -300,11 +302,9 @@ class PavlovianApp(QMainWindow):
 
         return {cs: self.floatOr(pair.box.text(), value) for cs, pair in self.per_cs_param[perc].items()}
 
-    def generateResults(self) -> tuple[list[dict[str, StimulusHistory]], dict[str, list[Phase]], RWArgs]:
-        assert self.called_refresh, 'RefreshExperiment never called.'
-
+    def packArgs(self) -> RWArgs:
         should_plot_macknhall = AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall()
-        args = RWArgs(
+        return RWArgs(
             adaptive_type = self.current_adaptive_type,
 
             alpha = self.floatOr(self.params['alpha'].box.text(), 0),
@@ -351,6 +351,14 @@ class PavlovianApp(QMainWindow):
             xi_hall = 0.5,
         )
 
+    def generateResults(self, args: Optional[RWArgs] = None) -> tuple[list[dict[str, StimulusHistory]], dict[str, list[Phase]]]:
+        assert self.called_refresh, 'RefreshExperiment never called.'
+
+        # Tempoary code; please delete.
+        if args is None:
+            logging.warning('Warning: empty args in generateResults.')
+            args = self.packArgs()
+
         rowCount = self.tableWidget.rowCount()
         columnCount = self.tableWidget.columnCount()
 
@@ -371,14 +379,33 @@ class PavlovianApp(QMainWindow):
                 QMessageBox.critical(self, 'Syntax Error', str(error))
 
                 # Apologies for the Go-like code. This should be a sum type!
-                return [], {}, args
+                return [], {}
 
             local_strengths = experiment.run_all_phases(args)
 
             strengths = [a | b for a, b in zip_longest(strengths, local_strengths, fillvalue = StimulusHistory.emptydict())]
             phases[name] = experiment.phases
 
-        return strengths, phases, args
+        return strengths, phases
+
+    def plotExperiment(self):
+        if len(self.phases) == 0:
+            return
+
+        args = self.packArgs()
+        figures = generate_figures(
+            self.strengths,
+            phases = self.phases,
+            plot_V = not args.plot_alpha and not args.plot_macknhall,
+            plot_alpha = args.plot_alpha and not AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
+            plot_macknhall = args.plot_macknhall and AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
+            dpi = self.dpi,
+            singular_legend = not self.show_legend
+        )
+
+        for fig in figures:
+            fig.canvas.mpl_connect('pick_event', self.pickLine)
+            fig.show()
 
     def refreshExperiment(self, caller = None):
         from matplotlib import pyplot
@@ -391,8 +418,9 @@ class PavlovianApp(QMainWindow):
         self.plotBox.phaseBox.setLoading()
         self.tableWidget.updateSizes()
 
-        strengths, phases, args = self.generateResults()
-        if len(phases) == 0:
+        args = self.packArgs()
+        self.strengths, self.phases = self.generateResults(args)
+        if len(self.phases) == 0:
             self.alphasBox.clear()
             self.numPhases = 1
             self.phaseNum = 1
@@ -401,12 +429,11 @@ class PavlovianApp(QMainWindow):
             self.refreshFigure()
             return
 
-        self.css = set.union(*[phase.cs() for group in phases.values() for phase in group])
+        self.css = set.union(*[phase.cs() for group in self.phases.values() for phase in group])
         self.alphasBox.refresh(self.css)
 
-        self.numPhases = max(len(v) for v in phases.values())
+        self.numPhases = max(len(v) for v in self.phases.values())
         self.phaseNum = min(self.phaseNum, self.numPhases)
-        self.phases = phases
 
         # Get the locations of the legends of all axes of all figures.
         legend_locs = [[ax.get_legend()._loc for ax in fig.get_axes()] for fig in self.figures]
@@ -416,7 +443,7 @@ class PavlovianApp(QMainWindow):
             pyplot.close(fig)
 
         self.figures = generate_figures(
-            strengths,
+            self.strengths,
             plot_V = not args.plot_alpha and not args.plot_macknhall,
             plot_alpha = args.plot_alpha and not AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
             plot_macknhall = args.plot_macknhall and AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
@@ -427,7 +454,7 @@ class PavlovianApp(QMainWindow):
         for f in self.figures:
             f.set_canvas(self.plotCanvas)
 
-        line_names = set.union(*[set(x.keys()) for x in strengths])
+        line_names = set.union(*[set(x.keys()) for x in self.strengths])
         self.line_hidden = {k: self.line_hidden.get(k, False) for k in line_names}
 
         self.refreshFigure()
@@ -525,13 +552,13 @@ class PavlovianApp(QMainWindow):
         self.close()
 
     def savePlots(self, filename, width, height, singular_legend):
-        strengths, phases, args = self.generateResults()
-        if len(phases) == 0:
+        if len(self.phases) == 0:
             return
 
+        args = self.packArgs()
         save_plots(
-            strengths,
-            phases = phases,
+            self.strengths,
+            phases = self.phases,
             plot_V = not args.plot_alpha and not args.plot_macknhall,
             plot_alpha = args.plot_alpha and not AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
             plot_macknhall = args.plot_macknhall and AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),

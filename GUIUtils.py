@@ -16,7 +16,7 @@ from AdaptiveType import AdaptiveType
 from Environment import StimulusHistory
 
 # Putting this here so mypy stops complaining.
-from PySide6.QtWidgets import QFormLayout, QGroupBox, QPushButton, QWidget
+from PySide6.QtWidgets import QFormLayout, QGroupBox, QPushButton, QWidget, QScrollArea
 from PySide6.QtCore import QTimer, Qt, QSize
 
 class PhaseBox(QGroupBox):
@@ -425,10 +425,9 @@ class ActionButtons(QWidget):
         if not fileName:
             return
 
-        strengths, _, args = self.parent.generateResults()
-
+        args = self.parent.packArgs()
         with open(fileName, 'w') as file:
-            StimulusHistory.exportData(strengths, file, args.should_plot_macknhall)
+            StimulusHistory.exportData(self.parent.strengths, file, args.should_plot_macknhall)
 
     def savePlots(self):
         dialog = QDialog(self)
