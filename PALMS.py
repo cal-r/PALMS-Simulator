@@ -299,8 +299,6 @@ class PavlovianApp(QMainWindow):
         return {cs: self.floatOr(pair.box.text(), value) for cs, pair in self.per_cs_param[perc].items()}
 
     def generateResults(self) -> tuple[list[dict[str, StimulusHistory]], dict[str, list[Phase]], RWArgs]:
-        logging.info('Called generateResults')
-
         should_plot_macknhall = AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall()
         args = RWArgs(
             adaptive_type = self.current_adaptive_type,
@@ -376,7 +374,6 @@ class PavlovianApp(QMainWindow):
             strengths = [a | b for a, b in zip_longest(strengths, local_strengths, fillvalue = StimulusHistory.emptydict())]
             phases[name] = experiment.phases
 
-        logging.info('Finish generateResults')
         return strengths, phases, args
 
     def plotExperiment(self):
@@ -400,8 +397,6 @@ class PavlovianApp(QMainWindow):
         return strengths
 
     def refreshExperiment(self, caller = None):
-        logging.info('Call refreshExperiment')
-
         from matplotlib import pyplot
         if caller is not None:
             logging.info(f'Called refreshExperiment from {caller}')
@@ -449,7 +444,6 @@ class PavlovianApp(QMainWindow):
         self.line_hidden = {k: self.line_hidden.get(k, False) for k in line_names}
 
         self.refreshFigure()
-        logging.info('Finish refreshExperiment')
 
     def refreshFigure(self):
         current_figure = self.figures[self.phaseNum - 1]
@@ -605,8 +599,6 @@ def main():
     if args.smoke_test or args.verbose:
         logging.getLogger().setLevel(logging.INFO)
 
-    logging.info('Starting')
-
     app = QApplication(sys.argv)
     logScreenInfo(app)
 
@@ -622,7 +614,6 @@ def main():
         dpi = 1.1 ** (5 * app.primaryScreen().devicePixelRatio()) * app.primaryScreen().logicalDotsPerInch()
         logging.info(f'Final DPI: {dpi}')
 
-    logging.info('Creating gallery')
 
     gallery = PavlovianApp(
         dpi = dpi,
@@ -632,14 +623,11 @@ def main():
     )
     gallery.show()
 
-    logging.info('Loading file')
     if args.load_file:
         gallery.loadFile(args.load_file)
 
-    logging.info('Executing app')
     code = app.exec()
 
-    logging.info('Finished!')
     sys.exit(code)
 
 if __name__ == '__main__':

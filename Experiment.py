@@ -224,16 +224,12 @@ class Experiment:
                     futures = [executor.submit(self.run_random_trials, g, phase, trials_per_worker(t), num_trials) for t in range(max_workers)]
                     hist, final_strengths = (list(x) for x in zip(*[f.result() for f in futures]))
 
-                logging.info(f'Appending results')
                 results.append([
                     Environment.summ([h[x] for h in hist if x < len(h)])
                     for x in range(max(len(h) for h in hist))
                 ])
 
-                logging.info(f'Averaging environment')
                 g.s = Environment.summ(final_strengths)
-
-                logging.info(f'Done!')
 
         return results
 

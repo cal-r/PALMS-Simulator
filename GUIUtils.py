@@ -297,8 +297,6 @@ class ActionButtons(QWidget):
                 parent = exe.parent
 
         experiments = parent / 'Experiments'
-        logging.info(parent)
-        logging.info(experiments)
         if os.path.exists(experiments):
             return experiments
 
