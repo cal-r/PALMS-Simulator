@@ -62,6 +62,8 @@ class PavlovianApp(QMainWindow):
     ):
         super(PavlovianApp, self).__init__(parent)
 
+        self.called_refresh = False
+
         self.adaptive_types = AdaptiveType.types().keys()
         self.current_adaptive_type = None
 
@@ -299,6 +301,8 @@ class PavlovianApp(QMainWindow):
         return {cs: self.floatOr(pair.box.text(), value) for cs, pair in self.per_cs_param[perc].items()}
 
     def generateResults(self) -> tuple[list[dict[str, StimulusHistory]], dict[str, list[Phase]], RWArgs]:
+        assert self.called_refresh, 'RefreshExperiment never called.'
+
         should_plot_macknhall = AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall()
         args = RWArgs(
             adaptive_type = self.current_adaptive_type,
@@ -376,30 +380,13 @@ class PavlovianApp(QMainWindow):
 
         return strengths, phases, args
 
-    def plotExperiment(self):
-        strengths, phases, args = self.generateResults()
-        if len(phases) == 0:
-            return
-
-        figures = generate_figures(
-            strengths,
-            phases = phases,
-            plot_V = not args.plot_alpha and not args.plot_macknhall,
-            plot_alpha = args.plot_alpha and not AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
-            plot_macknhall = args.plot_macknhall and AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
-            dpi = self.dpi,
-            singular_legend = not self.show_legend
-        )
-
-        for fig in figures:
-            fig.canvas.mpl_connect('pick_event', self.pickLine)
-            fig.show()
-        return strengths
-
     def refreshExperiment(self, caller = None):
         from matplotlib import pyplot
         if caller is not None:
             logging.info(f'Called refreshExperiment from {caller}')
+
+        self.called_refresh = True
+        logging.warning('Called refreshExperiment')
 
         self.plotBox.phaseBox.setLoading()
         self.tableWidget.updateSizes()
