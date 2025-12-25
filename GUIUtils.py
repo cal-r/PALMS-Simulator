@@ -586,7 +586,7 @@ class ParametersGroupBox(QGroupBox):
         layout = QFormLayout()
         layout.setSpacing(10)
         for key, val in AdaptiveType.initial_defaults().items():
-            label = parent.DualLabel(short_names[key], parent, str(val), hoverText = descriptions[key]).addRow(layout)
+            label = parent.DualLabel(short_names[key], parent, str(val), hoverText = descriptions[key], long_name = key).addRow(layout)
             self.params[key] = label
 
         self.params['num_trials'].box.setGeometry(100, 120, 120, 60)
@@ -788,6 +788,7 @@ class AdaptiveTypeButtons(QGroupBox):
         defaults = AdaptiveType.types()[self.parent.current_adaptive_type].defaults()
         parent.parametersGroupBox.clearFields(defaults = defaults, only_unmodified = True)
         parent.alphasBox.clearFields(vals = parent.params, only_unmodified = True)
+
         parent.refreshExperiment()
 
 class PlotBox(QGroupBox):

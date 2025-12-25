@@ -72,6 +72,9 @@ class RWArgs:
 
         setattr(self, name, prop_type(value))
 
+    def get(self, name: str) -> Any:
+        return getattr(self, name)
+
     adaptive_type: str
 
     alphas: dict[str, float]
