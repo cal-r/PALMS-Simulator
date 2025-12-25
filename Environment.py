@@ -67,7 +67,6 @@ class Stimulus:
     def __repr__(self) -> str:
         return str(self.assoc)
 
-
     def __add__(self, other: Stimulus) -> Stimulus:
         ret: dict[str, Any] = dict(name = self.name)
         if self.name != other.name:

@@ -52,8 +52,12 @@ class AdaptiveType:
         }
 
     @classmethod
+    def base(cls, adaptive_type_name) -> AdaptiveType:
+        return cls.types()[adaptive_type_name]
+
+    @classmethod
     def get(cls, adaptive_type_name, *args, **kwargs) -> AdaptiveType:
-        return cls.types()[adaptive_type_name](*args, **kwargs)
+        return cls.base(adaptive_type_name)(*args, **kwargs)
 
     @classmethod
     def parameters(cls) -> list[str]:
@@ -104,6 +108,10 @@ class AdaptiveType:
     def defaults(cls) -> dict[str, float]:
         return {}
 
+    @classmethod
+    def bounds(cls) -> dict[str, tuple[float, float]]:
+        return {}
+
     def get_alpha_mack(self, s: Stimulus, sigma: float) -> float:
         return 1/2 * (1 + 2*s.assoc - sigma)
 
@@ -127,6 +135,9 @@ class AdaptiveType:
         except OverflowError:
             print(f'{rp.lamda=}\t{rp.sigma=}')
             raise
+
+        for prop, (lower, upper) in self.bounds().items():
+            setattr(s, prop, min(upper, max(lower, getattr(s, prop))))
 
     def step(self, s: Stimulus, rp: RunParameters):
         raise NotImplementedError('Calling step in abstract function is undefined.')
@@ -272,6 +283,13 @@ class LePelleyHybrid(AdaptiveType):
             thetaE = .3,
             thetaI = .1,
             lamda = .8,
+        )
+
+    @classmethod
+    def bounds(cls) -> dict[str, tuple[float, float]]:
+        return dict(
+            alpha_mack = (0.05, 1),
+            alpha_hall = (0.5 , 1),
         )
 
     def step(self, s: Stimulus, rp: RunParameters):

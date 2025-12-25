@@ -231,7 +231,11 @@ class PavlovianApp(QMainWindow):
         hoverText: str
         modified: bool
 
-        def __init__(self, text, parent, default, font = 'Monospace', hoverText = None, maximumWidth = 40):
+        long_name: str
+
+        parent: QWidget
+
+        def __init__(self, text, parent, default, font = 'Monospace', hoverText = None, maximumWidth = 40, long_name: str = ''):
             self.parent = parent
 
             self.label = QLabel(text)
@@ -242,6 +246,7 @@ class PavlovianApp(QMainWindow):
             self.label.setFont(QFont(font))
 
             self.modified = False
+            self.long_name = long_name
 
             self.hoverText = hoverText
             if hoverText:
@@ -262,6 +267,12 @@ class PavlovianApp(QMainWindow):
 
         def changeText(self):
             self.modified = True
+
+            lower, upper = AdaptiveType.base(self.parent.current_adaptive_type).bounds().get(self.long_name, (0, 1))
+            value = float(self.box.text())
+            if value < lower or value > upper:
+                QMessageBox.warning(self.parent, 'Parameter out of range', f'Parameter {self.label.text()} = {value} out of range [{lower}, {upper}].')
+
             self.parent.refreshExperiment()
 
     def enableParams(self):
