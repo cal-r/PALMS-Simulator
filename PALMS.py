@@ -255,8 +255,10 @@ class PavlovianApp(QMainWindow):
             # self.label.setStyleSheet('border: 2px solid red')
             # self.box.setStyleSheet('border: 2px solid red')
 
+        # Programatically set the text of this DualLabel.
         def setText(self, text: str, set_modified: None | bool = None):
             self.box.setText(text)
+            self.checkBounds()
 
             if set_modified is not None:
                 self.modified = set_modified
@@ -265,13 +267,18 @@ class PavlovianApp(QMainWindow):
             layout.addRow(self.label, self.box)
             return self
 
-        def changeText(self):
-            self.modified = True
-
-            lower, upper = AdaptiveType.base(self.parent.current_adaptive_type).bounds().get(self.long_name, (0, 1))
+        def checkBounds(self):
+            adaptive_type = self.parent.current_adaptive_type
+            lower, upper = AdaptiveType.base(adaptive_type).bounds().get(self.long_name, (0, 1))
             value = float(self.box.text())
             if value < lower or value > upper:
-                QMessageBox.warning(self.parent, 'Parameter out of range', f'Parameter {self.label.text()} = {value} out of range [{lower}, {upper}].')
+                QMessageBox.warning(self.parent, 'Parameter out of range', f'Parameter {self.label.text()} = {value} out of range [{lower}, {upper}] for model {adaptive_type}.')
+
+
+        # Connected function to text change.
+        def changeText(self):
+            self.modified = True
+            self.checkBounds()
 
             self.parent.refreshExperiment()
 

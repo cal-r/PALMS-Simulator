@@ -604,6 +604,8 @@ class ParametersGroupBox(QGroupBox):
             if key.startswith('alpha_') and not self.params[key].modified and self.params['alpha'].modified:
                 self.params[key].setText(self.params['alpha'].box.text(), set_modified = True)
 
+            self.params[key].checkBounds()
+
 class AlphasBox(QGroupBox):
     class InnerBox(QWidget):
         def __init__(self, parent):
@@ -720,6 +722,7 @@ class AlphasBox(QGroupBox):
                         f'{local_val:.3f}'.rstrip('0').rstrip('.'),
                         hoverText = hoverText,
                         maximumWidth = 50,
+                        long_name = perc,
                     ).addRow(layout)
 
                     if (perc, cs) in values.keys():
@@ -737,6 +740,8 @@ class AlphasBox(QGroupBox):
 
                 if key.startswith('alpha_') and not pair.modified and self.per_cs_param['alpha'][cs].modified:
                     pair.setText(self.per_cs_param['alpha'][cs].box.text(), set_modified = True)
+
+                pair.checkBounds()
 
 class AdaptiveTypeButtons(QGroupBox):
     def __init__(self, parent):
