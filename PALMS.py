@@ -480,6 +480,7 @@ class PavlovianApp(QMainWindow):
         self.plotCanvas.figure = current_figure
 
         for ax in current_figure.get_axes():
+            logging.info([x.get_label() for x in ax.get_lines()])
             for line in ax.get_lines():
                 label = line.get_label().split(': ')[-1].strip()
                 if label in self.line_hidden:
@@ -514,12 +515,6 @@ class PavlovianApp(QMainWindow):
         self.actionButtons.phaseLambdaButton.setChecked(any_lambda)
 
         fig = self.plotCanvas.figure
-        logging.info(f'{fig.dpi=}')
-        logging.info(f'{fig.get_size_inches()=}')
-        logging.info(f'{self.plotCanvas.get_width_height()=}')
-
-        logging.info(f'DPI ratio: {getattr(self.plotCanvas, "_dpi_ratio", None)}')
-        logging.info(f'{self.plotCanvas.devicePixelRatioF()=}')
 
     def pickLine(self, event):
         label = event.artist.get_label().split(': ')[-1].strip()

@@ -11,6 +11,10 @@ from Experiment import Phase
 from itertools import chain
 from typing import Any, TypeAlias
 
+from matplotlib.textpath import TextPath
+from matplotlib.markers import MarkerStyle
+from matplotlib.font_manager import FontProperties
+
 Color: TypeAlias = tuple[float, float, float]
 
 def titleify(title: None | str, phases: dict[str, list[Phase]], phase_num: int) -> str:
@@ -55,6 +59,50 @@ def get_css(data: list[dict[str, StimulusHistory]]) -> tuple[list[str], dict[str
 
     colors['Real-world Group - X'], colors['Real-world Group - Y'] = seaborn.husl_palette(2)
     return css, colors, marker_dict
+
+# Plot a complex marker with an invisible square around it for rediability.
+def plot_around_marker(data, char, label, color, ax, **kwargs):
+    bg = ax.get_facecolor()
+    marker = f'${char}$'
+    size = 6
+
+    ax.plot(
+        data,
+        color = color,
+        zorder = 1,
+        label = '_' + label,
+        **kwargs,
+    )
+    ax.plot(
+        data,
+        markersize = size + .5,
+        color = bg,
+        linestyle = 'None',
+        marker = 's',
+        zorder = 2,
+        label = '_' + label,
+    )
+    ax.plot(
+        data,
+        markersize = size,
+        linestyle = 'None',
+        marker = marker,
+        zorder = 3,
+        label = '_' + label,
+        color = color,
+        # markerfacecolor = 'None',
+        markeredgewidth = .1,
+        # markeredgecolor = bg,
+    )
+
+    ax.plot(
+        [],
+        label = label,
+        markersize = size,
+        marker = marker,
+        markeredgewidth = .1,
+        color = color,
+    )
 
 def generate_figures(
         data: list[dict[str, StimulusHistory]],
@@ -139,9 +187,11 @@ def generate_figures(
                 ax.plot(hist.alpha, label='α: '+str(key), **plot_options) # type: ignore
 
             if not hist.compound[0] and plot_macknhall:
-                common_options: dict[str, Any] = dict(markersize = 6, alpha = 1)
-                ax.plot(hist.alpha_mack, label='Mack: ' + str(key), color = colors[key], marker='$M$', **common_options)
-                ax.plot(hist.alpha_hall, label='Hall: ' + str(key), color = colors[key], marker='$H$', **common_options)
+                plot_around_marker(hist.alpha_mack, ax = ax, label = f'Mack: {key}', char = 'M', color = colors[key])
+                plot_around_marker(hist.alpha_hall, ax = ax, label = f'Hall: {key}', char = 'H', color = colors[key])
+
+                # ax.plot(hist.alpha_mack, label = f'Mack: {key}', marker = '$M$', **common_options)
+                # ax.plot(hist.alpha_hall, label = f'Hall: {key}', marker = '$H$', **common_options)
 
         longFormat = lambda x, _: f'{x:.0e}' if abs(x) >= 1000 else f'{x:.2f}'
 
@@ -296,7 +346,6 @@ class PaginatedLegend:
             line.set_picker(5)
             text.set_picker(5)
             text.set_label(text.get_text())
-
 
 def generate_singular_legend(data, plot_stimuli, dpi):
     css, colors, markers = get_css(data)
