@@ -269,11 +269,10 @@ class PavlovianApp(QMainWindow):
 
         def checkBounds(self):
             adaptive_type = self.parent.current_adaptive_type
-            lower, upper = AdaptiveType.base(adaptive_type).bounds().get(self.long_name, (0, 1))
+            lower, upper = AdaptiveType.base(adaptive_type).bounds().get(self.long_name, (-float('inf'), float('inf')))
             value = float(self.box.text())
             if value < lower or value > upper:
                 QMessageBox.warning(self.parent, 'Parameter out of range', f'Parameter {self.label.text()} = {value} out of range [{lower}, {upper}] for model {adaptive_type}.')
-
 
         # Connected function to text change.
         def changeText(self):
