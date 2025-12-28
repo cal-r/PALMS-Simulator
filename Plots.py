@@ -3,6 +3,7 @@ from __future__ import annotations
 import colorcet
 import re
 import math
+import logging
 from itertools import islice, cycle, chain
 
 from Environment import StimulusHistory
@@ -350,6 +351,7 @@ def save_plots(
         phases = phases,
         plot_phase = plot_phase,
         plot_stimuli = plot_stimuli,
+        plot_V = plot_V,
         plot_alpha = plot_alpha,
         plot_macknhall = plot_macknhall,
         title = title,
@@ -364,10 +366,10 @@ def save_plots(
 
     for phase_num, fig in enumerate(figures, start = plot_phase or 1):
         dep = 1.3
-        if plot_phase is None and phase_num > 1:
-            fig.axes[0].set_title('')
-            fig.axes[0].set_ylabel('')
-            fig.axes[0].set_yticklabels([])
+        # if plot_phase is None and phase_num > 1:
+        #     fig.axes[0].set_title('')
+        #     fig.axes[0].set_ylabel('')
+        #     fig.axes[0].set_yticklabels([])
 
         fig.set_size_inches(plot_width / dep, plot_height / dep)
         # widths = {1: 5, 2: 2, 3: 5}
