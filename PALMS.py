@@ -220,10 +220,10 @@ class PavlovianApp(QMainWindow):
 
         self.refreshExperiment()
 
-    def getPixmap(self, filename):
+    def getPixmap(self, filename, scale = 1):
         here = Path(__file__).resolve().parent
         pixmap = QPixmap(str(here / "resources" / filename), flags = Qt.ImageConversionFlag.NoFormatConversion)
-        return pixmap.scaled(150, 150, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+        return pixmap.scaled(int(150 * scale), int(150 * scale), Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
 
     class DualLabel:
         label: QLabel
@@ -430,7 +430,6 @@ class PavlovianApp(QMainWindow):
             logging.info(f'Called refreshExperiment from {caller}')
 
         self.called_refresh = True
-        logging.warning('Called refreshExperiment')
 
         self.plotBox.phaseBox.setLoading()
         self.tableWidget.updateSizes()
