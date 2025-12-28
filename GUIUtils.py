@@ -708,6 +708,10 @@ class AlphasBox(QGroupBox):
                 del form[cs]
 
             def sort_key(x):
+                # Ensure configural cues go last.
+                if x.startswith('(') and x.endswith(')'):
+                    return ('~' + x, 0)
+
                 left, _, right = x.partition('^')
                 return (left, int(right or 0))
 
