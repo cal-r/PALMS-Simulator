@@ -12,6 +12,7 @@ from PySide6.QtWidgets import *
 
 from PIL import Image
 from pathlib import Path
+from datetime import datetime
 from AdaptiveType import AdaptiveType
 from Environment import StimulusHistory
 
@@ -87,23 +88,30 @@ class AboutButton(QPushButton):
     def __init__(self, parent = None):
         super().__init__('About', parent = parent)
 
+        self.icon = parent.getPixmap('palms.png', scale = .5)
+
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.clicked.connect(self.aboutPALMS)
         self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
     def aboutPALMS(self):
         about = '''\
-PALMS: Pavlovian Associative Learning Models Simulator
+**PALMS: Pavlovian Associative Learning Models Simulator**\\
 Version 0.xx
 
-Built by Alessandro Abati, Martin Fixman, Julián Jimenez Nimmo, Sean Lim and Esther Mondragón.
+Built by Team Alpha from City, University of London: Alessandro Abati,
+Martin Fixman, Julián Jimenez Nimmo, Sean Lim and Esther Mondragón.
 
-For the MSc in Artificial Intelligence in City St George's, University of London. \
-If you have any questions, contact any of the authors.
+For any questions add an issue to the Github page:
+[github.com/cal-r/PALMS-Simulator](https://github.com/cal-r/PALMS-Simulator)
+or contact any of the authors.
 
-2024. All rights reserved. Licensed under the LGPL v3. See LICENSE for details.\
+2024–2025. All rights reserved. Licensed under the LGPL v3. See LICENSE for details.\
         '''
-        QMessageBox.information(self, 'About', about)
+        box = QMessageBox(QMessageBox.Information, 'About', about)
+        box.setTextFormat(Qt.TextFormat.MarkdownText)
+        box.setIconPixmap(self.icon)
+        box.exec()
 
 class SquareButton(QPushButton):
     def __init__(self, *a, **kw):
