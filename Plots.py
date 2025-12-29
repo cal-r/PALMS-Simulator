@@ -192,8 +192,8 @@ def generate_figures(
                     plot_around_marker(hist.alpha_mack, ax = ax, label = f'Mack: {key}', char = 'M', color = colors[key])
                     plot_around_marker(hist.alpha_hall, ax = ax, label = f'Hall: {key}', char = 'H', color = colors[key])
                 else:
-                    ax.plot(hist.alpha_mack, linestyle = 'dotted', label = f'Mack: {key}', color = colors[key])
-                    ax.plot(hist.alpha_hall, linestyle = 'dashed', label = f'Hall: {key}', color = colors[key])
+                    ax.plot(hist.alpha_mack, marker = 'o', markersize = 1, markerfacecolor = 'None', label = f'Mack: {key}', color = colors[key])
+                    ax.plot(hist.alpha_hall, marker = '^', markersize = 1, label = f'Hall: {key}', color = colors[key])
 
         longFormat = lambda x, _: f'{x:.0e}' if abs(x) >= 1000 else f'{x:.2f}'
 
