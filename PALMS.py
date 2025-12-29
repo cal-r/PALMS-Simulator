@@ -480,7 +480,6 @@ class PavlovianApp(QMainWindow):
         self.plotCanvas.figure = current_figure
 
         for ax in current_figure.get_axes():
-            logging.info([x.get_label() for x in ax.get_lines()])
             for line in ax.get_lines():
                 label = line.get_label().split(': ')[-1].strip()
                 if label in self.line_hidden:
