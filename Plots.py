@@ -127,6 +127,7 @@ def generate_figures(
         data = [data[plot_phase - 1]]
 
     experiment_css, colors, markers = get_css(data)
+    max_x = max(max(len(hist) for hist in exp.values()) for exp in data)
 
     figures = []
     for phase_num, experiments in enumerate(data, start = 1):
@@ -187,11 +188,12 @@ def generate_figures(
                 ax.plot(hist.alpha, label='α: '+str(key), **plot_options) # type: ignore
 
             if not hist.compound[0] and plot_macknhall:
-                plot_around_marker(hist.alpha_mack, ax = ax, label = f'Mack: {key}', char = 'M', color = colors[key])
-                plot_around_marker(hist.alpha_hall, ax = ax, label = f'Hall: {key}', char = 'H', color = colors[key])
-
-                # ax.plot(hist.alpha_mack, label = f'Mack: {key}', marker = '$M$', **common_options)
-                # ax.plot(hist.alpha_hall, label = f'Hall: {key}', marker = '$H$', **common_options)
+                if max_x <= 100:
+                    plot_around_marker(hist.alpha_mack, ax = ax, label = f'Mack: {key}', char = 'M', color = colors[key])
+                    plot_around_marker(hist.alpha_hall, ax = ax, label = f'Hall: {key}', char = 'H', color = colors[key])
+                else:
+                    ax.plot(hist.alpha_mack, linestyle = 'dotted', label = f'Mack: {key}', color = colors[key])
+                    ax.plot(hist.alpha_hall, linestyle = 'dashed', label = f'Hall: {key}', color = colors[key])
 
         longFormat = lambda x, _: f'{x:.0e}' if abs(x) >= 1000 else f'{x:.2f}'
 
