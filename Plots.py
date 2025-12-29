@@ -4,6 +4,7 @@ import colorcet
 import re
 import math
 import logging
+import colorsys
 from itertools import islice, cycle, chain
 
 from Environment import StimulusHistory
@@ -104,6 +105,25 @@ def plot_around_marker(data, char, label, color, ax, **kwargs):
         color = color,
     )
 
+def shade_hls(color, factor: float):
+    """
+    factor > 1 -> lighter, factor < 1 -> darker
+    color: (r,g,b) in 0..1 or 0..255, or hex "#RRGGBB"
+    returns (r,g,b) in 0..1
+    """
+    if isinstance(color, str):
+        color = color.lstrip("#")
+        r, g, b = (int(color[i:i+2], 16) for i in (0, 2, 4))
+        r, g, b = r/255, g/255, b/255
+    # else:
+    # r, g, b = color
+    # if max(color) > 1.0:
+        # r, g, b = r/255, g/255, b/255
+
+    h, l, s = colorsys.rgb_to_hls(r, g, b)
+    l = max(0.0, min(1.0, l * factor))
+    return colorsys.hls_to_rgb(h, l, s)
+
 def generate_figures(
         data: list[dict[str, StimulusHistory]],
         *,
@@ -188,12 +208,13 @@ def generate_figures(
                 ax.plot(hist.alpha, label='α: '+str(key), **plot_options) # type: ignore
 
             if not hist.compound[0] and plot_macknhall:
+                color_mack, color_hall = shade_hls(colors[key], 1.25), shade_hls(colors[key], 0.75)
                 if max_x <= 100:
-                    plot_around_marker(hist.alpha_mack, ax = ax, label = f'Mack: {key}', char = 'M', color = colors[key])
-                    plot_around_marker(hist.alpha_hall, ax = ax, label = f'Hall: {key}', char = 'H', color = colors[key])
+                    plot_around_marker(hist.alpha_mack, ax = ax, label = f'Mack: {key}', char = 'M', color = color_mack)
+                    plot_around_marker(hist.alpha_hall, ax = ax, label = f'Hall: {key}', char = 'H', color = color_hall)
                 else:
-                    ax.plot(hist.alpha_mack, marker = 'o', markersize = 1, markerfacecolor = 'None', label = f'Mack: {key}', color = colors[key])
-                    ax.plot(hist.alpha_hall, marker = '^', markersize = 1, label = f'Hall: {key}', color = colors[key])
+                    ax.plot(hist.alpha_mack, marker = 'o', markersize = 1, markerfacecolor = 'None', label = f'Mack: {key}', color = color_mack)
+                    ax.plot(hist.alpha_hall, marker = '^', markersize = 1, label = f'Hall: {key}', color = color_hall)
 
         longFormat = lambda x, _: f'{x:.0e}' if abs(x) >= 1000 else f'{x:.2f}'
 
