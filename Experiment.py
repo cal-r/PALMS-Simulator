@@ -185,7 +185,7 @@ class Experiment:
 
         return g
 
-    def run_random_trials(self, g: Group, phase: Phase, trials: int, total_trials: int) -> tuple[list[Environment], Environment, float]:
+    def run_random_trials(self, g: Group, phase: Phase, trials: int, total_trials: int) -> tuple[list[Environment], Environment]:
         # Copy the configural cues to the global environment.
         # This is necessary due to spawn issues in MacOS; we should
         # ideally remove the class variable altogether.
@@ -211,19 +211,16 @@ class Experiment:
         ]
         avg_strengths = Environment.avg(final_strengths, total_trials)
 
-        return avg_hists, avg_strengths, confs / trials
+        return avg_hists, avg_strengths
 
     def run_group_experiments(self, g: Group, num_trials: int) -> list[list[Environment]]:
         results = []
 
-        logging.info(f'CC:\tIn this trial, {Environment.configural_cues=}')
         for trial, phase in enumerate(self.phases):
             if not phase.rand:
-                logging.info(f'CC:\tSequential phase with {Environment.configural_cues=}')
                 strength_hist = g.runPhase(phase.elems, phase.beta, phase.lamda)
                 results.append(strength_hist)
             else:
-                logging.info(f'CC:\tRandom phase with {Environment.configural_cues=}')
 
                 cpu_count = getattr(os, 'process_cpu_count', os.cpu_count)() or 1
                 max_workers = min(cpu_count, num_trials)
@@ -231,23 +228,17 @@ class Experiment:
                 if self.max_workers is not None:
                     max_workers = min(max_workers, self.max_workers)
 
-                logging.info(f'CC:\tBefore running all, {Environment.configural_cues=}')
-                logging.info(f'CC:\tRunning {num_trials} trials with {max_workers} worker{"s" if max_workers != 1 else ""}')
-
                 from concurrent.futures import ProcessPoolExecutor
                 with ProcessPoolExecutor(max_workers = max_workers) as executor:
                     trials_per_worker = lambda t: num_trials // max_workers + (1 if t < num_trials % max_workers else 0)
                     futures = [executor.submit(self.run_random_trials, g, phase, trials_per_worker(t), num_trials) for t in range(max_workers)]
-                    hist, final_strengths, confs_ratio = (list(x) for x in zip(*[f.result() for f in futures]))
+                    hist, final_strengths = (list(x) for x in zip(*[f.result() for f in futures]))
 
-                logging.info(f'CC\tConfs ratios are {confs_ratio}')
-                logging.info(f'CC:\tAppending, {len(hist[0])=}, {sum([x.configural_cues for x in hist[0]])=}')
                 results.append([
                     Environment.summ([h[x] for h in hist if x < len(h)])
                     for x in range(max(len(h) for h in hist))
                 ])
 
-                logging.info(f'CC:\tBefore Environment summ, {Environment.configural_cues=}')
                 g.s = Environment.summ(final_strengths)
 
         return results
