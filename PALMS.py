@@ -619,7 +619,8 @@ def logScreenInfo(app):
 
 def main():
     args = parse_args()
-    logging.basicConfig(level = logging.WARN, format = '[%(relativeCreated)d] %(message)s')
+    logfile = os.path.expanduser("~/Desktop/PALMS.log")
+    logging.basicConfig(filename = logfile, level = logging.INFO, format = '[%(relativeCreated)d] %(message)s')
     if args.smoke_test or args.verbose:
         logging.getLogger().setLevel(logging.INFO)
 
