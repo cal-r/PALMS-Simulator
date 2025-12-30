@@ -186,6 +186,11 @@ class Experiment:
         return g
 
     def run_random_trials(self, g: Group, phase: Phase, trials: int, total_trials: int) -> tuple[list[Environment], Environment, float]:
+        # Copy the configural cues to the global environment.
+        # This is necessary due to spawn issues in MacOS; we should
+        # ideally remove the class variable altogether.
+        Environment.configural_cues = g.configural_cues
+
         initial_strengths = g.s.copy()
 
         hists = []

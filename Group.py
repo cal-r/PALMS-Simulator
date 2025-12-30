@@ -9,6 +9,7 @@ class Group:
     name: str
 
     s: Environment
+    configural_cues: bool
 
     adaptive_type: AdaptiveType
 
@@ -77,6 +78,11 @@ class Group:
                 for k in cs
             }
         )
+
+        # Copy configural cues from global environment.
+        # This is necessary due to spawn issues in MacOS; we should
+        # ideally remove the class variable altogether.
+        self.configural_cues = Environment.configural_cues
 
         self.adaptive_type = AdaptiveType.get(
             adaptive_type,
