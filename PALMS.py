@@ -600,6 +600,7 @@ def parse_args():
     gui_parser.add_argument('--smoke-test', action = 'store_true', help = 'Run a smoke test: open the app, log everything, wait 5 seconds, close the app.')
     gui_parser.add_argument('--verbose', '-v', action = 'store_true', help = 'Verbose logging.')
     gui_parser.add_argument('--max-workers', type = int, help = 'Maximum number of multiprocessing cores used in randomised phases. This is constrained by the total CPU count and number of trials.')
+    gui_parser.add_argument('--spawn', action = 'store_true', help = 'Force spawn instead of fork for multiprocessing. This should only have an effect on Linux, and is used for debugging.')
     gui_parser.add_argument('load_file', nargs = '?', help = 'File to load initially')
 
     if len(sys.argv) > 1 and sys.argv[1] in ['-h', '--help']:
@@ -619,10 +620,13 @@ def logScreenInfo(app):
 
 def main():
     args = parse_args()
-    logfile = os.path.expanduser("~/Desktop/PALMS.log")
-    logging.basicConfig(filename = logfile, level = logging.INFO, format = '[%(relativeCreated)d] %(message)s')
+    logging.basicConfig(level = logging.WARN, format = '[%(relativeCreated)d] %(message)s')
     if args.smoke_test or args.verbose:
         logging.getLogger().setLevel(logging.INFO)
+
+    if args.spawn:
+        import multiprocessing
+        multiprocessing.set_start_method("spawn", force=True)
 
     app = QApplication(sys.argv)
     logScreenInfo(app)
