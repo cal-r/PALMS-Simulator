@@ -12,10 +12,6 @@ from Experiment import Phase
 from itertools import chain
 from typing import Any, TypeAlias
 
-from matplotlib.textpath import TextPath
-from matplotlib.markers import MarkerStyle
-from matplotlib.font_manager import FontProperties
-
 Color: TypeAlias = tuple[float, float, float]
 
 def titleify(title: None | str, phases: dict[str, list[Phase]], phase_num: int) -> str:
