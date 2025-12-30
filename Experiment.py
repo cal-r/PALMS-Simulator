@@ -208,6 +208,7 @@ class Experiment:
     def run_group_experiments(self, g: Group, num_trials: int) -> list[list[Environment]]:
         results = []
 
+        logging.info(f'CC:\tIn this trial, {Environment.configural_cues}')
         for trial, phase in enumerate(self.phases):
             if not phase.rand:
                 strength_hist = g.runPhase(phase.elems, phase.beta, phase.lamda)
@@ -219,7 +220,8 @@ class Experiment:
                 if self.max_workers is not None:
                     max_workers = min(max_workers, self.max_workers)
 
-                logging.info(f'Running {num_trials} trials with {max_workers} worker{"s" if max_workers != 1 else ""}')
+                logging.info(f'CC:\tBefore running all, {Environment.configural_cues}')
+                logging.info(f'CC:\tRunning {num_trials} trials with {max_workers} worker{"s" if max_workers != 1 else ""}')
 
                 from concurrent.futures import ProcessPoolExecutor
                 with ProcessPoolExecutor(max_workers = max_workers) as executor:
@@ -227,11 +229,13 @@ class Experiment:
                     futures = [executor.submit(self.run_random_trials, g, phase, trials_per_worker(t), num_trials) for t in range(max_workers)]
                     hist, final_strengths = (list(x) for x in zip(*[f.result() for f in futures]))
 
+                logging.info(f'CC:\tAppending, {len(hist[0])}, {sum([x.configural_cues for x in hist[0]])}')
                 results.append([
                     Environment.summ([h[x] for h in hist if x < len(h)])
                     for x in range(max(len(h) for h in hist))
                 ])
 
+                logging.info(f'CC:\tBefore Environment summ, {Environment.configural_cues}')
                 g.s = Environment.summ(final_strengths)
 
         return results
