@@ -185,15 +185,18 @@ class Experiment:
 
         return g
 
-    def run_random_trials(self, g: Group, phase: Phase, trials: int, total_trials: int) -> tuple[list[Environment], Environment]:
+    def run_random_trials(self, g: Group, phase: Phase, trials: int, total_trials: int) -> tuple[list[Environment], Environment, float]:
         initial_strengths = g.s.copy()
 
         hists = []
         final_strengths = []
+        confs = 0
         for t in range(trials):
             random.shuffle(phase.elems)
 
             g.s = initial_strengths.copy()
+            confs += int(g.s.configural_cues)
+
             hists.append(g.runPhase(phase.elems, phase.beta, phase.lamda))
             final_strengths.append(g.s)
 
@@ -203,7 +206,7 @@ class Experiment:
         ]
         avg_strengths = Environment.avg(final_strengths, total_trials)
 
-        return avg_hists, avg_strengths
+        return avg_hists, avg_strengths, confs / trials
 
     def run_group_experiments(self, g: Group, num_trials: int) -> list[list[Environment]]:
         results = []
@@ -230,8 +233,9 @@ class Experiment:
                 with ProcessPoolExecutor(max_workers = max_workers) as executor:
                     trials_per_worker = lambda t: num_trials // max_workers + (1 if t < num_trials % max_workers else 0)
                     futures = [executor.submit(self.run_random_trials, g, phase, trials_per_worker(t), num_trials) for t in range(max_workers)]
-                    hist, final_strengths = (list(x) for x in zip(*[f.result() for f in futures]))
+                    hist, final_strengths, confs_ratio = (list(x) for x in zip(*[f.result() for f in futures]))
 
+                logging.info(f'CC\tConfs ratios are {confs_ratio}')
                 logging.info(f'CC:\tAppending, {len(hist[0])=}, {sum([x.configural_cues for x in hist[0]])=}')
                 results.append([
                     Environment.summ([h[x] for h in hist if x < len(h)])
