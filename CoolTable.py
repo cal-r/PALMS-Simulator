@@ -17,8 +17,11 @@ class CoolTable(QWidget):
 
         self.table = QTableWidget(rows, cols)
         self.table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.table.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerItem)
 
         self.table.verticalHeader().sectionDoubleClicked.connect(self.editExperimentNames) # type: ignore
+        self.table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents) # type: ignore
         self.table.horizontalHeader().setMinimumSectionSize(150) # type: ignore
         # self.table.horizontalHeader().setMaximumSectionSize(300) # type: ignore
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents) # type: ignore
@@ -123,10 +126,10 @@ class CoolTable(QWidget):
 
     def updateSizes(self):
         self.setHeaderNames()
-        width = 2 + min(max(self.table.horizontalHeader().length(), 150), 1000) + self.table.verticalHeader().width()
-        height = 2 + self.table.verticalHeader().length() + self.table.horizontalHeader().height()
+        width = 5 + min(max(self.table.horizontalHeader().length(), 150), 1000) + self.table.verticalHeader().width()
+        height = self.table.verticalHeader().length() + self.table.horizontalHeader().height()
 
-        self.table.setFixedSize(width, height)
+        # self.table.setFixedSize(width, height)
         self.rightPlus.setFixedHeight(height)
         self.bottomPlus.setFixedWidth(width)
 
