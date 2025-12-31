@@ -1,0 +1,35 @@
+name: Apple certificate CSR
+
+on:
+  push:
+    branches: [ apple_certificate ]
+  workflow_dispatch:
+
+jobs:
+  csr:
+    runs-on: macos-latest
+    steps:
+      - name: Generate key + CSR
+        run: |
+          set -euo pipefail
+          mkdir -p out
+          openssl genrsa -out out/dev.key 2048
+
+          # Adjust subject if you want; Apple doesn’t require much here.
+          openssl req -new -key out/dev.key -out out/dev.csr -subj "/CN=Developer ID CSR"
+
+          echo "CSR generated: out/dev.csr"
+          echo "PRIVATE KEY generated: out/dev.key"
+          echo ""
+          echo "NEXT:"
+          echo "1) Download the artifact 'apple-csr-and-key'"
+          echo "2) Upload out/dev.csr to Apple Developer -> Certificates -> Developer ID Application"
+          echo "3) Download the .cer from Apple"
+          echo "4) Convert to .p12 (see instructions below)"
+
+      - name: Upload CSR + key as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: apple-csr-and-key
+          path: out/
+          retention-days: 3
