@@ -367,6 +367,8 @@ class PaginatedLegend:
             text.set_label(text.get_text())
 
 def generate_singular_legend(data, plot_stimuli, dpi):
+    from matplotlib import pyplot
+
     css, colors, markers = get_css(data)
     fig = pyplot.figure(dpi = dpi)
     pyplot.axis('off')
