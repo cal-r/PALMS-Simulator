@@ -11,10 +11,62 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: ./.github/actions/setup-and-build
         with:
           os: macos-latest
           artifact-name: macos-latest-release
+
+      - name: Import Developer ID Cert
+        env:
+          MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
+          MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+        run: |
+          set -euxo pipefail
+          KEYCHAIN_PATH="$RUNNER_TEMP/build.keychain-db"
+          echo "$MACOS_CERT_P12" | base64 -D > cert.p12
+          security create-keychain -p "" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "" "$KEYCHAIN_PATH"
+          security list-keychains -d user -s "$KEYCHAIN_PATH"
+          security default-keychain -d user -s "$KEYCHAIN_PATH"
+          security import cert.p12 -k "$KEYCHAIN_PATH" -P "$MACOS_CERT_PASSWORD" -A
+          security set-key-partition-list -S apple-tool:,apple: -s -k "" "$KEYCHAIN_PATH"
+          security find-identity -v -p codesigning "$KEYCHAIN_PATH"
+          security find-identity -v "$KEYCHAIN_PATH"
+          security find-certificate -a "$KEYCHAIN_PATH"
+
+      - name: Codesign
+        run: |
+          set -euxo pipefail
+          TARGET="dist/PALMS.app"
+          codesign --deep --force --options runtime --sign "Developer ID Application" "$TARGET"
+          codesign --verify --deep --strict "$TARGET"
+
+      - name: Zip for notarization
+        run: |
+          set -euxo pipefail
+          TARGET="dist/PALMS.app"
+          ditto -c -k --keepParent "$TARGET" notarize.zip
+
+      - name: Notarize
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          set -euxo pipefail
+          xcrun notarytool submit notarize.zip \
+            --apple-id "$APPLE_ID" \
+            --password "$APPLE_APP_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID" \
+            --wait
+
+      - name: Staple ticket
+        run: |
+          set -euxo pipefail
+          TARGET="dist/PALMS.app"
+          xcrun stapler staple "$TARGET"
 
   test-macos:
     name: Test macOS Executable
