@@ -1,0 +1,166 @@
+name: Build and Test Notarized MacOS Executable
+
+on:
+  push:
+    branches:
+      - release-notarise
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup-and-build
+        with:
+          os: macos-latest
+          artifact-name: macos-latest-release
+
+      - name: Import Developer ID Cert
+        env:
+          MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
+          MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+        run: |
+          set -euxo pipefail
+          KEYCHAIN_PATH="$RUNNER_TEMP/build.keychain-db"
+          echo "$MACOS_CERT_P12" | base64 -D > cert.p12
+          security create-keychain -p "" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "" "$KEYCHAIN_PATH"
+          security list-keychains -d user -s "$KEYCHAIN_PATH"
+          security default-keychain -d user -s "$KEYCHAIN_PATH"
+          security import cert.p12 -k "$KEYCHAIN_PATH" -P "$MACOS_CERT_PASSWORD" -A
+          security set-key-partition-list -S apple-tool:,apple: -s -k "" "$KEYCHAIN_PATH"
+          security find-identity -v -p codesigning "$KEYCHAIN_PATH"
+          security find-identity -v "$KEYCHAIN_PATH"
+          security find-certificate -a "$KEYCHAIN_PATH"
+
+      - name: Codesign
+        run: |
+          set -euxo pipefail
+          TARGET="dist/PALMS.app"
+          codesign --deep --force --options runtime --sign "Developer ID Application" "$TARGET"
+          codesign --verify --deep --strict "$TARGET"
+
+      - name: Zip for notarization
+        run: |
+          set -euxo pipefail
+          TARGET="dist/PALMS.app"
+          ditto -c -k --keepParent "$TARGET" notarize.zip
+
+      - name: Notarize
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          set -euxo pipefail
+          xcrun notarytool submit notarize.zip \
+            --apple-id "$APPLE_ID" \
+            --password "$APPLE_APP_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID" \
+            --wait
+
+      - name: Staple ticket
+        run: |
+          set -euxo pipefail
+          TARGET="dist/PALMS.app"
+          xcrun stapler staple "$TARGET"
+
+  test-macos:
+    name: Test macOS Executable
+    runs-on: macos-latest
+    needs: build-macos
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download macOS artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-latest-release
+          path: release/
+
+      - name: Extract .tar.gz
+        shell: bash
+        run: |
+          mkdir -p dist
+          tar -xzf release/release_macos.tar.gz -C dist
+
+      - name: Make app executable
+        shell: bash
+        run: chmod +x dist/PALMS.app/Contents/MacOS/PALMS
+
+      - name: Run app, screenshot, and check for errors
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            echo "Start time: $(date '+%Y-%m-%d %H:%M:%S.%3N')"
+            cp -r dist/PALMS.app ~/Desktop
+            screencapture -x desktop-macos.png
+            echo "Opening time: $(date '+%Y-%m-%d %H:%M:%S.%3N')"
+            dist/PALMS.app/Contents/MacOS/PALMS --smoke-test Experiments/Haselgrove_etal_2010_exp1.rw &
+            PID=$!
+            sleep 30
+            echo "Making screenshot"
+            screencapture -x palms-macos.png
+            wait $PID
+            EXIT_CODE=$?
+            echo "End time: $(date '+%Y-%m-%d %H:%M:%S.%3N')"
+            echo "App exited with code $EXIT_CODE"
+            if [ $EXIT_CODE -ne 0 ]; then
+              exit 1
+            fi
+          } 2>&1 | tee run.log
+
+      - name: Upload screenshot artifact.
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots-macos
+          path: |
+            palms-macos.png
+            desktop-macos.png
+          compression-level: 0
+
+      - name: Add screenshot and logs to Job Summary
+        if: always()
+        shell: bash
+        run: |
+          echo "## macOS Smoke Test" >> "$GITHUB_STEP_SUMMARY"
+          if [[ -f screenshot-macos.png ]]; then
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "### Screenshot" >> "$GITHUB_STEP_SUMMARY"
+            echo '<details><summary>Show screenshot</summary>' >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo -n '<img alt="screenshot-macos" src="data:image/png;base64,' >> "$GITHUB_STEP_SUMMARY"
+            base64 -i screenshot-macos.png -b 0 >> "$GITHUB_STEP_SUMMARY"
+            echo '" />' >> "$GITHUB_STEP_SUMMARY"
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo '</details>' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "> (No screenshot produced)" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Logs" >> "$GITHUB_STEP_SUMMARY"
+          echo '```text' >> "$GITHUB_STEP_SUMMARY"
+          if [[ -f run.log ]]; then cat run.log >> "$GITHUB_STEP_SUMMARY"; fi
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Create or update "latest" tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -f latest
+          git push origin latest --force
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload artifact to Releases
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: latest
+          files: release/release_macos_notarized.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
