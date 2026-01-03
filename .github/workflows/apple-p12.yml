@@ -34,13 +34,13 @@ jobs:
       - name: Upload p12 artifact
         uses: actions/upload-artifact@v4
         with:
-          name: developerid-p12
+          name: developerID.p12
           path: .apple/developerID.p12
           retention-days: 3
 
       - name: Upload p12 base64 artifact
         uses: actions/upload-artifact@v4
         with:
-          name: developerid-p12
+          name: developerID.p12.b64
           path: .apple/developerID.p12.b64
           retention-days: 3
