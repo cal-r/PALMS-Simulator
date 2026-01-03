@@ -726,7 +726,7 @@ class AlphasBox(QGroupBox):
             for cs in sorted(css, key = sort_key):
                 if cs not in form:
                     hoverText = parent.params[perc].hoverText.replace('of the stimuli', f' for stimulus {cs}')
-                    local_val = global_val ** len(cs.strip('()'))
+                    local_val = global_val ** len(re.sub(r"'|\(|\)|\^\d+", "", cs))
 
                     form[cs] = parent.DualLabel(
                         f'{shortnames[perc]}<sub>{cs}</sub>',
