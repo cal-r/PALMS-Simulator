@@ -42,6 +42,7 @@ jobs:
       - name: Codesign
         run: |
           set -euxo pipefail
+          ls -R .
           TARGET="dist/PALMS.app"
           codesign --deep --force --options runtime --sign "Developer ID Application" "$TARGET"
           codesign --verify --deep --strict "$TARGET"
