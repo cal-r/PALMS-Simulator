@@ -16,18 +16,16 @@ jobs:
           set -euxo pipefail
           ls -lah .apple/
 
-          # Convert Apple's DER .cer to PEM
-          openssl x509 -in .apple/developerID.cer -inform DER -out .apple/developerID.pem
+          openssl x509 -in .apple/developerID_application.cer -inform DER -out .apple/developerID_application.pem
 
-          # Create p12
           openssl pkcs12 -export \
             -inkey .apple/dev.key \
-            -in .apple/developerID.pem \
-            -out .apple/developerID.p12 \
+            -in .apple/developerID_application.pem \
+            -out .apple/developerID_application.p12 \
             -passout env:P12_PASSWORD
 
           # Emit base64 for pasting into GitHub secret MACOS_CERT_P12
-          base64 -i .apple/developerID.p12 > .apple/developerID.p12.b64
+          base64 -i .apple/developerID_application.p12 > .apple/developerID_application.p12.b64
 
           ls -lah .apple/
 
@@ -36,6 +34,6 @@ jobs:
         with:
           name: developerID
           path: |
-            .apple/developerID.p12
-            .apple/developerID.p12.b64
+            .apple/developerID_application.p12
+            .apple/developerID_application.p12.b64
           retention-days: 3
