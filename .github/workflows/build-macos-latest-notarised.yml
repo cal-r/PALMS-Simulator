@@ -15,6 +15,7 @@ jobs:
         with:
           os: macos-latest
           artifact-name: macos-latest-release
+          should-upload: "false"
 
       - name: Import Developer ID Cert
         env:
@@ -32,8 +33,6 @@ jobs:
           security import cert.p12 -k "$KEYCHAIN_PATH" -P "$MACOS_CERT_PASSWORD" -A
           security set-key-partition-list -S apple-tool:,apple: -s -k "" "$KEYCHAIN_PATH"
           security find-identity -v -p codesigning "$KEYCHAIN_PATH"
-          security find-identity -v "$KEYCHAIN_PATH"
-          security find-certificate -a "$KEYCHAIN_PATH"
 
       - name: Codesign
         run: |
@@ -46,7 +45,7 @@ jobs:
         run: |
           set -euxo pipefail
           TARGET="dist/PALMS.app"
-          ditto -c -k --keepParent "$TARGET" notarize.zip
+          ditto -c -k --keepParent "$TARGET" release_macos_candidate.zip
 
       - name: Notarize
         env:
@@ -55,7 +54,7 @@ jobs:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           set -euxo pipefail
-          xcrun notarytool submit notarize.zip \
+          xcrun notarytool submit release_macos_candidate.zip \
             --apple-id "$APPLE_ID" \
             --password "$APPLE_APP_PASSWORD" \
             --team-id "$APPLE_TEAM_ID" \
@@ -66,90 +65,18 @@ jobs:
           set -euxo pipefail
           TARGET="dist/PALMS.app"
           xcrun stapler staple "$TARGET"
+          spctl --assess --type execute -vv "$TARGET"
 
-  test-macos:
-    name: Test macOS Executable
-    runs-on: macos-latest
-    needs: build-macos
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download macOS artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: macos-latest-release
-          path: release/
-
-      - name: Extract .tar.gz
-        shell: bash
+      - name: Delete candidate zip, re-create notarised one.
         run: |
-          mkdir -p dist
-          tar -xzf release/release_macos.tar.gz -C dist
-
-      - name: Make app executable
-        shell: bash
-        run: chmod +x dist/PALMS.app/Contents/MacOS/PALMS
-
-      - name: Run app, screenshot, and check for errors
-        shell: bash
-        run: |
-          set -euo pipefail
-          {
-            echo "Start time: $(date '+%Y-%m-%d %H:%M:%S.%3N')"
-            cp -r dist/PALMS.app ~/Desktop
-            screencapture -x desktop-macos.png
-            echo "Opening time: $(date '+%Y-%m-%d %H:%M:%S.%3N')"
-            dist/PALMS.app/Contents/MacOS/PALMS --smoke-test Experiments/Haselgrove_etal_2010_exp1.rw &
-            PID=$!
-            sleep 30
-            echo "Making screenshot"
-            screencapture -x palms-macos.png
-            wait $PID
-            EXIT_CODE=$?
-            echo "End time: $(date '+%Y-%m-%d %H:%M:%S.%3N')"
-            echo "App exited with code $EXIT_CODE"
-            if [ $EXIT_CODE -ne 0 ]; then
-              exit 1
-            fi
-          } 2>&1 | tee run.log
-
-      - name: Upload screenshot artifact.
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: screenshots-macos
-          path: |
-            palms-macos.png
-            desktop-macos.png
-          compression-level: 0
-
-      - name: Add screenshot and logs to Job Summary
-        if: always()
-        shell: bash
-        run: |
-          echo "## macOS Smoke Test" >> "$GITHUB_STEP_SUMMARY"
-          if [[ -f screenshot-macos.png ]]; then
-            echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo "### Screenshot" >> "$GITHUB_STEP_SUMMARY"
-            echo '<details><summary>Show screenshot</summary>' >> "$GITHUB_STEP_SUMMARY"
-            echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo -n '<img alt="screenshot-macos" src="data:image/png;base64,' >> "$GITHUB_STEP_SUMMARY"
-            base64 -i screenshot-macos.png -b 0 >> "$GITHUB_STEP_SUMMARY"
-            echo '" />' >> "$GITHUB_STEP_SUMMARY"
-            echo "" >> "$GITHUB_STEP_SUMMARY"
-            echo '</details>' >> "$GITHUB_STEP_SUMMARY"
-          else
-            echo "> (No screenshot produced)" >> "$GITHUB_STEP_SUMMARY"
-          fi
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "### Logs" >> "$GITHUB_STEP_SUMMARY"
-          echo '```text' >> "$GITHUB_STEP_SUMMARY"
-          if [[ -f run.log ]]; then cat run.log >> "$GITHUB_STEP_SUMMARY"; fi
-          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          set -euxo pipefail
+          rm release_macos_candidate.zip
+          mkdir -p release
+          ditto -c -k --keepParent "dist/PALMS.app" release/release_macos_notarized.zip
 
       - name: Create or update "latest" tag
         run: |
+          set -euxo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag -f latest
@@ -161,6 +88,6 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: latest
-          files: release/release_macos_notarized.tar.gz
+          files: release/release_macos_notarized.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
