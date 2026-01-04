@@ -72,7 +72,8 @@ jobs:
           set -euxo pipefail
           rm release_macos_candidate.zip
           mkdir -p release
-          ditto -c -k --keepParent "dist/PALMS.app" release/release_macos_notarized.zip
+          ls -R dist/
+          ditto -c -k --keepParent dist/* release/release_macos_notarized.zip
 
       - name: Create or update "latest" tag
         run: |
