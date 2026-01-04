@@ -72,8 +72,10 @@ jobs:
           set -euxo pipefail
           rm release_macos_candidate.zip
           mkdir -p release
-          ls dist/
-          ditto -c -k --keepParent dist/* release/release_macos_notarized.zip
+          cd dist/
+          ls
+          ditto -c -k . ../release/release_macos_notarized.zip
+          cd ../
 
       - name: Create or update "latest" tag
         run: |
