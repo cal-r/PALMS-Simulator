@@ -46,7 +46,7 @@ jobs:
           if (-not $exe) { throw "PALMS.exe not found under dist/" }
           $exePath = $exe.FullName
 
-          $args = @('--smoke-test','Experiments/Haselgrove_etal_2010_exp1.rw')
+          $args = @('--smoke-test','Experiments/Byrom-Murphy.rw')
           $p = Start-Process -FilePath $exePath -ArgumentList $args -PassThru
 
           Start-Sleep -Seconds 30
