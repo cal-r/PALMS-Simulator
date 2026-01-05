@@ -49,7 +49,7 @@ jobs:
             cp -r dist/PALMS.app ~/Desktop
             screencapture -x desktop-macos.png
             echo "Opening time: $(date '+%Y-%m-%d %H:%M:%S.%3N')"
-            dist/PALMS.app/Contents/MacOS/PALMS --smoke-test Experiments/Haselgrove_etal_2010_exp1.rw &
+            dist/PALMS.app/Contents/MacOS/PALMS --smoke-test Experiments/Byrom-Murphy.rw &
             PID=$!
             sleep 30
             echo "Making screenshot"
