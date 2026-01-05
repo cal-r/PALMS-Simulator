@@ -1,0 +1,4 @@
+@model=MLAB Model
+@beta=0.5;betan=0.4;num_trials=500
+@salience_Y=0.2
+Hetal2010-Exp3|rand/96AX+/96BY+/96X-/96Y-|rand/4AX+/4BY+/4X-/4Y-/2A-/2B-/2X-/2Y-|rand/96AY+/48AX-/48BY-
