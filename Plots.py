@@ -109,12 +109,7 @@ def shade_hls(color, factor: float):
     """
     if isinstance(color, str):
         color = color.lstrip("#")
-        r, g, b = (int(color[i:i+2], 16) for i in (0, 2, 4))
-        r, g, b = r/255, g/255, b/255
-    # else:
-    # r, g, b = color
-    # if max(color) > 1.0:
-        # r, g, b = r/255, g/255, b/255
+        r, g, b = (float(int(color[i:i+2], 16)) / 255 for i in (0, 2, 4))
 
     h, l, s = colorsys.rgb_to_hls(r, g, b)
     l = max(0.0, min(1.0, l * factor))

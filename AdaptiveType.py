@@ -52,7 +52,7 @@ class AdaptiveType:
         }
 
     @classmethod
-    def base(cls, adaptive_type_name) -> AdaptiveType:
+    def base(cls, adaptive_type_name) -> Type[AdaptiveType]:
         return cls.types()[adaptive_type_name]
 
     @classmethod

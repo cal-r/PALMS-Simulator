@@ -344,12 +344,12 @@ class ActionButtons(QWidget):
         if self.parent.configural_cues:
             lines.append('@configural_cues=True')
 
-        params = [f'{key}={dual.box.text()}' for key, dual in self.parent.params.items() if dual.modified]
+        params = [f'{key}={dual.box.text()}' for key, dual in self.parent.params.items() if dual.box.isModified()]
         if params:
             lines.append('@' + ';'.join(params))
 
         if self.parent.alphasBox.isVisible():
-            percs_params = [f'{perc}_{cs}={dual.box.text()}' for perc, value in self.parent.per_cs_param.items() for cs, dual in value.items() if dual.modified]
+            percs_params = [f'{perc}_{cs}={dual.box.text()}' for perc, value in self.parent.per_cs_param.items() for cs, dual in value.items() if dual.box.isModified()]
             if percs_params:
                 lines.append('@' + ';'.join(percs_params))
 
@@ -606,10 +606,10 @@ class ParametersGroupBox(QGroupBox):
 
     def clearFields(self, defaults, only_unmodified = False):
         for key, default in defaults.items():
-            if not only_unmodified or not self.params[key].modified:
+            if not only_unmodified or not self.params[key].box.isModified():
                 self.params[key].setText(str(default), set_modified = False)
 
-            if key.startswith('alpha_') and not self.params[key].modified and self.params['alpha'].modified:
+            if key.startswith('alpha_') and not self.params[key].box.isModified() and self.params['alpha'].box.isModified():
                 self.params[key].setText(self.params['alpha'].box.text(), set_modified = True)
 
             self.params[key].checkBounds()
@@ -746,11 +746,11 @@ class AlphasBox(QGroupBox):
             default = float(vals[key].box.text())
             param = self.per_cs_param[key]
             for cs, pair in param.items():
-                if not only_unmodified or not pair.modified:
+                if not only_unmodified or not pair.box.isModified():
                     val = default ** len(re.sub(r"'|\(|\)|\^\d+", "", cs))
                     pair.setText(f'{val:.3f}'.rstrip('0').rstrip('.'), set_modified = False)
 
-                if key.startswith('alpha_') and not pair.modified and self.per_cs_param['alpha'][cs].modified:
+                if key.startswith('alpha_') and not pair.box.isModified() and self.per_cs_param['alpha'][cs].box.isModified():
                     pair.setText(self.per_cs_param['alpha'][cs].box.text(), set_modified = True)
 
                 pair.checkBounds()
