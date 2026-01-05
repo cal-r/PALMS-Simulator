@@ -73,6 +73,7 @@ jobs:
           set -euxo pipefail
           rm release_macos_candidate.zip
           mkdir -p release
+          mv Experiments/ dist/ # Experiments should be in dist/ in the first place.
           cd dist/
           ls
           ditto -c -k . ../release/release_macos_notarized.zip
