@@ -1,0 +1,5 @@
+@model=MLAB Model
+@alpha=0.9;alpha_mack=0.9;alpha_hall=0.9;lamda=1;beta=0.5;betan=0.4;gamma=0.1;thetaE=0.8;thetaI=0.1;num_trials=2000
+Learned Irrelevance|rand/20X+/20X-/20AX+/20AX-|8A+
+CS-preexposure|rand/20X-/20X-/20AX-/20AX-|8A+
+Novel||8A+
