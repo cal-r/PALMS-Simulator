@@ -3,6 +3,7 @@ name: Build and Test Notarized MacOS Executable
 on:
   push:
     branches:
+      - release
       - release-notarise
 
 jobs:

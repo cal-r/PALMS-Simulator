@@ -4,7 +4,7 @@ from PySide6.QtCore import Qt
 from PySide6.QtWidgets import *
 
 # We do this so that mypy stops complaining
-from PySide6.QtWidgets import QGridLayout, QPushButton, QSizePolicy, QTableWidget, QWidget
+from PySide6.QtWidgets import QAbstractItemView, QGridLayout, QPushButton, QSizePolicy, QTableWidget, QWidget
 
 import re
 

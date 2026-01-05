@@ -229,7 +229,6 @@ class PavlovianApp(QMainWindow):
         label: QLabel
         box: QLineEdit
         hoverText: str
-        modified: bool
 
         long_name: str
 
@@ -245,7 +244,7 @@ class PavlovianApp(QMainWindow):
             self.box.returnPressed.connect(self.changeText)
             self.label.setFont(QFont(font))
 
-            self.modified = False
+            self.box.setModified(False)
             self.long_name = long_name
 
             self.hoverText = hoverText
@@ -261,7 +260,7 @@ class PavlovianApp(QMainWindow):
             self.checkBounds()
 
             if set_modified is not None:
-                self.modified = set_modified
+                self.box.setModified(set_modified)
 
         def addRow(self, layout):
             layout.addRow(self.label, self.box)
@@ -276,9 +275,8 @@ class PavlovianApp(QMainWindow):
 
         # Connected function to text change.
         def changeText(self):
-            self.modified = True
+            self.box.setModified(True)
             self.checkBounds()
-
             self.parent.refreshExperiment()
 
     def enableParams(self):
