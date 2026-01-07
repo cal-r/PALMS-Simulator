@@ -138,7 +138,7 @@ def generate_figures(
         data = [data[plot_phase - 1]]
 
     experiment_css, colors, markers = get_css(data)
-    max_x = max(max(len(hist) for hist in exp.values()) for exp in data)
+    max_x = max([max([len(hist) for hist in exp.values()], default = 0) for exp in data], default = 0)
 
     figures = []
     for phase_num, experiments in enumerate(data, start = 1):

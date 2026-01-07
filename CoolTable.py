@@ -21,9 +21,8 @@ class CoolTable(QWidget):
         self.table.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerItem)
 
         self.table.verticalHeader().sectionDoubleClicked.connect(self.editExperimentNames) # type: ignore
-        self.table.verticalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents) # type: ignore
         self.table.horizontalHeader().setMinimumSectionSize(150) # type: ignore
-        # self.table.horizontalHeader().setMaximumSectionSize(300) # type: ignore
+        self.table.horizontalHeader().setMaximumSectionSize(400) # type: ignore
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents) # type: ignore
 
         self.rightPlus = QPushButton('+')
@@ -126,10 +125,10 @@ class CoolTable(QWidget):
 
     def updateSizes(self):
         self.setHeaderNames()
-        width = 5 + min(max(self.table.horizontalHeader().length(), 150), 1000) + self.table.verticalHeader().width()
-        height = self.table.verticalHeader().length() + self.table.horizontalHeader().height()
+        width = 5 + min(max(self.table.horizontalHeader().length(), 150), self.width()) + self.table.verticalHeader().width()
+        height = 5 + self.table.verticalHeader().length() + self.table.horizontalHeader().height()
 
-        # self.table.setFixedSize(width, height)
+        self.table.setFixedSize(width, height)
         self.rightPlus.setFixedHeight(height)
         self.bottomPlus.setFixedWidth(width)
 
