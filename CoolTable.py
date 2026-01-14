@@ -70,7 +70,8 @@ class CoolTable(QWidget):
         self.mainLayout.addWidget(self.bottomPlus, 1, 0)
         self.mainLayout.addWidget(self.cButton, 1, 1)
         # self.mainLayout.setColumnStretch(0, 1)
-        # self.mainLayout.setRowStretch(0, 1)
+        self.mainLayout.setRowStretch(0, 0)
+        self.mainLayout.setRowStretch(1, 0)
         self.mainLayout.setSpacing(0)
         self.mainLayout.setContentsMargins(0, 0, 0, 0)
         # self.mainLayout.setSizeConstraint(QLayout.SetMinimumSize)
@@ -83,6 +84,7 @@ class CoolTable(QWidget):
         self.setHeaderNames()
 
         hh = self.table.horizontalHeader()
+        vh = self.table.verticalHeader()
         self.table.resizeColumnsToContents()
 
         sizes = [hh.sectionSize(i) for i in range(hh.count())]
@@ -98,8 +100,10 @@ class CoolTable(QWidget):
                 for b in bigs:
                     hh.resizeSection(b, size_bigs // len(bigs))
 
-        self.bottomPlus.setFixedWidth(2 + self.table.horizontalHeader().length() + self.table.verticalHeader().width())
-        self.rightPlus.setFixedHeight(2 + self.table.verticalHeader().length() + self.table.horizontalHeader().height())
+        self.table.setFixedWidth(hh.length() + vh.width() + 2 * self.table.frameWidth())
+        self.bottomPlus.setFixedWidth(hh.length() + vh.width() + 2 * self.table.frameWidth())
+        self.table.setFixedHeight(hh.height() + vh.length() + 2 * self.table.frameWidth())
+        self.rightPlus.setFixedHeight(hh.height() + vh.length() + 2 * self.table.frameWidth())
 
         self.table.updateGeometry()
         self.updateGeometry()
