@@ -781,7 +781,7 @@ class AdaptiveTypeButtons(QGroupBox):
             self.buttonGroup.addButton(button, i)
             button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
-            layout.addWidget(button)
+            layout.addWidget(button, stretch = 1)
 
         self.buttonGroup.buttonClicked.connect(lambda button: self.changeAdaptiveType(button.adaptive_type))
         self.setLayout(layout)

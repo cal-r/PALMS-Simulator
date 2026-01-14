@@ -111,14 +111,19 @@ class PavlovianApp(QMainWindow):
     def initUI(self):
         logging.info(f'Init UI using {QGuiApplication.platformName()}')
         self.tableWidget = CoolTable(2, 1, parent = self)
-        self.tableWidget.table.setMaximumHeight(120)
+        self.tableWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.tableWidget.onCellChange(self.refreshExperiment)
 
         self.parametersGroupBox = ParametersGroupBox(self)
+        self.parametersGroupBox.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
 
         self.alphasBox = AlphasBox(self)
+        self.alphasBox.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Expanding)
+
         aboutButton = AboutButton(self)
+
         self.adaptiveTypeButtons = AdaptiveTypeButtons(self)
+        self.adaptiveTypeButtons.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         iconLabel = QLabel(self)
         iconLabel.setPixmap(self.getPixmap('palms.png'))
@@ -128,9 +133,12 @@ class PavlovianApp(QMainWindow):
         iconLabel.setToolTip('Pavlovian\N{bellhop bell} \N{dog face} Associative\N{handshake} Learning\N{brain} Models\N{bar chart} Simulator\N{desktop computer}.')
 
         self.plotBox = PlotBox(self)
+        self.plotBox.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
         self.plotCanvas = self.plotBox.plotCanvas
 
         self.actionButtons = ActionButtons(self)
+        self.actionButtons.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
 
         mainLayout = QGridLayout()
         mainLayout.setContentsMargins(5, 5, 0, 5)

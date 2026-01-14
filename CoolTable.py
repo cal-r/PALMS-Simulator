@@ -1,12 +1,13 @@
 from __future__ import annotations
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QObject, QEvent, QTimer
 from PySide6.QtWidgets import *
 
 # We do this so that mypy stops complaining
 from PySide6.QtWidgets import QAbstractItemView, QGridLayout, QPushButton, QSizePolicy, QTableWidget, QWidget
 
 import re
+import logging
 
 class CoolTable(QWidget):
     def __init__(self, rows: int, cols: int, parent: None | QWidget = None):
@@ -15,25 +16,28 @@ class CoolTable(QWidget):
 
         self.freeze = True
 
-        self.table = QTableWidget(rows, cols)
+        self.table = QTableWidget(rows, cols, parent)
         self.table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.table.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerItem)
 
         self.table.verticalHeader().sectionDoubleClicked.connect(self.editExperimentNames) # type: ignore
-        self.table.horizontalHeader().setMinimumSectionSize(150) # type: ignore
-        self.table.horizontalHeader().setMaximumSectionSize(400) # type: ignore
-        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents) # type: ignore
+        self.table.horizontalHeader().setMinimumSectionSize(100) # type: ignore
+        # self.table.horizontalHeader().setMaximumSectionSize(400) # type: ignore
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive) # type: ignore
+        self.table.resizeColumnsToContents()
 
         self.rightPlus = QPushButton('+')
         self.rightPlus.clicked.connect(self.addColumn)
         self.rightPlus.setToolTip('Add a new phase.')
         self.rightPlus.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.rightPlus.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
 
         self.bottomPlus = QPushButton('+')
         self.bottomPlus.clicked.connect(self.addRow)
         self.bottomPlus.setToolTip('Add a new experiment.')
         self.bottomPlus.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.bottomPlus.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         self.cButton = QPushButton('C')
         self.cButton.clicked.connect(self.clearEmptyCells)
@@ -46,16 +50,35 @@ class CoolTable(QWidget):
 
         self.mainLayout = QGridLayout(parent = self)
         self.mainLayout.addWidget(self.table, 0, 0)
-        self.mainLayout.addWidget(self.rightPlus, 0, 1, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
-        self.mainLayout.addWidget(self.bottomPlus, 1, 0, Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
-        self.mainLayout.addWidget(self.cButton, 1, 1, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+        self.mainLayout.addWidget(self.rightPlus, 0, 1)
+        self.mainLayout.addWidget(self.bottomPlus, 1, 0)
+        self.mainLayout.addWidget(self.cButton, 1, 1)
         self.mainLayout.setColumnStretch(0, 1)
         self.mainLayout.setRowStretch(0, 1)
         self.mainLayout.setSpacing(0)
         self.mainLayout.setContentsMargins(0, 0, 0, 0)
 
-        self.updateSizes()
+        QTimer.singleShot(0, self.updateSizes)
         self.freeze = False
+
+    def updateSizes(self):
+        self.setHeaderNames()
+
+        hh = self.table.horizontalHeader()
+        # self.table.horizontalHeader().setCascadingSectionResizes(True)
+        self.table.resizeColumnsToContents()
+
+        sizes = [hh.sectionSize(i) for i in range(hh.count())]
+        if sum(sizes) > hh.width():
+            bigs = [i for i, s in enumerate(sizes) if s > 100]
+            size_bigs = hh.width() - sum(x for x in sizes if x <= 100)
+
+            logging.info(f'Resizing sections to {size_bigs // len(bigs) if len(bigs) > 0 else "?"}')
+            for b in bigs:
+                self.table.horizontalHeader().resizeSection(b, size_bigs // len(bigs))
+
+        # print(f'Sizes:\t{[hh.sectionSize(i) for i in range(hh.count())]}')
+        # print(f'Width:\t{hh.width()};\tSum:\t{sum([hh.sectionSize(i) for i in range(hh.count())])}')
 
     def editExperimentNames(self, index):
         item = self.table.verticalHeaderItem(index)
@@ -122,15 +145,6 @@ class CoolTable(QWidget):
                 func()
 
         self.table.cellChanged.connect(cellChanged)
-
-    def updateSizes(self):
-        self.setHeaderNames()
-        width = 5 + min(max(self.table.horizontalHeader().length(), 150), self.width()) + self.table.verticalHeader().width()
-        height = 5 + self.table.verticalHeader().length() + self.table.horizontalHeader().height()
-
-        self.table.setFixedSize(width, height)
-        self.rightPlus.setFixedHeight(height)
-        self.bottomPlus.setFixedWidth(width)
 
     def addColumn(self):
         cols = self.columnCount()
