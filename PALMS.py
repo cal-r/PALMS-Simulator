@@ -65,7 +65,7 @@ class PavlovianApp(QMainWindow):
 
         self.called_refresh = False
 
-        self.adaptive_types = AdaptiveType.types().keys()
+        self.adaptive_types = list(AdaptiveType.types().keys())
         self.current_adaptive_type = None
 
         self.figures = []
@@ -161,7 +161,7 @@ class PavlovianApp(QMainWindow):
         self.setWindowFlags(Qt.WindowType.Window | Qt.WindowType.WindowCloseButtonHint | Qt.WindowType.WindowMaximizeButtonHint)
         self.adaptiveTypeButtons.buttonGroup.button(0).click()
 
-        self.adjustSize()
+        # self.adjustSize()
 
         windowSize = QSize(self.width() * 1.25, self.height() * 1.1)
 
@@ -169,7 +169,7 @@ class PavlovianApp(QMainWindow):
         if screen:
             windowSize = windowSize.boundedTo(screen.availableGeometry().size())
 
-        self.resize(windowSize)
+        # self.resize(windowSize)
 
     def loadFile(self, filename):
         lines = []
