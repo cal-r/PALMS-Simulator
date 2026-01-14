@@ -9,7 +9,23 @@ from PySide6.QtWidgets import QAbstractItemView, QGridLayout, QPushButton, QSize
 import re
 import logging
 
+class FitTable(QTableWidget):
+    def sizeHint(self):
+        w = self.verticalHeader().width() + self.horizontalHeader().length()
+        w += self.frameWidth() * 2
+
+        h = self.horizontalHeader().height() + self.verticalHeader().length()
+        h += self.frameWidth() * 2
+
+        # if you use gridlines or styles that add extra pixels, add a small fudge:
+        return QSize(w + 2, h + 2)
+
+    def minimumSizeHint(self):
+        return self.sizeHint()
+
 class CoolTable(QWidget):
+    min_size = 100
+
     def __init__(self, rows: int, cols: int, parent: None | QWidget = None):
         super().__init__(parent = parent)
         self.parent = parent
@@ -17,12 +33,12 @@ class CoolTable(QWidget):
         self.freeze = True
 
         self.table = QTableWidget(rows, cols, parent)
-        self.table.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self.table.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.table.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerItem)
 
         self.table.verticalHeader().sectionDoubleClicked.connect(self.editExperimentNames) # type: ignore
-        self.table.horizontalHeader().setMinimumSectionSize(100) # type: ignore
+        self.table.horizontalHeader().setMinimumSectionSize(self.min_size) # type: ignore
         # self.table.horizontalHeader().setMaximumSectionSize(400) # type: ignore
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive) # type: ignore
         self.table.resizeColumnsToContents()
@@ -31,13 +47,13 @@ class CoolTable(QWidget):
         self.rightPlus.clicked.connect(self.addColumn)
         self.rightPlus.setToolTip('Add a new phase.')
         self.rightPlus.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.rightPlus.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
+        self.rightPlus.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
         self.bottomPlus = QPushButton('+')
         self.bottomPlus.clicked.connect(self.addRow)
         self.bottomPlus.setToolTip('Add a new experiment.')
         self.bottomPlus.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.bottomPlus.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.bottomPlus.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
         self.cButton = QPushButton('C')
         self.cButton.clicked.connect(self.clearEmptyCells)
@@ -53,10 +69,12 @@ class CoolTable(QWidget):
         self.mainLayout.addWidget(self.rightPlus, 0, 1)
         self.mainLayout.addWidget(self.bottomPlus, 1, 0)
         self.mainLayout.addWidget(self.cButton, 1, 1)
-        self.mainLayout.setColumnStretch(0, 1)
-        self.mainLayout.setRowStretch(0, 1)
+        # self.mainLayout.setColumnStretch(0, 1)
+        # self.mainLayout.setRowStretch(0, 1)
         self.mainLayout.setSpacing(0)
         self.mainLayout.setContentsMargins(0, 0, 0, 0)
+        # self.mainLayout.setSizeConstraint(QLayout.SetMinimumSize)
+        self.mainLayout.setAlignment(Qt.AlignLeft | Qt.AlignTop)
 
         QTimer.singleShot(0, self.updateSizes)
         self.freeze = False
@@ -65,20 +83,26 @@ class CoolTable(QWidget):
         self.setHeaderNames()
 
         hh = self.table.horizontalHeader()
-        # self.table.horizontalHeader().setCascadingSectionResizes(True)
         self.table.resizeColumnsToContents()
 
         sizes = [hh.sectionSize(i) for i in range(hh.count())]
-        if sum(sizes) > hh.width():
-            bigs = [i for i, s in enumerate(sizes) if s > 100]
-            size_bigs = hh.width() - sum(x for x in sizes if x <= 100)
+        width = self.mainLayout.geometry().width() - self.rightPlus.width()
+        if sum(sizes) > width:
+            bigs = [i for i, s in enumerate(sizes) if s > self.min_size]
+            size_bigs = width - sum(x for x in sizes if x <= self.min_size)
 
-            logging.info(f'Resizing sections to {size_bigs // len(bigs) if len(bigs) > 0 else "?"}')
-            for b in bigs:
-                self.table.horizontalHeader().resizeSection(b, size_bigs // len(bigs))
+            if bigs:
+                hh.setStretchLastSection(True)
 
-        # print(f'Sizes:\t{[hh.sectionSize(i) for i in range(hh.count())]}')
-        # print(f'Width:\t{hh.width()};\tSum:\t{sum([hh.sectionSize(i) for i in range(hh.count())])}')
+                logging.warn(f'Resizing sections to {size_bigs // len(bigs) if len(bigs) > 0 else "?"} for {width}')
+                for b in bigs:
+                    hh.resizeSection(b, size_bigs // len(bigs))
+
+        self.bottomPlus.setFixedWidth(2 + self.table.horizontalHeader().length() + self.table.verticalHeader().width())
+        self.rightPlus.setFixedHeight(2 + self.table.verticalHeader().length() + self.table.horizontalHeader().height())
+
+        self.table.updateGeometry()
+        self.updateGeometry()
 
     def editExperimentNames(self, index):
         item = self.table.verticalHeaderItem(index)
