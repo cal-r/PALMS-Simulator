@@ -117,6 +117,15 @@ class CoolTable(QWidget):
 
         return item.text()
 
+    def selectedPrefixes(self) -> list[set[str]]:
+        changes = {'lambda': 'lamda'}
+
+        prefixes = []
+        for item in self.table.selectedItems():
+            prefixes.append({changes.get(x[0], x[0]) for x in re.findall(r'([a-zA-Z]+)=[0-9]+(\.[0-9]*)?/', item.text())})
+
+        return prefixes
+
     def setPrefixInSelection(self, prefix, value: None | bool | float):
         self.freeze = True
         for item in self.table.selectedItems():
@@ -159,6 +168,9 @@ class CoolTable(QWidget):
                 func()
 
         self.table.cellChanged.connect(cellChanged)
+
+    def onItemSelectionChange(self, func):
+        self.table.itemSelectionChanged.connect(lambda: func(self.selectedPrefixes()))
 
     def addColumn(self):
         cols = self.columnCount()

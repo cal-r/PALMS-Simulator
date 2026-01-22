@@ -614,6 +614,13 @@ class ParametersGroupBox(QGroupBox):
 
             self.params[key].checkBounds()
 
+    def enablePerPhaseParameters(self, prefixes):
+        intersection = set.intersection(*prefixes) if prefixes else set()
+
+        changeable = ['lamda', 'beta']
+        for key in changeable:
+            self.params[key].box.setDisabled(key in intersection)
+
 class AlphasBox(QGroupBox):
     class InnerBox(QWidget):
         def __init__(self, parent):
