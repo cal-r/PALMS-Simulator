@@ -514,10 +514,6 @@ class PavlovianApp(QMainWindow):
         self.tableWidget.selectColumn(self.phaseNum - 1)
         self.plotBox.phaseBox.setInfo(self.phaseNum, self.numPhases)
 
-        any_rand = any(p[self.phaseNum - 1].rand for p in self.phases.values())
-        self.params['num_trials'].box.setDisabled(not any_rand)
-        self.actionButtons.toggleRandButton.setChecked(any_rand)
-
         fig = self.plotCanvas.figure
 
     def pickLine(self, event):

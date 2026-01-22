@@ -375,7 +375,7 @@ class ActionButtons(QWidget):
         self.parent.refreshExperiment()
 
     def toggleRand(self):
-        set_rand = any(p[self.parent.phaseNum - 1].rand for p in self.parent.phases.values())
+        set_rand = all('rand' in x for x in self.parent.tableWidget.selectedPrefixes())
         self.parent.tableWidget.setPrefixInSelection('rand', not set_rand)
         self.parent.refreshExperiment()
 
@@ -552,8 +552,11 @@ Selecting "separate legend" removes the legend from these plots, and creates a n
     def enablePerPhaseParameters(self, prefixes):
         intersection = set.intersection(*prefixes) if prefixes else set()
 
+        self.toggleRandButton.setChecked('rand' in intersection)
         self.phaseBetaButton.setChecked('beta' in intersection)
         self.phaseLambdaButton.setChecked('lamda' in intersection)
+
+        # self.params['num_trials'].box.setDisabled(not any_rand)
 
 class ParametersGroupBox(QGroupBox):
     def __init__(self, parent):
@@ -623,9 +626,12 @@ class ParametersGroupBox(QGroupBox):
     def enablePerPhaseParameters(self, prefixes):
         intersection = set.intersection(*prefixes) if prefixes else set()
 
-        changeable = ['lamda', 'beta']
-        for key in changeable:
-            self.params[key].box.setDisabled(key in intersection)
+        changeable = {'rand': 'num_trials', 'beta': 'beta', 'lamda': 'lamda'}
+        for key, val in changeable.items():
+            if key == 'rand':
+                self.params[val].box.setEnabled(key in intersection)
+            else:
+                self.params[val].box.setEnabled(key not in intersection)
 
 class AlphasBox(QGroupBox):
     class InnerBox(QWidget):
