@@ -175,7 +175,7 @@ def generate_figures(
         for num, key in enumerate(sorted_exp):
             hist = experiments[key]
             stimulus = key.split(' ')[-1]
-            if plot_stimuli is not None and stimulus not in plot_stimuli:
+            if plot_stimuli is not None and stimulus not in plot_stimuli and key not in plot_stimuli:
                 continue
 
             ratio = 0.
