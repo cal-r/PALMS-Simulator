@@ -9,20 +9,6 @@ from PySide6.QtWidgets import QAbstractItemView, QGridLayout, QPushButton, QSize
 import re
 import logging
 
-class FitTable(QTableWidget):
-    def sizeHint(self):
-        w = self.verticalHeader().width() + self.horizontalHeader().length()
-        w += self.frameWidth() * 2
-
-        h = self.horizontalHeader().height() + self.verticalHeader().length()
-        h += self.frameWidth() * 2
-
-        # if you use gridlines or styles that add extra pixels, add a small fudge:
-        return QSize(w + 2, h + 2)
-
-    def minimumSizeHint(self):
-        return self.sizeHint()
-
 class CoolTable(QWidget):
     min_size = 100
 
