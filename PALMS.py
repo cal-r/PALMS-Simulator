@@ -426,23 +426,23 @@ class PavlovianApp(QMainWindow):
         if len(self.phases) == 0:
             return
 
-        for fig in self.figures:
+        # We need to regenerate the figures due to matplotlib canvas manager issues.
+        args = self.packArgs()
+        figures = generate_figures(
+            self.strengths,
+            phases = self.phases,
+            plot_V = not args.plot_alpha and not args.plot_macknhall,
+            plot_alpha = args.plot_alpha and not AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
+            plot_macknhall = args.plot_macknhall and AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
+            dpi = self.dpi,
+            singular_legend = not self.show_legend,
+            plot_stimuli = [k for k, v in self.line_hidden.items() if not v],
+            legend_locs = self.legend_locs,
+        )
+
+        for fig in figures:
+            fig.canvas.mpl_connect('pick_event', self.pickLine)
             fig.show()
-
-        # args = self.packArgs()
-        # figures = generate_figures(
-        #     self.strengths,
-        #     phases = self.phases,
-        #     plot_V = not args.plot_alpha and not args.plot_macknhall,
-        #     plot_alpha = args.plot_alpha and not AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
-        #     plot_macknhall = args.plot_macknhall and AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
-        #     dpi = self.dpi,
-        #     singular_legend = not self.show_legend
-        # )
-
-        # for fig in figures:
-        #     fig.canvas.mpl_connect('pick_event', self.pickLine)
-        #     fig.show()
 
     def addOutOfRange(self, param: str, value: float, lower: float, upper: float):
         self.out_of_range[param] = (value, lower, upper)
@@ -474,7 +474,6 @@ class PavlovianApp(QMainWindow):
             self.numPhases = 1
             self.phaseNum = 1
             self.figures = [pyplot.Figure()]
-            self.figures[0].set_canvas(self.plotCanvas)
             self.refreshFigure()
             return
 
@@ -485,8 +484,8 @@ class PavlovianApp(QMainWindow):
         self.phaseNum = min(self.phaseNum, self.numPhases)
 
         # Get the locations of the legends of all axes of all figures.
-        legend_locs = [[ax.get_legend()._loc for ax in fig.get_axes()] for fig in self.figures]
-        legend_locs = (legend_locs + self.numPhases * [[]])[:self.numPhases]
+        self.legend_locs = [[ax.get_legend()._loc for ax in fig.get_axes()] for fig in self.figures]
+        self.legend_locs = (self.legend_locs + self.numPhases * [[]])[:self.numPhases]
 
         for fig in self.figures:
             pyplot.close(fig)
@@ -498,10 +497,10 @@ class PavlovianApp(QMainWindow):
             plot_macknhall = args.plot_macknhall and AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
             dpi = self.dpi,
             singular_legend = not self.show_legend,
-            legend_locs = legend_locs,
+            legend_locs = self.legend_locs,
         )
-        for f in self.figures:
-            f.set_canvas(self.plotCanvas)
+        # for f in self.figures:
+            # f.set_canvas(self.plotCanvas)
 
         line_names = set.union(*[set(x.keys()) for x in self.strengths])
         self.line_hidden = {k: self.line_hidden.get(k, False) for k in line_names}
@@ -511,6 +510,9 @@ class PavlovianApp(QMainWindow):
     def refreshFigure(self):
         current_figure = self.figures[self.phaseNum - 1]
         self.plotCanvas.figure = current_figure
+        current_figure.set_canvas(self.plotCanvas)
+        self.plotCanvas.mpl_connect('pick_event', self.pickLine)
+        self.plotCanvas.mpl_connect('motion_notify_event', self.mouseMove)
 
         for ax in current_figure.get_axes():
             for line in ax.get_lines():
@@ -533,9 +535,6 @@ class PavlovianApp(QMainWindow):
 
         self.plotCanvas.draw()
 
-        self.plotCanvas.mpl_connect('pick_event', self.pickLine)
-        self.plotCanvas.mpl_connect('motion_notify_event', self.mouseMove)
-
         self.tableWidget.selectColumn(self.phaseNum - 1)
         self.plotBox.phaseBox.setInfo(self.phaseNum, self.numPhases)
 
@@ -556,12 +555,7 @@ class PavlovianApp(QMainWindow):
 
         self.refreshFigure()
 
-    moved = False
     def mouseMove(self, event):
-        if not self.moved:
-            print('Mouse move!')
-            self.moved = True
-
         if not event.inaxes:
             return
 
