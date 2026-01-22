@@ -380,7 +380,7 @@ class ActionButtons(QWidget):
         self.parent.refreshExperiment()
 
     def togglePhaseBeta(self):
-        set_lambda = all('beta' in x for x in self.parent.tableWidget.selectedPrefixes())
+        set_beta = all('beta' in x for x in self.parent.tableWidget.selectedPrefixes())
         self.parent.tableWidget.setPrefixInSelection('beta', self.parent.floatOr(self.parent.params['beta'].box.text(), 0) if not set_beta else None)
         self.parent.refreshExperiment()
 

@@ -231,6 +231,9 @@ class CoolTable(QWidget):
         return self.table.columnCount()
 
     def selectColumn(self, changeCol):
+        old_freeze = self.freeze
+        self.freeze = True
+
         default = self.table.palette().color(QPalette.ColorRole.Base)
         highlight = default.lighter(150) if default.valueF() < 0.5 else default.darker(150)
 
@@ -240,6 +243,8 @@ class CoolTable(QWidget):
                 brush = QBrush(highlight) if col == changeCol else QBrush(default)
                 if item:
                     item.setBackground(brush)
+
+        self.freeze = old_freeze
 
     def loadFile(self, lines):
         self.freeze = True
