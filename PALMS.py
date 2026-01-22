@@ -426,6 +426,10 @@ class PavlovianApp(QMainWindow):
         if len(self.phases) == 0:
             return
 
+        # Get the locations of the legends of all axes of all figures.
+        self.legend_locs = [[ax.get_legend()._loc for ax in fig.get_axes()] for fig in self.figures]
+        self.legend_locs = (self.legend_locs + self.numPhases * [[]])[:self.numPhases]
+
         # We need to regenerate the figures due to matplotlib canvas manager issues.
         args = self.packArgs()
         figures = generate_figures(
@@ -589,6 +593,10 @@ class PavlovianApp(QMainWindow):
     def savePlots(self, filename, width, height, singular_legend):
         if len(self.phases) == 0:
             return
+
+        # Get the locations of the legends of all axes of all figures.
+        self.legend_locs = [[ax.get_legend()._loc for ax in fig.get_axes()] for fig in self.figures]
+        self.legend_locs = (self.legend_locs + self.numPhases * [[]])[:self.numPhases]
 
         args = self.packArgs()
         save_plots(
