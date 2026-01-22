@@ -212,7 +212,7 @@ class ActionButtons(QWidget):
         printButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         savePlotButton = QPushButton('Save Plots')
-        savePlotButton.clicked.connect(self.savePlots)
+        savePlotButton.clicked.connect(self.savePlotDialog)
         savePlotButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
         hideButton = QPushButton("Clear Figures")
@@ -437,7 +437,7 @@ class ActionButtons(QWidget):
         with open(fileName, 'w') as file:
             StimulusHistory.exportData(self.parent.strengths, file, args.should_plot_macknhall)
 
-    def savePlots(self):
+    def savePlotDialog(self):
         dialog = QDialog(self)
         dialog.setWindowTitle("Save Plots")
         layout = QVBoxLayout(dialog)
@@ -509,19 +509,21 @@ Selecting "separate legend" removes the legend from these plots, and creates a n
 
         choose_file()
 
-        if dialog.exec() == QDialog.Accepted:
-            file_path = file_edit.text()
-            if not file_path:
-                QMessageBox.warning(self, "No file selected", "Please select a file to save.")
-                return
-            try:
-                width = int(width.text())
-                height = int(height.text())
-            except ValueError:
-                QMessageBox.warning(self, "Invalid input", "Width and Height must be integers.")
-                return
-            separate_legend = legend_checkbox.isChecked()
-            self.parent.savePlots(file_path, width, height, separate_legend)
+        if dialog.exec() != QDialog.Accepted:
+            return
+
+        file_path = file_edit.text()
+        if not file_path:
+            QMessageBox.warning(self, "No file selected", "Please select a file to save.")
+            return
+        try:
+            width = int(width.text())
+            height = int(height.text())
+        except ValueError:
+            QMessageBox.warning(self, "Invalid input", "Width and Height must be integers.")
+            return
+        separate_legend = legend_checkbox.isChecked()
+        self.parent.savePlots(file_path, width, height, separate_legend)
 
     def hideExperiment(self):
         value = not all(self.parent.line_hidden.values())
