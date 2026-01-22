@@ -453,9 +453,9 @@ class PavlovianApp(QMainWindow):
         self.called_refresh = True
 
         if self.out_of_range:
-            message = [f'Parameters out of range for model {self.current_adaptive_type}:']
+            message = [f'Parameters out of range for {self.current_adaptive_type}:']
             for param, (value, lower, upper) in self.out_of_range.items():
-                message.append(f'\t{param} = {value} outside of range [{lower}, {upper}]')
+                message.append(f'    {param} = {value} ∉ [{lower}, {upper}]')
 
             QMessageBox.warning(self, 'Parameters out of range', '\n'.join(message))
 
