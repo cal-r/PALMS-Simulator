@@ -187,25 +187,25 @@ def generate_figures(
                 color = colors[key],
                 markersize = 4,
                 alpha = 1 - .5 * ratio,
+                picker = 5
             )
 
-            ax = axes[0]
+            ax_V = axes[0]
+            ax_alpha = axes[0] if not multiple else axes[1]
             if plot_V:
-                line = ax.plot(hist.assoc, label = key, **plot_options) # type: ignore
-                if multiple:
-                    ax = axes[1]
+                ax_V.plot(hist.assoc, label = key, **plot_options) # type: ignore
 
             if not hist.compound[0] and plot_alpha and not plot_macknhall:
-                ax.plot(hist.alpha, label='α: '+str(key), **plot_options) # type: ignore
+                ax_alpha.plot(hist.alpha, label='α: '+str(key), **plot_options) # type: ignore
 
             if not hist.compound[0] and plot_macknhall:
                 color_mack, color_hall = shade_hls(colors[key], 1.25), shade_hls(colors[key], 0.75)
                 if max_x <= 100:
-                    plot_around_marker(hist.alpha_mack, ax = ax, label = f'Mack: {key}', char = 'M', color = color_mack)
-                    plot_around_marker(hist.alpha_hall, ax = ax, label = f'Hall: {key}', char = 'H', color = color_hall)
+                    plot_around_marker(hist.alpha_mack, ax = ax_alpha, label = f'Mack: {key}', char = 'M', color = color_mack)
+                    plot_around_marker(hist.alpha_hall, ax = ax_alpha, label = f'Hall: {key}', char = 'H', color = color_hall)
                 else:
-                    ax.plot(hist.alpha_mack, marker = 'o', markersize = 1, markerfacecolor = 'None', label = f'Mack: {key}', color = color_mack)
-                    ax.plot(hist.alpha_hall, marker = '^', markersize = 1, label = f'Hall: {key}', color = color_hall)
+                    ax_alpha.plot(hist.alpha_mack, marker = 'o', markersize = 1, markerfacecolor = 'None', label = f'Mack: {key}', color = color_mack)
+                    ax_alpha.plot(hist.alpha_hall, marker = '^', markersize = 1, label = f'Hall: {key}', color = color_hall)
 
         longFormat = lambda x, _: f'{x:.0e}' if abs(x) >= 1000 else f'{x:.2f}'
 
