@@ -380,12 +380,12 @@ class ActionButtons(QWidget):
         self.parent.refreshExperiment()
 
     def togglePhaseBeta(self):
-        set_beta = any(p[self.parent.phaseNum - 1].beta is not None for p in self.parent.phases.values())
+        set_lambda = all('beta' in x for x in self.parent.tableWidget.selectedPrefixes())
         self.parent.tableWidget.setPrefixInSelection('beta', self.parent.floatOr(self.parent.params['beta'].box.text(), 0) if not set_beta else None)
         self.parent.refreshExperiment()
 
     def togglePhaseLambda(self):
-        set_lambda = any(p[self.parent.phaseNum - 1].lamda is not None for p in self.parent.phases.values())
+        set_lambda = all('lamda' in x for x in self.parent.tableWidget.selectedPrefixes())
         self.parent.tableWidget.setPrefixInSelection('lambda', self.parent.floatOr(self.parent.params['lamda'].box.text(), 0) if not set_lambda else None)
         self.parent.refreshExperiment()
 
@@ -552,8 +552,8 @@ Selecting "separate legend" removes the legend from these plots, and creates a n
     def enablePerPhaseParameters(self, prefixes):
         intersection = set.intersection(*prefixes) if prefixes else set()
 
-        self.phaseLambdaButton.setChecked('lamda' in intersection)
         self.phaseBetaButton.setChecked('beta' in intersection)
+        self.phaseLambdaButton.setChecked('lamda' in intersection)
 
 class ParametersGroupBox(QGroupBox):
     def __init__(self, parent):
