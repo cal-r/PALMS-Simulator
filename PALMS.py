@@ -245,9 +245,9 @@ class PavlovianApp(QMainWindow):
         def __init__(self, text, parent, default, font = 'Monospace', hoverText = None, maximumWidth = 40, long_name: str = ''):
             self.parent = parent
 
-            self.label = QLabel(text)
+            self.label = QLabel(text, parent)
             self.label.setAlignment(Qt.AlignmentFlag.AlignRight)
-            self.box = QLineEdit(default)
+            self.box = QLineEdit(default, parent)
             self.box.setMaximumWidth(maximumWidth)
             self.box.returnPressed.connect(self.changeText)
             self.label.setFont(QFont(font))
