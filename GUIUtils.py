@@ -529,6 +529,10 @@ Selecting "separate legend" removes the legend from these plots, and creates a n
         self.parent.refreshFigure()
 
     def clearExperiment(self):
+        response = QMessageBox.question(self.parent, 'Clear Experiment', 'Are you sure you want to clear the experiment?')
+        if response == QMessageBox.No:
+            return
+
         self.parent.tableWidget.clearAll()
         defaults = AdaptiveType.types()[self.parent.current_adaptive_type].defaults()
         self.parent.parametersGroupBox.clearFields(defaults)
