@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from PySide6.QtCore import Qt, QObject, QEvent, QTimer
-from PyQt6.QtGui import QBrush, QColor
+from PySide6.QtGui import QBrush, QColor, QPalette
 from PySide6.QtWidgets import *
 
 # We do this so that mypy stops complaining
@@ -230,20 +230,16 @@ class CoolTable(QWidget):
     def columnCount(self):
         return self.table.columnCount()
 
-    def selectColumn(self, col):
-        pass
-        # for row in range(self.rowCount()):
-            # table.item(row, col).setBackground(QBrush(QColor('#eeeeee')))
+    def selectColumn(self, changeCol):
+        default = self.table.palette().color(QPalette.ColorRole.Base)
+        highlight = default.lighter(150) if default.valueF() < 0.5 else default.darker(150)
 
-        self.table.setRangeSelected(
-            QTableWidgetSelectionRange(0, 0, self.rowCount() - 1, self.columnCount() - 1),
-            False,
-        )
-
-        self.table.setRangeSelected(
-            QTableWidgetSelectionRange(0, col, self.rowCount() - 1, col),
-            True,
-        )
+        for row in range(self.rowCount()):
+            for col in range(self.columnCount()):
+                item = self.table.item(row, col)
+                brush = QBrush(highlight) if col == changeCol else QBrush(default)
+                if item:
+                    item.setBackground(brush)
 
     def loadFile(self, lines):
         self.freeze = True
