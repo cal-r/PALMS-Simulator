@@ -124,14 +124,14 @@ class CoolTable(QWidget):
         changes = {'lambda': 'lamda'}
 
         prefixes = []
-        for item in self.table.selectedItems():
+        for item in self.table.selectedItems() or [self.table.itemAt(0, 0)]:
             prefixes.append({changes.get(x[0], x[0]) for x in re.findall(r'([a-zA-Z]+)=[0-9]+(\.[0-9]*)?/', item.text())})
 
         return prefixes
 
     def setPrefixInSelection(self, prefix, value: None | bool | float):
         self.freeze = True
-        for item in self.table.selectedItems():
+        for item in self.table.selectedItems() or [self.table.itemAt(0, 0)]:
             text = re.sub(rf'{prefix}(=[0-9]+(\.[0-9]*)?)?/', '', item.text())
 
             if value is None:

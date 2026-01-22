@@ -518,9 +518,6 @@ class PavlovianApp(QMainWindow):
         self.params['num_trials'].box.setDisabled(not any_rand)
         self.actionButtons.toggleRandButton.setChecked(any_rand)
 
-        any_lambda = any(p[self.phaseNum - 1].lamda is not None for p in self.phases.values())
-        self.actionButtons.phaseLambdaButton.setChecked(any_lambda)
-
         fig = self.plotCanvas.figure
 
     def pickLine(self, event):
