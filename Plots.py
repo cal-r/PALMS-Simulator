@@ -367,7 +367,7 @@ def generate_singular_legend(data, plot_stimuli, dpi):
     fig = pyplot.figure(dpi = dpi)
     pyplot.axis('off')
     for exp in css:
-        if plot_stimuli is not None and exp.split(' ')[-1] not in plot_stimuli:
+        if plot_stimuli is not None and exp.split(' ')[-1] not in plot_stimuli and exp not in plot_stimuli:
             continue
 
         pyplot.plot([], [], figure = fig, color = colors[exp], marker = markers[exp], label = exp)
