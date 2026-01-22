@@ -280,15 +280,19 @@ class PavlovianApp(QMainWindow):
             layout.addRow(self.label, self.box)
             return self
 
+        def setDisabled(self, disabled):
+            self.box.setDisabled(disabled)
+            self.checkBounds()
+
         def checkBounds(self):
             adaptive_type = self.parent.current_adaptive_type
             lower, upper = AdaptiveType.base(adaptive_type).bounds().get(self.long_name, (-float('inf'), float('inf')))
             value = float(self.box.text())
-            if value < lower or value > upper:
-                self.parent.addOutOfRange(self.label.text(), value, lower, upper)
-            else:
+
+            if not self.box.isEnabled() or value >= lower and value <= upper:
                 self.parent.removeOutOfRange(self.label.text())
-                # QMessageBox.warning(self.parent, 'Parameter out of range', f'Parameter {self.label.text()} = {value} out of range [{lower}, {upper}] for model {adaptive_type}.')
+            else:
+                self.parent.addOutOfRange(self.label.text(), value, lower, upper)
 
         # Connected function to text change.
         def changeText(self):
@@ -298,16 +302,14 @@ class PavlovianApp(QMainWindow):
 
     def enableParams(self):
         for key in AdaptiveType.parameters():
-            widget = self.params[key].box
-            widget.setDisabled(True)
+            self.params[key].setDisabled(True)
 
             if key in self.per_cs_box:
                 self.per_cs_box[key].setVisible(False)
 
         for key in self.enabled_params:
             if not self.alphasBox.isVisible() or key not in self.per_cs_param:
-                widget = self.params[key].box
-                widget.setDisabled(False)
+                widget = self.params[key].setDisabled(False)
             else:
                 self.per_cs_box[key].setVisible(True)
 
