@@ -116,6 +116,7 @@ class PavlovianApp(QMainWindow):
 
         self.parametersGroupBox = ParametersGroupBox(self)
         self.parametersGroupBox.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+        self.tableWidget.onItemSelectionChange(self.parametersGroupBox.enablePerPhaseParameters)
 
         self.alphasBox = AlphasBox(self)
         self.alphasBox.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Expanding)
