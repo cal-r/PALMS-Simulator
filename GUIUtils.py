@@ -549,6 +549,12 @@ Selecting "separate legend" removes the legend from these plots, and creates a n
         self.parent.dpi *= ratio
         self.parent.refreshExperiment()
 
+    def enablePerPhaseParameters(self, prefixes):
+        intersection = set.intersection(*prefixes) if prefixes else set()
+
+        self.phaseLambdaButton.setChecked('lamda' in intersection)
+        self.phaseBetaButton.setChecked('beta' in intersection)
+
 class ParametersGroupBox(QGroupBox):
     def __init__(self, parent):
         super().__init__('Params')

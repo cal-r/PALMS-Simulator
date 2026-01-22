@@ -112,11 +112,9 @@ class PavlovianApp(QMainWindow):
         logging.info(f'Init UI using {QGuiApplication.platformName()}')
         self.tableWidget = CoolTable(2, 1, parent = self)
         self.tableWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.tableWidget.onCellChange(self.refreshExperiment)
 
         self.parametersGroupBox = ParametersGroupBox(self)
         self.parametersGroupBox.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
-        self.tableWidget.onItemSelectionChange(self.parametersGroupBox.enablePerPhaseParameters)
 
         self.alphasBox = AlphasBox(self)
         self.alphasBox.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Expanding)
@@ -140,6 +138,9 @@ class PavlovianApp(QMainWindow):
 
         self.actionButtons = ActionButtons(self)
         self.actionButtons.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+
+        self.tableWidget.connectPrefixes(self.parametersGroupBox.enablePerPhaseParameters)
+        self.tableWidget.connectPrefixes(self.actionButtons.enablePerPhaseParameters)
 
         mainLayout = QGridLayout()
         mainLayout.setContentsMargins(5, 5, 0, 5)
