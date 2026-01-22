@@ -391,7 +391,7 @@ def save_plots(
     singular_legend: bool = False,
     plot_width: int = 11,
     plot_height: int = 2,
-    hide_lines: set[str] = set(),
+    legend_locs: None | list[list[tuple[float, float]]] = None,
 ):
     from matplotlib import pyplot
 
@@ -404,12 +404,6 @@ def save_plots(
     else:
         phases = None
 
-    # Do not plot lines that are to be hidden.
-    data = [
-        {cs: phase[cs] for cs in phase.keys() if cs not in hide_lines}
-        for phase in data
-    ]
-
     figures = generate_figures(
         data = data,
         phases = phases,
@@ -421,6 +415,7 @@ def save_plots(
         title = title,
         dpi = dpi,
         singular_legend = singular_legend,
+        legend_locs = legend_locs,
     )
 
     if singular_legend:
