@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from PySide6.QtCore import Qt, QObject, QEvent, QTimer
+from PyQt6.QtGui import QBrush, QColor
 from PySide6.QtWidgets import *
 
 # We do this so that mypy stops complaining
@@ -230,6 +231,10 @@ class CoolTable(QWidget):
         return self.table.columnCount()
 
     def selectColumn(self, col):
+        pass
+        # for row in range(self.rowCount()):
+            # table.item(row, col).setBackground(QBrush(QColor('#eeeeee')))
+
         self.table.setRangeSelected(
             QTableWidgetSelectionRange(0, 0, self.rowCount() - 1, self.columnCount() - 1),
             False,
