@@ -29,6 +29,8 @@ class CoolTable(QWidget):
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive) # type: ignore
         self.table.resizeColumnsToContents()
 
+        self.table.cellChanged.connect(self.refreshOnChange)
+
         self.rightPlus = QPushButton('+')
         self.rightPlus.clicked.connect(self.addColumn)
         self.rightPlus.setToolTip('Add a new phase.')
@@ -82,7 +84,7 @@ class CoolTable(QWidget):
             if bigs:
                 hh.setStretchLastSection(True)
 
-                logging.warn(f'Resizing sections to {size_bigs // len(bigs) if len(bigs) > 0 else "?"} for {width}')
+                # logging.warn(f'Resizing sections to {size_bigs // len(bigs) if len(bigs) > 0 else "?"} for {width}')
                 for b in bigs:
                     hh.resizeSection(b, size_bigs // len(bigs))
 
@@ -162,14 +164,14 @@ class CoolTable(QWidget):
             for item in self.table.selectedItems():
                 item.setText('')
 
-    def onCellChange(self, func):
-        def cellChanged(*args, **kwargs):
-            if not self.freeze:
-                func()
+    def refreshOnChange(self):
+        if self.freeze:
+            return
 
-        self.table.cellChanged.connect(cellChanged)
+        self.parent.refreshExperiment()
 
-    def onItemSelectionChange(self, func):
+    def connectPrefixes(self, func):
+        self.table.cellChanged.connect(lambda: func(self.selectedPrefixes()))
         self.table.itemSelectionChanged.connect(lambda: func(self.selectedPrefixes()))
 
     def addColumn(self):
