@@ -49,6 +49,8 @@ class PavlovianApp(QMainWindow):
     plot_part_stimuli: bool
     show_legend: bool
 
+    out_of_range: dict[str, tuple[float, float, float]]
+
     max_workers: Optional[int]
     screenshot_ready: bool
     dpi: int
@@ -91,6 +93,8 @@ class PavlovianApp(QMainWindow):
         self.plot_alpha = False
         self.plot_part_stimuli = False
         self.show_legend = True
+
+        self.out_of_range = {}
 
         self.legend_page = 0
         self.line_hidden = {}
@@ -281,7 +285,10 @@ class PavlovianApp(QMainWindow):
             lower, upper = AdaptiveType.base(adaptive_type).bounds().get(self.long_name, (-float('inf'), float('inf')))
             value = float(self.box.text())
             if value < lower or value > upper:
-                QMessageBox.warning(self.parent, 'Parameter out of range', f'Parameter {self.label.text()} = {value} out of range [{lower}, {upper}] for model {adaptive_type}.')
+                self.parent.addOutOfRange(self.label.text(), value, lower, upper)
+            else:
+                self.parent.removeOutOfRange(self.label.text())
+                # QMessageBox.warning(self.parent, 'Parameter out of range', f'Parameter {self.label.text()} = {value} out of range [{lower}, {upper}] for model {adaptive_type}.')
 
         # Connected function to text change.
         def changeText(self):
@@ -432,12 +439,25 @@ class PavlovianApp(QMainWindow):
             fig.canvas.mpl_connect('pick_event', self.pickLine)
             fig.show()
 
+    def addOutOfRange(self, param: str, value: float, lower: float, upper: float):
+        self.out_of_range[param] = (value, lower, upper)
+
+    def removeOutOfRange(self, param: str):
+        self.out_of_range.pop(param, None)
+
     def refreshExperiment(self, caller = None):
         from matplotlib import pyplot
         if caller is not None:
             logging.info(f'Called refreshExperiment from {caller}')
 
         self.called_refresh = True
+
+        if self.out_of_range:
+            message = [f'Parameters out of range for model {self.current_adaptive_type}:']
+            for param, (value, lower, upper) in self.out_of_range.items():
+                message.append(f'\t{param} = {value} outside of range [{lower}, {upper}]')
+
+            QMessageBox.warning(self, 'Parameters out of range', '\n'.join(message))
 
         self.plotBox.phaseBox.setLoading()
         self.tableWidget.updateSizes()
