@@ -33,13 +33,12 @@ def titleify(title: None | str, phases: dict[str, list[Phase]], phase_num: int) 
                 phase_str = fr'$\mathbf{{{phase_str}}}$'
 
             phase_str = (ln - len(g.phase_str)) * ' ' + phase_str
-
             group_str.append(phase_str)
 
         titles.append('|'.join(group_str))
 
     ret = '\n'.join(titles)
-    if len(ret) <= 100:
+    if len(ret) <= 1000:
         return ret
     
     return ''
@@ -250,9 +249,9 @@ def generate_figures(
                 PaginatedLegend(ax, loc = loc)
 
         if phases is not None:
-            title = titleify(title, phases, phase_num)
-            if title:
-                fig.suptitle(title, fontdict = {'family': 'monospace'}, fontsize = 12)
+            plot_title = titleify(title, phases, phase_num)
+            if plot_title:
+                fig.suptitle(plot_title, fontdict = {'family': 'monospace'}, fontsize = 12)
 
             if len(axes) > 1:
                 fig.subplots_adjust(top = .85)
