@@ -602,7 +602,8 @@ class PavlovianApp(QMainWindow):
             plot_width = width,
             plot_height = height,
             singular_legend = singular_legend,
-            hide_lines = {k for k, v in self.line_hidden.items() if v},
+            plot_stimuli = {k for k, v in self.line_hidden.items() if not v},
+            legend_locs = self.legend_locs,
         )
 
 def parse_args():
