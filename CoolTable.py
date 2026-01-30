@@ -25,7 +25,7 @@ class CoolTable(QWidget):
         self.table.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerItem)
 
         self.table.verticalHeader().sectionDoubleClicked.connect(self.editExperimentNames) # type: ignore
-        self.table.horizontalHeader().setMinimumSectionSize(self.min_size) # type: ignore
+        # self.table.horizontalHeader().setMinimumSectionSize(self.min_size) # type: ignore
         # self.table.horizontalHeader().setMaximumSectionSize(400) # type: ignore
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive) # type: ignore
         self.table.resizeColumnsToContents()
@@ -81,22 +81,12 @@ class CoolTable(QWidget):
             return
 
         sizes = [hh.sectionSize(i) for i in range(hh.count())]
-        width = self.mainLayout.geometry().width() - self.rightPlus.width()
+        width = self.mainLayout.geometry().width() - self.rightPlus.width() - 10
 
-        print(width, sizes)
         if sum(sizes) > width:
-            bigs = [i for i, s in enumerate(sizes) if s > self.min_size]
-            size_bigs = width - sum(x for x in sizes if x <= self.min_size)
-
-            if bigs:
-                hh.setStretchLastSection(True)
-
-                logging.warn(f'Resizing big sections to {[size_bigs // len(bigs) if x in bigs else self.min_size for x in range(hh.count())]} to get total width {width}')
-                for b in range(hh.count()):
-                    if b in bigs:
-                        hh.resizeSection(b, size_bigs // len(bigs))
-                    else:
-                        hh.resizeSection(b, self.min_size)
+            # print(f'Setting default section size to {width // hh.count()}')
+            for h in range(hh.count()):
+                hh.resizeSection(h, width // hh.count())
 
         self.table.setFixedWidth(hh.length() + vh.width() + 2 * self.table.frameWidth())
         self.bottomPlus.setFixedWidth(hh.length() + vh.width() + 2 * self.table.frameWidth())
@@ -188,7 +178,7 @@ class CoolTable(QWidget):
         cols = self.columnCount()
         self.table.insertColumn(cols)
         self.updateGeometry()
-        self.updateSizes()
+        QTimer.singleShot(100, self.updateSizes)
 
     def addRow(self):
         rows = self.rowCount()
