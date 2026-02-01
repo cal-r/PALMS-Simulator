@@ -223,10 +223,7 @@ class Experiment:
             else:
 
                 cpu_count = getattr(os, 'process_cpu_count', os.cpu_count)() or 1
-                max_workers = min(cpu_count, num_trials)
-
-                if self.max_workers is not None:
-                    max_workers = min(max_workers, self.max_workers)
+                max_workers = min(num_trials, self.max_workers or 1 + cpu_count)
 
                 from concurrent.futures import ProcessPoolExecutor
                 with ProcessPoolExecutor(max_workers = max_workers) as executor:
