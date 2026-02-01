@@ -141,7 +141,7 @@ class PavlovianApp(QMainWindow):
         self.plotCanvas = self.plotBox.plotCanvas
 
         self.actionButtons = ActionButtons(self)
-        self.actionButtons.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
+        self.actionButtons.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
 
         self.tableWidget.connectPrefixes(self.parametersGroupBox.enablePerPhaseParameters)
         self.tableWidget.connectPrefixes(self.actionButtons.enablePerPhaseParameters)
@@ -169,17 +169,12 @@ class PavlovianApp(QMainWindow):
         mainLayout.setColumnStretch(4, 0)
         centralWidget = QWidget(self)
         centralWidget.setLayout(mainLayout)
+        centralWidget.setObjectName('CentralWidget')
         self.setCentralWidget(centralWidget)
 
         self.setWindowTitle("PALMS Simulator")
         self.setWindowFlags(Qt.WindowType.Window | Qt.WindowType.WindowCloseButtonHint | Qt.WindowType.WindowMaximizeButtonHint)
         self.adaptiveTypeButtons.buttonGroup.button(0).click()
-
-        # windowSize = QSize(self.width() * 1.25, self.height() * 1.1)
-
-        # screen = self.screen()
-        # if screen:
-        #     windowSize = windowSize.boundedTo(screen.availableGeometry().size())
 
     def loadFile(self, filename):
         lines = []

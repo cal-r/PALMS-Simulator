@@ -63,6 +63,8 @@ class CoolTable(QWidget):
         self.mainLayout.setContentsMargins(0, 0, 0, 0)
         self.mainLayout.setAlignment(Qt.AlignLeft | Qt.AlignTop)
 
+        self.setObjectName('CoolTable')
+
         QTimer.singleShot(0, self.updateSizes)
         self.freeze = False
 

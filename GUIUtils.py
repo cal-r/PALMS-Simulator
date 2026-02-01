@@ -55,7 +55,6 @@ class PhaseBox(QGroupBox):
             self.yCoordInfo.setVisible(False)
 
         self.setLayout(phaseBoxLayout)
-        # self.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
 
     def setLoading(self):
         self.phaseInfo.setText('Simulating...')
@@ -90,7 +89,7 @@ class AboutButton(QPushButton):
 
         self.icon = parent.getPixmap('palms.png', scale = .5)
 
-        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         self.clicked.connect(self.aboutPALMS)
         self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
@@ -132,10 +131,26 @@ class SquareButton(QPushButton):
         return QSize(side, side)
 
 class ActionButtons(QWidget):
+    enable_shrink: bool
+
+    class ShrinkableBox(QGroupBox):
+        def __init__(self, parent, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.parent = parent
+
+        def minimumSizeHint(self) -> QSize:
+            if self.parent.enable_shrink:
+                return QSize(super().minimumSizeHint().width(), 0)
+
+            return super().minimumSizeHint()
+
     def __init__(self, parent):
         super().__init__(parent)
 
+        self.enable_shrink = False
+
         self.parent = parent
+        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
 
         checkedStyle = "QPushButton:checked { background-color: lightblue; font-weight: bold; border: 0.2ex solid #0057D8; }"
 
@@ -150,7 +165,7 @@ class ActionButtons(QWidget):
         plotAlphaButton = QPushButton('Plot α')
         plotAlphaButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         plotAlphaButton.setStyleSheet(checkedStyle)
-        plotAlphaButton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        plotAlphaButton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         plotAlphaButton.clicked.connect(self.togglePlotAlpha)
         plotAlphaButton.setCheckable(True)
         self.parent.plot_alpha = False
@@ -188,14 +203,14 @@ class ActionButtons(QWidget):
         partStimuliButton = QPushButton('Plot Trial Type Data')
         partStimuliButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         partStimuliButton.setStyleSheet(checkedStyle)
-        partStimuliButton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        partStimuliButton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         partStimuliButton.clicked.connect(self.togglePlotPartStimuli)
         partStimuliButton.setCheckable(True)
 
         toggleLegendButton = QPushButton('Hide Legend')
         toggleLegendButton.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         toggleLegendButton.setStyleSheet(checkedStyle)
-        toggleLegendButton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        toggleLegendButton.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         toggleLegendButton.clicked.connect(self.toggleLegend)
         toggleLegendButton.setCheckable(True)
 
@@ -252,10 +267,13 @@ class ActionButtons(QWidget):
         phaseOptionsLayout.addWidget(self.phaseLambdaButton)
         phaseOptionsLayout.addWidget(self.toggleAlphasButton)
         phaseOptionsLayout.addWidget(self.configuralButton)
-        phaseOptionsLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        # phaseOptionsLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        phaseOptionsLayout.addStretch(1)
         phaseOptionsLayout.setSpacing(1)
         phaseOptionsGroupBox = QGroupBox('Phase Options')
         phaseOptionsGroupBox.setLayout(phaseOptionsLayout)
+        phaseOptionsGroupBox.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+        phaseOptionsGroupBox.setMinimumHeight(0)
 
         plotOptionsLayout = QVBoxLayout()
         plotOptionsLayout.addWidget(plotAlphaButton)
@@ -267,27 +285,52 @@ class ActionButtons(QWidget):
         plotOptionsLayout.addWidget(clearButton)
         plotOptionsLayout.addWidget(modelInfoButton)
         plotOptionsLayout.addLayout(dpiOptionsLayout)
-        plotOptionsLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        # plotOptionsLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        plotOptionsLayout.addStretch(1)
         plotOptionsLayout.setSpacing(1)
         plotOptionsGroupBox = QGroupBox("Plot Options")
         plotOptionsGroupBox.setLayout(plotOptionsLayout)
+        plotOptionsGroupBox.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+        plotOptionsGroupBox.setMinimumHeight(0)
 
         fileOptionsLayout = QVBoxLayout()
         fileOptionsLayout.addWidget(fileButton)
         fileOptionsLayout.addWidget(saveButton)
         fileOptionsLayout.addWidget(exportDataButton)
-        fileOptionsLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        # fileOptionsLayout.setAlignment(Qt.AlignmentFlag.AlignTop)
+        fileOptionsLayout.addStretch(1)
         fileOptionsLayout.setSpacing(1)
         fileOptionsGroupBox = QGroupBox("File Options")
         fileOptionsGroupBox.setLayout(fileOptionsLayout)
+        fileOptionsGroupBox.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+        fileOptionsGroupBox.setMinimumHeight(0)
 
         layout = QVBoxLayout()
         layout.addWidget(phaseOptionsGroupBox)
         layout.addWidget(plotOptionsGroupBox)
-        layout.addWidget(fileOptionsGroupBox, alignment = Qt.AlignmentFlag.AlignTop)
+        layout.addWidget(fileOptionsGroupBox)
+        layout.addWidget(QWidget())
+        layout.setStretch(0, 1)
+        layout.setStretch(1, 1)
+        layout.setStretch(2, 1)
+        layout.setStretch(3, 1)
+        layout.setStretchFactor(phaseOptionsGroupBox, 1)
+        layout.setStretchFactor(plotOptionsGroupBox, 1)
+        layout.setStretchFactor(fileOptionsGroupBox, 1)
         self.setLayout(layout)
 
+        QTimer.singleShot(0, self.enableShrink)
         logging.info(f'Experiment path set to ' + str(self.getExperimentPath()))
+
+    def enableShrink(self):
+        self.enable_shrink = True
+        self.updateGeometry()
+
+    def minimumSizeHint(self) -> QSize:
+        if self.enable_shrink:
+            return QSize(super().minimumSizeHint().width(), 0)
+
+        return super().minimumSizeHint()
 
     def getExperimentPath(self) -> Path:
         if not getattr(sys, 'frozen', False):
