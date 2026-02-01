@@ -20,13 +20,11 @@ class CoolTable(QWidget):
         self.freeze = True
 
         self.table = QTableWidget(rows, cols, parent)
-        self.table.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        self.table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.table.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerItem)
 
         self.table.verticalHeader().sectionDoubleClicked.connect(self.editExperimentNames) # type: ignore
-        # self.table.horizontalHeader().setMinimumSectionSize(self.min_size) # type: ignore
-        # self.table.horizontalHeader().setMaximumSectionSize(400) # type: ignore
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive) # type: ignore
         self.table.resizeColumnsToContents()
 
@@ -58,12 +56,11 @@ class CoolTable(QWidget):
         self.mainLayout.addWidget(self.rightPlus, 0, 1)
         self.mainLayout.addWidget(self.bottomPlus, 1, 0)
         self.mainLayout.addWidget(self.cButton, 1, 1)
-        # self.mainLayout.setColumnStretch(0, 1)
+        self.mainLayout.setColumnStretch(0, 1)
         self.mainLayout.setRowStretch(0, 0)
         self.mainLayout.setRowStretch(1, 0)
         self.mainLayout.setSpacing(0)
         self.mainLayout.setContentsMargins(0, 0, 0, 0)
-        # self.mainLayout.setSizeConstraint(QLayout.SetMinimumSize)
         self.mainLayout.setAlignment(Qt.AlignLeft | Qt.AlignTop)
 
         QTimer.singleShot(0, self.updateSizes)
@@ -77,7 +74,6 @@ class CoolTable(QWidget):
         self.table.resizeColumnsToContents()
 
         if self.mainLayout.geometry().width() == 0:
-            logging.warn('Called with 0 width.')
             return
 
         sizes = [hh.sectionSize(i) for i in range(hh.count())]
