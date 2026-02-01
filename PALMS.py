@@ -629,6 +629,7 @@ def parse_args():
 
     gui_parser.add_argument('--dpi', type = int, default = None, help = 'DPI for shown and outputted figures.')
     gui_parser.add_argument('--fontsize', type = int, default = None, help = 'Fontsize of the GUI; screenshots are taken in fontsize 16.')
+    gui_parser.add_argument('--fontscale', type = float, default = 1.2, help = 'Scale of the font (overriden by --fontsize).')
     gui_parser.add_argument('--screenshot-ready', action = 'store_true', help = 'Hide guide numbers for easier screenshots.')
     gui_parser.add_argument('--debug', action = 'store_true', help = 'Whether to go to a debugging console if there is an exception')
     gui_parser.add_argument('--smoke-test', action = 'store_true', help = 'Run a smoke test: open the app, log everything, wait 5 seconds, close the app.')
@@ -642,15 +643,30 @@ def parse_args():
 
     return gui_parser.parse_args()
 
-def logScreenInfo(app):
+def logScreenInfo(app: QApplication):
     logging.info(f'Logical DPI: {app.primaryScreen().logicalDotsPerInch()}.')
     logging.info(f'Physical DPI: {app.primaryScreen().physicalDotsPerInch()}.')
     logging.info(f'Device pixel ratio: {app.primaryScreen().devicePixelRatio()}.')
     # logging.info(f'Pyplot backend: {pyplot.get_backend()}.')
     logging.info(f'Platform name: {QGuiApplication.platformName()}')
     logging.info(f'Primary screen height: {app.primaryScreen().size().height()}')
+    logging.info(f'Font size: {app.font().pointSizeF()}')
+
     for envvar in ("QT_AUTO_SCREEN_SCALE_FACTOR","QT_SCALE_FACTOR", "QT_SCREEN_SCALE_FACTORS","QT_DEVICE_PIXEL_RATIO"):
         logging.info(f'Env {envvar}: {os.environ.get(envvar)}')
+
+def defineFont(app: QApplication, fontScale: None | float, fontSize: None | int) -> QFont:
+    fontSize = app.font().pointSizeF()
+
+    if fontScale:
+        fontSize *= fontScale
+
+    if fontSize:
+        fontSize = fontSize
+
+    font = QFont()
+    font.setPointSize(fontSize)
+    return font
 
 def main():
     args = parse_args()
@@ -660,17 +676,12 @@ def main():
 
     if args.spawn:
         import multiprocessing
-        multiprocessing.set_start_method("spawn", force=True)
+        multiprocessing.set_start_method("spawn", force = True)
 
     app = QApplication(sys.argv)
+
+    app.setFont(defineFont(app, args.fontscale, args.fontsize))
     logScreenInfo(app)
-
-    if args.fontsize is None:
-        args.fontsize = 13
-
-    font = QFont()
-    font.setPointSize(args.fontsize)
-    app.setFont(font)
 
     dpi = args.dpi
     if dpi is None:
