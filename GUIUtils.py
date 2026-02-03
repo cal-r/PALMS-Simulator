@@ -73,7 +73,7 @@ class PhaseBox(QGroupBox):
             return
 
         parent.phaseNum -= 1
-        parent.refreshFigure()
+        parent.refreshCurrentFigure()
 
     def nextPhase(self):
         parent = self.parent
@@ -81,7 +81,7 @@ class PhaseBox(QGroupBox):
             return
 
         parent.phaseNum += 1
-        parent.refreshFigure()
+        parent.refreshCurrentFigure()
 
 class AboutButton(QPushButton):
     def __init__(self, parent = None):
@@ -571,7 +571,7 @@ Selecting "separate legend" removes the legend from these plots, and creates a n
     def hideExperiment(self):
         value = not all(self.parent.line_hidden.values())
         self.parent.line_hidden = {k: value for k in self.parent.line_hidden.keys()}
-        self.parent.refreshFigure()
+        self.parent.refreshCurrentFigure()
 
     def clearExperiment(self):
         response = QMessageBox.question(self.parent, 'Clear Experiment', 'Are you sure you want to clear the experiment?')
@@ -596,7 +596,7 @@ Selecting "separate legend" removes the legend from these plots, and creates a n
 
     def changeDPI(self, ratio):
         self.parent.dpi *= ratio
-        self.parent.refreshExperiment()
+        self.parent.refreshFigures()
 
     def enablePerPhaseParameters(self, prefixes):
         intersection = set.intersection(*prefixes) if prefixes else set()
