@@ -11,8 +11,6 @@ import re
 import logging
 
 class CoolTable(QWidget):
-    min_size = 100
-
     def __init__(self, rows: int, cols: int, parent: None | QWidget = None):
         super().__init__(parent = parent)
         self.parent = parent
@@ -65,55 +63,43 @@ class CoolTable(QWidget):
 
         self.setObjectName('CoolTable')
 
-        QTimer.singleShot(0, self.updateSizes)
         self.freeze = False
 
-    # TODO: Change this name
+    def resizeEvent(self, event):
+        self.updateSizes()
+
     def updateSizes(self):
         self.setHeaderNames()
 
-        self.table.setMaximumWidth(self.width())
-        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch) # type: ignore
-        # self.table.resizeColumnsToContents()
+        self.table.horizontalHeader().setMaximumSectionSize(-1)
+        self.table.horizontalHeader().setMinimumSectionSize(150)
+        self.table.resizeColumnsToContents()
 
-        # hh = self.table.horizontalHeader()
-        # sizes = [hh.sectionSizeFromContents(i) for i in range(hh.count())]
+        QTimer.singleShot(0, self.resizeAllColumns)
 
-        # self.resize(self.width(), self.height())
+    def resizeAllColumns(self):
+        hh = self.table.horizontalHeader()
 
-        # width = event.size().width()
-        # height = event.size().height()
+        sectionSizes = [hh.sectionSize(x) for x in range(hh.count())]
+        if sum(sectionSizes) > hh.width():
+            self.table.horizontalHeader().setMinimumSectionSize(50)
+            self.table.resizeColumnsToContents()
+            QTimer.singleShot(0, self.resizeLargeColumns)
 
-        # if width <= 0:
-        #     return
+    def resizeLargeColumns(self):
+        hh = self.table.horizontalHeader()
+        length = hh.width()
 
-        # hh = self.table.horizontalHeader()
-        # vh = self.table.verticalHeader()
-        # self.table.resizeColumnsToContents()
-        # sizes = [hh.sectionSize(i) for i in range(hh.count())]
-        # width = self.mainLayout.geometry().width() - self.rightPlus.width() - 10
+        sectionSizes = sorted(hh.sectionSize(x) for x in range(hh.count()))
+        count = len(sectionSizes)
 
-        # if sum(sizes) > width:
-        #     for h in range(hh.count()):
-        #         hh.resizeSection(h, width // hh.count())
+        for s in sectionSizes:
+            if s >= length // count:
+                hh.setMaximumSectionSize(length // count)
+                break
 
-        # import ipdb
-        # ipdb.set_trace()
-
-        # width = hh.width() + vh.width() + 2 * self.table.frameWidth()
-        # logging.warning(f'Changing table from {self.table.width()} to {width} with {hh.length()=}, {hh.width()=}, {vh.width()=}, {2 * self.table.frameWidth()=}')
-
-        # self.table.setFixedWidth(self.parent.width() - self.rightPlus.width())
-
-        # self.table.setFixedWidth(width)
-        # self.bottomPlus.setFixedWidth(width)
-
-        # height = hh.height() + vh.length() + 2 * self.table.frameWidth()
-        # self.table.setFixedHeight(height)
-        # self.rightPlus.setFixedHeight(height)
-
-        # self.table.updateGeometry()
-        # self.updateGeometry()
+            length -= s
+            count -= 1
 
     def editExperimentNames(self, index):
         item = self.table.verticalHeaderItem(index)
@@ -197,7 +183,7 @@ class CoolTable(QWidget):
         cols = self.columnCount()
         self.table.insertColumn(cols)
         self.updateGeometry()
-        QTimer.singleShot(100, self.updateSizes)
+        self.updateSizes()
 
     def addRow(self):
         rows = self.rowCount()
