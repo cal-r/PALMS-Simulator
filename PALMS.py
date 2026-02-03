@@ -55,17 +55,22 @@ class PavlovianApp(QMainWindow):
     screenshot_ready: bool
     dpi: int
 
+    initial_file: None | str
+
     def __init__(
         self,
-        dpi = 200,
+        dpi = None,
         screenshot_ready = False,
         parent = None,
         smoke_test = False,
         max_workers = None,
+        initial_file = None,
     ):
         super(PavlovianApp, self).__init__(parent)
 
         self.called_refresh = False
+
+        self.initial_file = initial_file
 
         self.adaptive_types = list(AdaptiveType.types().keys())
         self.current_adaptive_type = None
@@ -177,6 +182,7 @@ class PavlovianApp(QMainWindow):
         self.adaptiveTypeButtons.buttonGroup.button(0).click()
 
     def loadFile(self, filename):
+        logging.info(f'Load file with DPI {self.dpi}.')
         lines = []
         changes = {}
         percs_changes = {}
@@ -568,9 +574,15 @@ class PavlovianApp(QMainWindow):
         self.plotBox.phaseBox.setCoordInfo(max(1 + event.xdata, 1), ylabel, event.ydata)
 
     def updateWidgets(self):
-        # self.relax_size(self)
-        # self.tableWidget.update()
-        # self.tableWidget.repaint()
+        if self.dpi is None:
+            win = self.window()
+            self.dpi = 120 * win.devicePixelRatioF()
+            logging.info(f'{win.devicePixelRatioF()=:.2f} {win.physicalDpiY()=} {win.physicalDpiX()=} {win.logicalDpiY()=} {win.logicalDpiX()=}')
+            logging.info(f'Using DPI {self.dpi}')
+
+        if self.initial_file:
+            self.loadFile(self.initial_file)
+
         self.tableWidget.updateSizes()
         self.plotBox.setInitialSize()
         self.update()
@@ -622,7 +634,7 @@ def parse_args():
     cli_parser = subparsers.add_parser('cli', help = f'Run PALMS command-line interface. {sys.argv[0]} cli --help for mode information.')
     gui_parser = subparsers.add_parser('gui', help = f'Run PALMS GUI interface. This is the default if no mode is selected.')
 
-    gui_parser.add_argument('--dpi', type = int, default = None, help = 'DPI for shown and outputted figures.')
+    gui_parser.add_argument('--dpi', type = int, help = 'DPI for shown and outputted figures.')
     gui_parser.add_argument('--fontsize', type = int, default = None, help = 'Fontsize of the GUI; screenshots are taken in fontsize 16.')
     gui_parser.add_argument('--fontscale', type = float, default = 1.2, help = 'Scale of the font (overriden by --fontsize).')
     gui_parser.add_argument('--screenshot-ready', action = 'store_true', help = 'Hide guide numbers for easier screenshots.')
@@ -631,7 +643,7 @@ def parse_args():
     gui_parser.add_argument('--verbose', '-v', action = 'store_true', help = 'Verbose logging.')
     gui_parser.add_argument('--max-workers', type = int, help = 'Maximum number of multiprocessing cores used in randomised phases. This is constrained by the total CPU count and number of trials.')
     gui_parser.add_argument('--spawn', action = 'store_true', help = 'Force spawn instead of fork for multiprocessing. This should only have an effect on Linux, and is used for debugging.')
-    gui_parser.add_argument('load_file', nargs = '?', help = 'File to load initially')
+    gui_parser.add_argument('initial_file', nargs = '?', help = 'File to load initially')
 
     if len(sys.argv) > 1 and sys.argv[1] in ['-h', '--help']:
         print(parser.format_help())
@@ -640,12 +652,13 @@ def parse_args():
 
 def logScreenInfo(app: QApplication):
     logging.info(f'Logical DPI: {app.primaryScreen().logicalDotsPerInch()}.')
-    logging.info(f'Physical DPI: {app.primaryScreen().physicalDotsPerInch()}.')
-    logging.info(f'Device pixel ratio: {app.primaryScreen().devicePixelRatio()}.')
-    # logging.info(f'Pyplot backend: {pyplot.get_backend()}.')
     logging.info(f'Platform name: {QGuiApplication.platformName()}')
     logging.info(f'Primary screen height: {app.primaryScreen().size().height()}')
     logging.info(f'Font size: {app.font().pointSizeF()}')
+    logging.info(f'Physical DPI: {app.primaryScreen().physicalDotsPerInch()}.')
+    logging.info(f'Device pixel ratio: {app.primaryScreen().devicePixelRatio()}.')
+    logging.info(f'Available geometry: {app.primaryScreen().availableGeometry()}')
+    logging.info(f'Available virtual geometry: {app.primaryScreen().availableVirtualGeometry()}')
 
     for envvar in ("QT_AUTO_SCREEN_SCALE_FACTOR","QT_SCALE_FACTOR", "QT_SCREEN_SCALE_FACTORS","QT_DEVICE_PIXEL_RATIO"):
         logging.info(f'Env {envvar}: {os.environ.get(envvar)}')
@@ -678,22 +691,15 @@ def main():
     app.setFont(defineFont(app, args.fontscale, args.fontsize))
     logScreenInfo(app)
 
-    dpi = args.dpi
-    if dpi is None:
-        dpi = 1.1 ** (5 * app.primaryScreen().devicePixelRatio()) * app.primaryScreen().logicalDotsPerInch()
-        logging.info(f'Final DPI: {dpi}')
-
-
     gallery = PavlovianApp(
-        dpi = dpi,
+        dpi = args.dpi,
         screenshot_ready = args.screenshot_ready,
         smoke_test = args.smoke_test,
         max_workers = args.max_workers,
+        initial_file = args.initial_file,
     )
     gallery.show()
-
-    if args.load_file:
-        gallery.loadFile(args.load_file)
+    app.processEvents()
 
     code = app.exec()
 

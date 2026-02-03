@@ -596,6 +596,7 @@ Selecting "separate legend" removes the legend from these plots, and creates a n
 
     def changeDPI(self, ratio):
         self.parent.dpi *= ratio
+        logging.info(f'DPI: {self.parent.dpi}')
         self.parent.refreshFigures()
 
     def enablePerPhaseParameters(self, prefixes):
