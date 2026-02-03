@@ -901,7 +901,6 @@ class PlotBox(QGroupBox):
         if diff <= 0:
             return
 
-        logging.warning(f'Resizing from {self.window().width()} to {self.window().width() + diff}')
         self.window().resize(
             self.window().width() + diff,
             self.window().height(),

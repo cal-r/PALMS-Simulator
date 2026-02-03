@@ -26,7 +26,7 @@ class CoolTable(QWidget):
 
         self.table.verticalHeader().sectionDoubleClicked.connect(self.editExperimentNames) # type: ignore
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive) # type: ignore
-        self.table.resizeColumnsToContents()
+        # self.table.resizeColumnsToContents()
 
         self.table.cellChanged.connect(self.refreshOnChange)
 
@@ -34,13 +34,13 @@ class CoolTable(QWidget):
         self.rightPlus.clicked.connect(self.addColumn)
         self.rightPlus.setToolTip('Add a new phase.')
         self.rightPlus.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.rightPlus.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.rightPlus.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
 
         self.bottomPlus = QPushButton('+')
         self.bottomPlus.clicked.connect(self.addRow)
         self.bottomPlus.setToolTip('Add a new experiment.')
         self.bottomPlus.setFocusPolicy(Qt.FocusPolicy.NoFocus)
-        self.bottomPlus.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.bottomPlus.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
         self.cButton = QPushButton('C')
         self.cButton.clicked.connect(self.clearEmptyCells)
@@ -68,31 +68,52 @@ class CoolTable(QWidget):
         QTimer.singleShot(0, self.updateSizes)
         self.freeze = False
 
+    # TODO: Change this name
     def updateSizes(self):
         self.setHeaderNames()
 
-        hh = self.table.horizontalHeader()
-        vh = self.table.verticalHeader()
-        self.table.resizeColumnsToContents()
+        self.table.setMaximumWidth(self.width())
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch) # type: ignore
+        # self.table.resizeColumnsToContents()
 
-        if self.mainLayout.geometry().width() == 0:
-            return
+        # hh = self.table.horizontalHeader()
+        # sizes = [hh.sectionSizeFromContents(i) for i in range(hh.count())]
 
-        sizes = [hh.sectionSize(i) for i in range(hh.count())]
-        width = self.mainLayout.geometry().width() - self.rightPlus.width() - 10
+        # self.resize(self.width(), self.height())
 
-        if sum(sizes) > width:
-            # print(f'Setting default section size to {width // hh.count()}')
-            for h in range(hh.count()):
-                hh.resizeSection(h, width // hh.count())
+        # width = event.size().width()
+        # height = event.size().height()
 
-        self.table.setFixedWidth(hh.length() + vh.width() + 2 * self.table.frameWidth())
-        self.bottomPlus.setFixedWidth(hh.length() + vh.width() + 2 * self.table.frameWidth())
-        self.table.setFixedHeight(hh.height() + vh.length() + 2 * self.table.frameWidth())
-        self.rightPlus.setFixedHeight(hh.height() + vh.length() + 2 * self.table.frameWidth())
+        # if width <= 0:
+        #     return
 
-        self.table.updateGeometry()
-        self.updateGeometry()
+        # hh = self.table.horizontalHeader()
+        # vh = self.table.verticalHeader()
+        # self.table.resizeColumnsToContents()
+        # sizes = [hh.sectionSize(i) for i in range(hh.count())]
+        # width = self.mainLayout.geometry().width() - self.rightPlus.width() - 10
+
+        # if sum(sizes) > width:
+        #     for h in range(hh.count()):
+        #         hh.resizeSection(h, width // hh.count())
+
+        # import ipdb
+        # ipdb.set_trace()
+
+        # width = hh.width() + vh.width() + 2 * self.table.frameWidth()
+        # logging.warning(f'Changing table from {self.table.width()} to {width} with {hh.length()=}, {hh.width()=}, {vh.width()=}, {2 * self.table.frameWidth()=}')
+
+        # self.table.setFixedWidth(self.parent.width() - self.rightPlus.width())
+
+        # self.table.setFixedWidth(width)
+        # self.bottomPlus.setFixedWidth(width)
+
+        # height = hh.height() + vh.length() + 2 * self.table.frameWidth()
+        # self.table.setFixedHeight(height)
+        # self.rightPlus.setFixedHeight(height)
+
+        # self.table.updateGeometry()
+        # self.updateGeometry()
 
     def editExperimentNames(self, index):
         item = self.table.verticalHeaderItem(index)
