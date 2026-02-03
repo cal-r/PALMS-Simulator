@@ -569,6 +569,7 @@ class PavlovianApp(QMainWindow):
         # self.tableWidget.update()
         # self.tableWidget.repaint()
         self.tableWidget.updateSizes()
+        self.plotBox.setInitialSize()
         self.update()
         self.repaint()
 

@@ -895,3 +895,14 @@ class PlotBox(QGroupBox):
         layout.setContentsMargins(5, 0, 5, 0)
         layout.setSpacing(0)
         self.setLayout(layout)
+
+    def setInitialSize(self):
+        diff = 1000 - self.plotCanvas.width()
+        if diff <= 0:
+            return
+
+        logging.warning(f'Resizing from {self.window().width()} to {self.window().width() + diff}')
+        self.window().resize(
+            self.window().width() + diff,
+            self.window().height(),
+        )
