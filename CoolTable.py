@@ -20,7 +20,8 @@ class CoolTable(QWidget):
         self.table = QTableWidget(rows, cols, parent)
         self.table.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.table.setVerticalScrollMode(QAbstractItemView.ScrollMode.ScrollPerItem)
+        self.table.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
+        self.table.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         self.table.verticalHeader().sectionDoubleClicked.connect(self.editExperimentNames) # type: ignore
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive) # type: ignore
@@ -55,8 +56,6 @@ class CoolTable(QWidget):
         self.mainLayout.addWidget(self.bottomPlus, 1, 0)
         self.mainLayout.addWidget(self.cButton, 1, 1)
         self.mainLayout.setColumnStretch(0, 1)
-        self.mainLayout.setRowStretch(0, 0)
-        self.mainLayout.setRowStretch(1, 0)
         self.mainLayout.setSpacing(0)
         self.mainLayout.setContentsMargins(0, 0, 0, 0)
         self.mainLayout.setAlignment(Qt.AlignLeft | Qt.AlignTop)
@@ -66,6 +65,7 @@ class CoolTable(QWidget):
         self.freeze = False
 
     def resizeEvent(self, event):
+        super().resizeEvent(event)
         self.updateSizes()
 
     def updateSizes(self):
@@ -74,6 +74,14 @@ class CoolTable(QWidget):
         self.table.horizontalHeader().setMaximumSectionSize(-1)
         self.table.horizontalHeader().setMinimumSectionSize(150)
         self.table.resizeColumnsToContents()
+
+        self.table.setFixedHeight(
+            sum(self.table.rowHeight(x) for x in range(self.table.rowCount())) +
+            self.table.horizontalHeader().height() +
+            2 * self.table.frameWidth()
+        )
+
+        self.table.updateGeometry()
 
         QTimer.singleShot(0, self.resizeAllColumns)
 
@@ -85,6 +93,8 @@ class CoolTable(QWidget):
             self.table.horizontalHeader().setMinimumSectionSize(50)
             self.table.resizeColumnsToContents()
             QTimer.singleShot(0, self.resizeLargeColumns)
+
+        self.table.updateGeometry()
 
     def resizeLargeColumns(self):
         hh = self.table.horizontalHeader()
@@ -100,6 +110,8 @@ class CoolTable(QWidget):
 
             length -= s
             count -= 1
+
+        self.table.updateGeometry()
 
     def editExperimentNames(self, index):
         item = self.table.verticalHeaderItem(index)
