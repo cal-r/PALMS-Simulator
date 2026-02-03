@@ -446,7 +446,6 @@ class PavlovianApp(QMainWindow):
         self.out_of_range.pop(param, None)
 
     def refreshExperiment(self, caller = None):
-        from matplotlib import pyplot
         if caller is not None:
             logging.info(f'Called refreshExperiment from {caller}')
 
@@ -464,12 +463,17 @@ class PavlovianApp(QMainWindow):
 
         args = self.packArgs()
         self.strengths, self.phases = self.generateResults(args)
+
+        self.refreshFigures()
+
+    def refreshFigures(self):
+        from matplotlib import pyplot
         if len(self.phases) == 0:
             self.alphasBox.clear()
             self.numPhases = 1
             self.phaseNum = 1
             self.figures = [pyplot.Figure()]
-            self.refreshFigure()
+            self.refreshCurrentFigure()
             return
 
         self.css = set.union(*[phase.cs() for group in self.phases.values() for phase in group])
@@ -485,6 +489,7 @@ class PavlovianApp(QMainWindow):
         for fig in self.figures:
             pyplot.close(fig)
 
+        args = self.packArgs()
         self.figures = generate_figures(
             self.strengths,
             plot_V = not args.plot_alpha and not args.plot_macknhall,
@@ -494,15 +499,13 @@ class PavlovianApp(QMainWindow):
             singular_legend = not self.show_legend,
             legend_locs = self.legend_locs,
         )
-        # for f in self.figures:
-            # f.set_canvas(self.plotCanvas)
 
         line_names = set.union(*[set(x.keys()) for x in self.strengths])
         self.line_hidden = {k: self.line_hidden.get(k, False) for k in line_names}
 
-        self.refreshFigure()
+        self.refreshCurrentFigure()
 
-    def refreshFigure(self):
+    def refreshCurrentFigure(self):
         current_figure = self.figures[self.phaseNum - 1]
         self.plotCanvas.figure = current_figure
         current_figure.set_canvas(self.plotCanvas)
@@ -548,7 +551,7 @@ class PavlovianApp(QMainWindow):
             case _:
                 self.line_hidden[label] = not self.line_hidden[label]
 
-        self.refreshFigure()
+        self.refreshCurrentFigure()
 
     def mouseMove(self, event):
         if not event.inaxes:
