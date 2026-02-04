@@ -13,7 +13,7 @@ from itertools import zip_longest
 from pathlib import Path
 from typing import Optional
 from PySide6.QtCore import QTimer, Qt, QSize
-from PySide6.QtGui import QFont, QPixmap, QGuiApplication
+from PySide6.QtGui import QFont, QPixmap, QGuiApplication, QCursor
 from PySide6.QtWidgets import *
 
 from Experiment import RWArgs, Experiment, Phase
@@ -599,6 +599,21 @@ class PavlovianApp(QMainWindow):
         self.plotBox.setInitialSize()
         self.update()
         self.repaint()
+
+        QTimer.singleShot(0, self.centerWindow)
+
+    def centerWindow(self):
+        screen = self.screen() or QGuiApplication.primaryScreen()
+        geo = screen.availableGeometry()
+
+        fg = self.frameGeometry()
+        fg.moveCenter(geo.center())
+
+        x = max(geo.left(), min(fg.left(), geo.right() - fg.width() + 1))
+        y = max(geo.top(), min(fg.top(), geo.bottom() - fg.height() + 1))
+
+        print(f'Centering to {x} {y}')
+        self.move(x, y)
 
     def relax_size(self, elem):
         elem.setMinimumSize(0, 0)
