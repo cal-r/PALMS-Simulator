@@ -612,7 +612,6 @@ class PavlovianApp(QMainWindow):
         x = max(geo.left(), min(fg.left(), geo.right() - fg.width() + 1))
         y = max(geo.top(), min(fg.top(), geo.bottom() - fg.height() + 1))
 
-        print(f'Centering to {x} {y}')
         self.move(x, y)
 
     def relax_size(self, elem):

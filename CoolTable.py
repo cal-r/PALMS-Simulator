@@ -25,7 +25,6 @@ class CoolTable(QWidget):
 
         self.table.verticalHeader().sectionDoubleClicked.connect(self.editExperimentNames) # type: ignore
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Interactive) # type: ignore
-        # self.table.resizeColumnsToContents()
 
         self.table.cellChanged.connect(self.refreshOnChange)
 
@@ -76,11 +75,13 @@ class CoolTable(QWidget):
         self.table.horizontalHeader().setMinimumSectionSize(150)
         self.table.resizeColumnsToContents()
 
-        self.table.setFixedHeight(
-            sum(self.table.rowHeight(x) for x in range(self.table.rowCount())) +
-            self.table.horizontalHeader().height() +
+        height = \
+            sum(self.table.rowHeight(x) for x in range(self.table.rowCount())) + \
+            self.table.horizontalHeader().height() + \
             2 * self.table.frameWidth()
-        )
+
+        self.table.setFixedHeight(height)
+        self.rightPlus.setFixedHeight(height)
 
         self.table.updateGeometry()
 
