@@ -75,6 +75,7 @@ def parse_args():
     experiment.add_argument("--rho", metavar = 'ρ', type = float, default = .2)
     experiment.add_argument("--nu", metavar = 'ν', type = float, default = .25)
     experiment.add_argument("--kay", metavar = 'κ', type = float, default = 2)
+    experiment.add_argument('--max-workers', type = int, help = 'Maximum number of multiprocessing cores used in randomised phases. This is constrained by the total CPU count and number of trials.')
 
 
     parser.add_argument(
@@ -140,7 +141,7 @@ def main() -> None:
         if args.plot_experiments is not None and name not in args.plot_experiments:
             continue
 
-        experiment = Experiment(name, phase_strs)
+        experiment = Experiment(name, phase_strs, max_workers = args.max_workers)
         local_strengths = experiment.run_all_phases(experiment_args)
         groups_strengths = [a | b for a, b in zip(groups_strengths, local_strengths)]
         phases[name] = experiment.phases
