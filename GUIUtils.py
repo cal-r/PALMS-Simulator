@@ -668,8 +668,8 @@ class ParametersGroupBox(QGroupBox):
             if not only_unmodified or not self.params[key].box.isModified():
                 self.params[key].setText(str(default), set_modified = False)
 
-            if key.startswith('alpha_') and not self.params[key].box.isModified() and self.params['alpha'].box.isModified():
-                self.params[key].setText(self.params['alpha'].box.text(), set_modified = True)
+            # if key.startswith('alpha_') and not self.params[key].box.isModified() and self.params['alpha'].box.isModified():
+                # self.params[key].setText(self.params['alpha'].box.text(), set_modified = True)
 
             self.params[key].checkBounds()
 
