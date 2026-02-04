@@ -72,7 +72,7 @@ jobs:
         run: |
           set -euxo pipefail
           rm release_macos_candidate.zip
-          rm PALMS_macos_unnotarized.zip
+          # rm PALMS_macos_unnotarized.zip
           mkdir -p release
           mv Experiments/ dist/ # Experiments should be in dist/ in the first place.
           cd dist/
