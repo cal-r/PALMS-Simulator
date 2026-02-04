@@ -142,6 +142,9 @@ class CoolTable(QWidget):
 
         prefixes = []
         for item in self.table.selectedItems() or [self.table.itemAt(0, 0)]:
+            if not item:
+                continue
+
             prefixes.append({changes.get(x[0], x[0]) for x in re.findall(r'(rand|beta|lamb?da)(:?=[0-9]+(\.[0-9]*)?)?/', item.text())})
 
         return prefixes
