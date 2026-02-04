@@ -458,14 +458,23 @@ class PavlovianApp(QMainWindow):
         self.called_refresh = True
 
         if self.out_of_range:
-            message = [f'Parameters out of range for {self.current_adaptive_type}:']
+            header = f'Parameters out of range for {self.current_adaptive_type}:'
+            messages = []
             for param, (value, lower, upper) in self.out_of_range.items():
-                message.append(f'    {param} = {value} ∉ [{lower}, {upper}]')
+                messages.append(f"<li style='margin:2px 0'>{param} = {value} ∉ [{lower}, {upper}]</li>")
 
-            if len(message) > 6:
-                message = message[:6] + ['', f'    and {len(message) - 6} other parameter{'' if len(message) == 7 else 's'}.']
+            if len(messages) > 5:
+                messages = messages[:5] + [' ', f'and {len(messages) - 5} other parameter{'' if len(messages) == 6 else 's'}.']
 
-            QMessageBox.warning(self, 'Parameters out of range', '\n'.join(message))
+            text = header + "<ul style='list-style-type:none; margin:4px 0; padding-left:48px;'>" + ''.join([f'<li>{m}</li>' for m in messages]) + '</ul>'
+            warning = QMessageBox(
+                QMessageBox.Warning,
+                'Parameters out of range',
+                text,
+                parent = self
+            )
+            warning.setTextFormat(Qt.RichText)
+            warning.exec()
 
         self.plotBox.phaseBox.setLoading()
         self.tableWidget.updateSizes()
