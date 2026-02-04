@@ -462,6 +462,9 @@ class PavlovianApp(QMainWindow):
             for param, (value, lower, upper) in self.out_of_range.items():
                 message.append(f'    {param} = {value} ∉ [{lower}, {upper}]')
 
+            if len(message) > 6:
+                message = message[:6] + ['', f'    and {len(message) - 6} other parameter{'' if len(message) == 7 else 's'}.']
+
             QMessageBox.warning(self, 'Parameters out of range', '\n'.join(message))
 
         self.plotBox.phaseBox.setLoading()
