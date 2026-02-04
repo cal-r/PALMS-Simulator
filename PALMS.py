@@ -208,7 +208,7 @@ class PavlovianApp(QMainWindow):
                     self.adaptiveTypeButtons.clickAdaptiveTypeButton(value)
                 elif name == 'configural_cues':
                     self.actionButtons.configuralButton.click()
-                elif '_' in name and name not in ('alpha_mack', 'alpha_hall'):
+                elif '_' in name and name not in ('alpha_mack', 'alpha_hall', 'num_trials'):
                     percs_changes[name] = value
                 else:
                     changes[name] = value
