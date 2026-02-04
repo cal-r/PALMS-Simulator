@@ -32,7 +32,7 @@ jobs:
         shell: powershell
         run: |
           New-Item -ItemType Directory -Force -Path dist | Out-Null
-          Expand-Archive -Path "release/release_windows.zip" -DestinationPath "dist" -Force
+          Expand-Archive -Path "release/PALMS_windows.zip" -DestinationPath "dist" -Force
 
       - name: Run app, screenshot, and check for errors
         shell: powershell
@@ -108,7 +108,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: latest
-          files: release/release_windows.zip
+          files: release/PALMS_windows.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

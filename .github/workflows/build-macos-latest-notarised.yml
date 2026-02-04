@@ -68,15 +68,16 @@ jobs:
           xcrun stapler staple "$TARGET"
           spctl --assess --type execute -vv "$TARGET"
 
-      - name: Delete candidate zip, re-create notarised one.
+      - name: Delete candidate and unnotarized zip, re-create notarised one.
         run: |
           set -euxo pipefail
           rm release_macos_candidate.zip
+          rm PALMS_macos_unnotarized.zip
           mkdir -p release
           mv Experiments/ dist/ # Experiments should be in dist/ in the first place.
           cd dist/
           ls
-          ditto -c -k . ../release/release_macos_notarized.zip
+          ditto -c -k . ../release/PALMS_macos.zip
           cd ../
 
       - name: Create or update "latest" tag
@@ -93,6 +94,6 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: latest
-          files: release/release_macos_notarized.zip
+          files: release/PALMS_macos.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

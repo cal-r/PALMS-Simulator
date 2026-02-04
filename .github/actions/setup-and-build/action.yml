@@ -49,8 +49,8 @@ runs:
             PALMS.py
           mkdir -p release
           mv dist/PALMS 'dist/PALMS Code'
-          tar -czf release_macos.tar.gz Experiments -C dist ./
-          mv release_macos.tar.gz release/
+          tar -czf PALMS_macos_unnotarized.tar.gz Experiments -C dist ./
+          mv PALMS_macos_unnotarized.tar.gz release/
         elif [[ "${{ inputs.os }}" == "windows-latest" ]]
         then
           pyinstaller ${EXCLUDED_MODULE_OPTIONS} ${COMMON_OPTIONS} \
@@ -62,10 +62,10 @@ runs:
             PALMS.py
           mkdir -p release
           cd dist
-          7z a -tzip ../release_windows.zip PALMS.exe
+          7z a -tzip ../PALMS_windows.zip PALMS.exe
           cd ..
-          7z a -tzip release_windows.zip Experiments
-          mv release_windows.zip release/
+          7z a -tzip PALMS_windows.zip Experiments
+          mv PALMS_windows.zip release/
         else
           pyinstaller ${EXCLUDED_MODULE_OPTIONS} ${COMMON_OPTIONS} \
             --add-data "resources:resources" \
@@ -75,8 +75,8 @@ runs:
             PALMS.py
           mkdir -p release
           chmod +x dist/PALMS
-          tar -czf release_linux.tar.gz Experiments -C dist PALMS
-          mv release_linux.tar.gz release/
+          tar -czf PALMS_linux.tar.gz Experiments -C dist PALMS
+          mv PALMS_linux.tar.gz release/
         fi
 
     - name: Upload artifact
