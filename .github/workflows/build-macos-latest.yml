@@ -34,7 +34,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p dist
-          tar -xzf release/release_macos.tar.gz -C dist
+          tar -xzf release/PALMS_macos_unnotarized.tar.gz -C dist
 
       - name: Make app executable
         shell: bash
@@ -110,7 +110,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: latest
-          files: release/release_macos.tar.gz
+          files: release/PALMS_macos_unnotarized.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
