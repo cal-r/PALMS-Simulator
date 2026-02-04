@@ -98,8 +98,8 @@ class AboutButton(QPushButton):
 **PALMS: Pavlovian Associative Learning Models Simulator**\\
 Version 0.xx
 
-Built by Team Alpha from City, University of London: Alessandro Abati,
-Martin Fixman, Julián Jimenez Nimmo, Sean Lim and Esther Mondragón.
+Built by Team Alpha from City, University of London: Martin Fixman,
+Alessandro Abati, Julián Jimenez Nimmo, Sean Lim and Esther Mondragón.
 
 For any questions add an issue to the Github page:
 [github.com/cal-r/PALMS-Simulator](https://github.com/cal-r/PALMS-Simulator)
