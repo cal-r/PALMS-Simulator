@@ -136,7 +136,7 @@ class PavlovianApp(QMainWindow):
         iconLabel = QLabel(self)
         iconLabel.setPixmap(self.getPixmap('palms.png'))
         iconLabel.setScaledContents(True)
-        iconLabel.setFixedSize(130, 130)
+        iconLabel.setFixedSize(120, 120)
         iconLabel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         iconLabel.setToolTip('Pavlovian\N{bellhop bell} \N{dog face} Associative\N{handshake} Learning\N{brain} Models\N{bar chart} Simulator\N{desktop computer}.')
 
@@ -662,7 +662,7 @@ def parse_args():
 
     gui_parser.add_argument('--dpi', type = int, help = 'DPI for shown and outputted figures.')
     gui_parser.add_argument('--fontsize', type = int, default = None, help = 'Fontsize of the GUI; screenshots are taken in fontsize 16.')
-    gui_parser.add_argument('--fontscale', type = float, default = 1.2, help = 'Scale of the font (overriden by --fontsize).')
+    gui_parser.add_argument('--fontscale', type = float, default = 1.15, help = 'Scale of the font (overriden by --fontsize).')
     gui_parser.add_argument('--screenshot-ready', action = 'store_true', help = 'Hide guide numbers for easier screenshots.')
     gui_parser.add_argument('--debug', action = 'store_true', help = 'Whether to go to a debugging console if there is an exception')
     gui_parser.add_argument('--smoke-test', action = 'store_true', help = 'Run a smoke test: open the app, log everything, wait 5 seconds, close the app.')
