@@ -30,8 +30,15 @@ jobs:
           RELEASE_BRANCHES: release
           TAG_PREFIX: v
           INITIAL_VERSION: 1.0.0
-          DEFAULT_BUMP: patch
+          DEFAULT_BUMP: minor
           FORCE_WITHOUT_CHANGES: "true"
+
+      - name: Move latest tag to this commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git tag -f latest
+          git push origin latest --force
 
   build-linux:
     name: Build Linux
@@ -97,6 +104,14 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ needs.bump.outputs.tag }}
+          files: release/PALMS_linux.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload to latest GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: latest
           files: release/PALMS_linux.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -264,6 +279,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Upload to latest GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: latest
+          files: release/PALMS_windows.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   build-macos:
     name: Build + Notarize macOS
     needs: bump
@@ -389,6 +412,14 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ needs.bump.outputs.tag }}
+          files: release/PALMS_macos.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload to latest GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: latest
           files: release/PALMS_macos.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
