@@ -26,8 +26,8 @@ from GUIUtils import *
 from PySide6.QtWidgets import QLabel, QLineEdit, QMainWindow, QMessageBox, QWidget
 
 class PavlovianApp(QMainWindow):
-    adaptive_types: list[str]
-    current_adaptive_type: str
+    models: list[str]
+    current_model: str
 
     figures: list # list[pyplot.Figure]
     strengths: list[dict[str, StimulusHistory]]
@@ -72,8 +72,8 @@ class PavlovianApp(QMainWindow):
 
         self.initial_file = initial_file
 
-        self.adaptive_types = list(Model.types().keys())
-        self.current_adaptive_type = None
+        self.models = list(Model.types().keys())
+        self.current_model = None
 
         self.figures = []
         self.strengths = []
@@ -199,10 +199,10 @@ class PavlovianApp(QMainWindow):
             for prop in line.strip('@').split(';'):
                 name, value = prop.split('=')
 
-                replacements = {'betap': 'beta', 'lambda': 'lamda', 'model': 'adaptive_type'}
+                replacements = {'betap': 'beta', 'lambda': 'lamda', 'model': 'model'}
                 name = replacements.get(name, name)
 
-                if name == 'adaptive_type':
+                if name == 'model':
                     value = value.replace('LePelley', 'Le Pelley')
                     value = value.replace('Rescorla Wagner w/ Variable Learning Rate', 'MLAB Model')
                     self.adaptiveTypeButtons.clickAdaptiveTypeButton(value)
@@ -282,8 +282,8 @@ class PavlovianApp(QMainWindow):
             self.checkBounds()
 
         def checkBounds(self):
-            adaptive_type = self.parent.current_adaptive_type
-            lower, upper = Model.base(adaptive_type).bounds().get(self.long_name, (-float('inf'), float('inf')))
+            model = self.parent.current_model
+            lower, upper = Model.base(model).bounds().get(self.long_name, (-float('inf'), float('inf')))
             value = float(self.box.text())
 
             if not self.box.isEnabled() or value >= lower and value <= upper:
@@ -334,9 +334,9 @@ class PavlovianApp(QMainWindow):
         return {cs: self.floatOr(pair.box.text(), value) for cs, pair in self.per_cs_param[perc].items()}
 
     def packArgs(self) -> RWArgs:
-        should_plot_macknhall = Model.types()[self.current_adaptive_type].should_plot_macknhall()
+        should_plot_macknhall = Model.types()[self.current_model].should_plot_macknhall()
         return RWArgs(
-            adaptive_type = self.current_adaptive_type,
+            model = self.current_model,
 
             alpha = self.floatOr(self.params['alpha'].box.text(), 0),
             alpha_mack = self.floatOrNone(self.params['alpha_mack'].box.text()),
@@ -433,8 +433,8 @@ class PavlovianApp(QMainWindow):
             self.strengths,
             phases = self.phases,
             plot_V = not args.plot_alpha and not args.plot_macknhall,
-            plot_alpha = args.plot_alpha and not Model.types()[self.current_adaptive_type].should_plot_macknhall(),
-            plot_macknhall = args.plot_macknhall and Model.types()[self.current_adaptive_type].should_plot_macknhall(),
+            plot_alpha = args.plot_alpha and not Model.types()[self.current_model].should_plot_macknhall(),
+            plot_macknhall = args.plot_macknhall and Model.types()[self.current_model].should_plot_macknhall(),
             dpi = self.dpi,
             singular_legend = not self.show_legend,
             plot_stimuli = [k for k, v in self.line_hidden.items() if not v],
@@ -458,7 +458,7 @@ class PavlovianApp(QMainWindow):
         self.called_refresh = True
 
         if self.out_of_range:
-            header = f'Parameters out of range for {self.current_adaptive_type}:'
+            header = f'Parameters out of range for {self.current_model}:'
             messages = []
             for param, (value, lower, upper) in self.out_of_range.items():
                 messages.append(f"<li style='margin:2px 0'>{param} = {value} ∉ [{lower}, {upper}]</li>")
@@ -511,8 +511,8 @@ class PavlovianApp(QMainWindow):
         self.figures = generate_figures(
             self.strengths,
             plot_V = not args.plot_alpha and not args.plot_macknhall,
-            plot_alpha = args.plot_alpha and not Model.types()[self.current_adaptive_type].should_plot_macknhall(),
-            plot_macknhall = args.plot_macknhall and Model.types()[self.current_adaptive_type].should_plot_macknhall(),
+            plot_alpha = args.plot_alpha and not Model.types()[self.current_model].should_plot_macknhall(),
+            plot_macknhall = args.plot_macknhall and Model.types()[self.current_model].should_plot_macknhall(),
             dpi = self.dpi,
             singular_legend = not self.show_legend,
             legend_locs = self.legend_locs,
@@ -644,8 +644,8 @@ class PavlovianApp(QMainWindow):
             self.strengths,
             phases = self.phases,
             plot_V = not args.plot_alpha and not args.plot_macknhall,
-            plot_alpha = args.plot_alpha and not Model.types()[self.current_adaptive_type].should_plot_macknhall(),
-            plot_macknhall = args.plot_macknhall and Model.types()[self.current_adaptive_type].should_plot_macknhall(),
+            plot_alpha = args.plot_alpha and not Model.types()[self.current_model].should_plot_macknhall(),
+            plot_macknhall = args.plot_macknhall and Model.types()[self.current_model].should_plot_macknhall(),
             dpi = self.dpi,
             filename = filename,
             plot_width = width,

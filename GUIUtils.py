@@ -383,7 +383,7 @@ class ActionButtons(QWidget):
 
         lines = []
 
-        lines.append(f'@model={self.parent.current_adaptive_type}')
+        lines.append(f'@model={self.parent.current_model}')
         if self.parent.configural_cues:
             lines.append('@configural_cues=True')
 
@@ -579,14 +579,14 @@ Selecting "separate legend" removes the legend from these plots, and creates a n
             return
 
         self.parent.tableWidget.clearAll()
-        defaults = Model.types()[self.parent.current_adaptive_type].defaults()
+        defaults = Model.types()[self.parent.current_model].defaults()
         self.parent.parametersGroupBox.clearFields(defaults)
         self.parent.alphasBox.clearFields(vals = self.parent.params)
         self.parent.refreshExperiment()
 
     def showModelInfo(self):
         root = getattr(sys, '_MEIPASS', '.')
-        image_filename = Model.types()[self.parent.current_adaptive_type].image_filename
+        image_filename = Model.types()[self.parent.current_model].image_filename
         image_path = os.path.join(root, 'resources', image_filename)
         try:
             image = Image.open(image_path)
@@ -836,9 +836,9 @@ class AdaptiveTypeButtons(QGroupBox):
         self.buttonGroup = QButtonGroup(parent)
         self.buttonGroup.setExclusive(True)
 
-        for i, adaptive_type in enumerate(parent.adaptive_types):
-            button = QPushButton('  ' + adaptive_type.replace('/ ', '/\n') + '  ')
-            button.adaptive_type = adaptive_type
+        for i, model in enumerate(parent.models):
+            button = QPushButton('  ' + model.replace('/ ', '/\n') + '  ')
+            button.model = model
             button.setCheckable(True)
             button.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
@@ -852,26 +852,26 @@ class AdaptiveTypeButtons(QGroupBox):
 
             layout.addWidget(button, stretch = 1)
 
-        self.buttonGroup.buttonClicked.connect(lambda button: self.changeAdaptiveType(button.adaptive_type))
+        self.buttonGroup.buttonClicked.connect(lambda button: self.changeAdaptiveType(button.model))
         self.setLayout(layout)
 
-    def clickAdaptiveTypeButton(self, adaptive_type):
+    def clickAdaptiveTypeButton(self, model):
         for button in self.buttonGroup.buttons():
-            if button.adaptive_type == adaptive_type:
+            if button.model == model:
                 button.click()
                 return
 
-        print(f'Secret adaptive type! {adaptive_type}')
+        print(f'Secret adaptive type! {model}')
         self.buttonGroup.checkedButton.release()
-        self.changeAdaptiveType(self, adaptive_type)
+        self.changeAdaptiveType(self, model)
 
-    def changeAdaptiveType(self, adaptive_type):
+    def changeAdaptiveType(self, model):
         parent = self.parent
-        parent.current_adaptive_type = adaptive_type
-        parent.enabled_params = set(Model.types()[parent.current_adaptive_type].parameters())
+        parent.current_model = model
+        parent.enabled_params = set(Model.types()[parent.current_model].parameters())
         parent.enableParams()
 
-        defaults = Model.types()[self.parent.current_adaptive_type].defaults()
+        defaults = Model.types()[self.parent.current_model].defaults()
         parent.parametersGroupBox.clearFields(defaults = defaults, only_unmodified = True)
         parent.alphasBox.clearFields(vals = parent.params, only_unmodified = True)
 

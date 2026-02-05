@@ -11,7 +11,7 @@ class Group:
     s: Environment
     configural_cues: bool
 
-    adaptive_type: Model
+    model: Model
 
     @staticmethod
     def set_vals(cs: set[str], vals: dict[str, float], default: None | float) -> dict[str, float]:
@@ -49,7 +49,7 @@ class Group:
         thetaE: float,
         thetaI: float,
         cs: set[str] = set(),
-        adaptive_type: None | str = None,
+        model: None | str = None,
         xi_hall: None | float = None,
     ):
         cs = cs | alphas.keys() | saliences.keys() | habituations.keys() | alpha_macks.keys() | alpha_halls.keys()
@@ -84,8 +84,8 @@ class Group:
         # ideally remove the class variable altogether.
         self.configural_cues = Environment.configural_cues
 
-        self.adaptive_type = Model.get(
-            adaptive_type,
+        self.model = Model.get(
+            model,
             betan = betan,
             betap = betap,
             lamda = lamda,
@@ -104,11 +104,11 @@ class Group:
 
         for e, (part, plus) in enumerate(parts, start = 1):
             if plus == '++':
-                beta, lamda, sign = 2 * (phase_beta or self.adaptive_type.betap), phase_lamda or self.adaptive_type.lamda, 1
+                beta, lamda, sign = 2 * (phase_beta or self.model.betap), phase_lamda or self.model.lamda, 1
             elif plus == '+':
-                beta, lamda, sign = phase_beta or self.adaptive_type.betap, phase_lamda or self.adaptive_type.lamda, 1
+                beta, lamda, sign = phase_beta or self.model.betap, phase_lamda or self.model.lamda, 1
             else:
-                beta, lamda, sign = self.adaptive_type.betan, 0., -1
+                beta, lamda, sign = self.model.betan, 0., -1
 
             compounds = Environment.list_cs(part)
 
@@ -140,6 +140,6 @@ class Group:
                 # We need to calculate max_{i != cs} V_i.
                 # This is always either the maximum V_i, or the second maximum when i = cs.
                 rp.maxAssocRest = maxAssoc if cs != argmaxAssoc else secondMaxAssoc
-                self.adaptive_type.run_step(self.s[cs], rp)
+                self.model.run_step(self.s[cs], rp)
 
         return Environment.fromHistories(hist)

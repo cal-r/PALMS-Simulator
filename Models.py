@@ -52,12 +52,12 @@ class Model:
         }
 
     @classmethod
-    def base(cls, adaptive_type_name) -> Type[Model]:
-        return cls.types()[adaptive_type_name]
+    def base(cls, model_name) -> Type[Model]:
+        return cls.types()[model_name]
 
     @classmethod
-    def get(cls, adaptive_type_name, *args, **kwargs) -> Model:
-        return cls.base(adaptive_type_name)(*args, **kwargs)
+    def get(cls, model_name, *args, **kwargs) -> Model:
+        return cls.base(model_name)(*args, **kwargs)
 
     @classmethod
     def parameters(cls) -> list[str]:
