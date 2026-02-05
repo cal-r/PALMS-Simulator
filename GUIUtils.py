@@ -898,11 +898,11 @@ class PlotBox(QGroupBox):
         self.setLayout(layout)
 
     def setInitialSize(self):
-        diff = 1000 - self.plotCanvas.width()
+        diff = 800 - self.plotCanvas.width()
         if diff <= 0:
             return
 
-        self.window().resize(
-            self.window().width() + diff,
-            self.window().height(),
+        QTimer.singleShot(
+            50,
+            lambda: self.window().resize(self.window().width() + diff, self.window().height()),
         )

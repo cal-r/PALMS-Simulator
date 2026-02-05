@@ -602,7 +602,7 @@ class PavlovianApp(QMainWindow):
         self.update()
         self.repaint()
 
-        QTimer.singleShot(0, self.resizeAndCenterWindow)
+        QTimer.singleShot(100, self.resizeAndCenterWindow)
 
     def resizeAndCenterWindow(self):
         available = self.screen().availableGeometry()
