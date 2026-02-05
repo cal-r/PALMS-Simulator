@@ -96,7 +96,7 @@ def parse_args():
     if rest:
         raise KeyError(f"Arguments not recognised: {' '.join(rest)}.")
 
-    args.use_adaptive = args.adaptive_type is not None
+    args.use_adaptive = args.model is not None
 
     if args.plot_alphas:
         args.plot_alpha = True
@@ -122,7 +122,7 @@ def main() -> None:
         if experiment.startswith('@'):
             for prop in experiment.strip('@').split(';'):
                 name, value = prop.split('=')
-                replacements = {'model': 'adaptive_type', 'betap': 'beta', 'betan': 'beta_neg', 'lambda': 'lamda'}
+                replacements = {'adaptive_type': 'model', 'betap': 'beta', 'betan': 'beta_neg', 'lambda': 'lamda'}
                 name = replacements.get(name, name)
 
                 if '_' in name and name.split('_')[-1].isupper():

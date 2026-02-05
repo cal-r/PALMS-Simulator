@@ -75,7 +75,7 @@ class RWArgs:
     def get(self, name: str) -> Any:
         return getattr(self, name)
 
-    adaptive_type: str
+    model: str
 
     alphas: dict[str, float]
     alpha_macks: dict[str, float]
@@ -179,7 +179,7 @@ class Experiment:
             thetaE = args.thetaE,
             thetaI = args.thetaI,
             cs = stimuli,
-            adaptive_type = args.adaptive_type,
+            model = args.model,
             xi_hall = args.xi_hall,
         )
 
