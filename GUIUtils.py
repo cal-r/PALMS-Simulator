@@ -824,7 +824,7 @@ class AlphasBox(QGroupBox):
 
                 pair.checkBounds()
 
-class AdaptiveTypeButtons(QGroupBox):
+class ModelButtons(QGroupBox):
     def __init__(self, parent):
         super().__init__('Models', parent = parent)
         self.parent = parent
@@ -852,10 +852,10 @@ class AdaptiveTypeButtons(QGroupBox):
 
             layout.addWidget(button, stretch = 1)
 
-        self.buttonGroup.buttonClicked.connect(lambda button: self.changeAdaptiveType(button.model))
+        self.buttonGroup.buttonClicked.connect(lambda button: self.changeModel(button.model))
         self.setLayout(layout)
 
-    def clickAdaptiveTypeButton(self, model):
+    def clickModelButton(self, model):
         for button in self.buttonGroup.buttons():
             if button.model == model:
                 button.click()
@@ -863,9 +863,9 @@ class AdaptiveTypeButtons(QGroupBox):
 
         print(f'Secret adaptive type! {model}')
         self.buttonGroup.checkedButton.release()
-        self.changeAdaptiveType(self, model)
+        self.changeModel(self, model)
 
-    def changeAdaptiveType(self, model):
+    def changeModel(self, model):
         parent = self.parent
         parent.current_model = model
         parent.enabled_params = set(Model.types()[parent.current_model].parameters())
