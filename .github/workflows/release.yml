@@ -1,0 +1,393 @@
+name: Release builds
+
+on:
+  push:
+    branches: [release]
+
+# Avoid overlapping release runs (e.g., two quick pushes)
+concurrency:
+  group: release-builds
+  cancel-in-progress: false
+
+jobs:
+  bump:
+    name: Bump tag
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      tag: ${{ steps.tag.outputs.new_tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Bump tag (SemVer)
+        id: tag
+        uses: anothrNick/github-tag-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_BRANCHES: release
+          TAG_PREFIX: v
+          INITIAL_VERSION: 1.0.0
+          DEFAULT_BUMP: patch
+          FORCE_WITHOUT_CHANGES: "true"
+
+  build-linux:
+    name: Build Linux
+    needs: bump
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Write tag into version.py
+      # version.py must contain: __version__ = "${VERSION}"
+        uses: eball/write-tag-to-version-file@latest
+        with:
+          filename: "version.py"
+          placeholder: "${VERSION}"
+          tag: "${{ needs.bump.outputs.tag }}"
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12.6'
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build executable (Linux)
+        shell: bash
+        run: |
+          set -euo pipefail
+          EXCLUDED_MODULE_OPTIONS=" \
+            --exclude-module PySide5  \
+            --exclude-module PySide6.Qt6.translations  \
+            --exclude-module PySide6.Qt6.lib.libQt6Pdf  \
+            --exclude-module PySide6.Qt6.Qt6Network \
+            --collect-data PySide6.Qt6.plugins
+          "
+          COMMON_OPTIONS="--windowed --noconfirm --clean"
+
+          pyinstaller ${EXCLUDED_MODULE_OPTIONS} ${COMMON_OPTIONS} \
+            --add-data "resources:resources" \
+            --onefile \
+            --icon resources/palms.png \
+            --splash resources/splash.png \
+            PALMS.py
+
+          mkdir -p release
+          chmod +x dist/PALMS
+          tar -czf PALMS_linux.tar.gz Experiments -C dist PALMS
+          mv PALMS_linux.tar.gz release/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ubuntu-latest-release
+          path: release/
+
+      - name: Upload to versioned GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.bump.outputs.tag }}
+          files: release/PALMS_linux.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-windows:
+    name: Build Windows
+    needs: bump
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Write tag into version.py
+        uses: eball/write-tag-to-version-file@latest
+        with:
+          filename: "version.py"
+          placeholder: "${VERSION}"
+          tag: "${{ needs.bump.outputs.tag }}"
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12.6'
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build executable (Windows)
+        shell: bash
+        run: |
+          set -euo pipefail
+          EXCLUDED_MODULE_OPTIONS=" \
+            --exclude-module PySide5  \
+            --exclude-module PySide6.Qt6.translations  \
+            --exclude-module PySide6.Qt6.lib.libQt6Pdf  \
+            --exclude-module PySide6.Qt6.Qt6Network \
+            --collect-data PySide6.Qt6.plugins
+          "
+          COMMON_OPTIONS="--windowed --noconfirm --clean"
+
+          pyinstaller ${EXCLUDED_MODULE_OPTIONS} ${COMMON_OPTIONS} \
+            --collect-all PySide6 \
+            --add-data "resources;resources" \
+            --onefile \
+            --icon resources/palms.ico \
+            --splash resources/splash.png \
+            PALMS.py
+
+          mkdir -p release
+          cd dist
+          7z a -tzip ../PALMS_windows.zip PALMS.exe
+          cd ..
+          7z a -tzip PALMS_windows.zip Experiments
+          mv PALMS_windows.zip release/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-latest-release
+          path: release/
+
+  test-windows:
+    name: Test Windows Executable
+    needs: build-windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-latest-release
+          path: release/
+
+      - name: Extract .zip
+        shell: powershell
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          Expand-Archive -Path "release/PALMS_windows.zip" -DestinationPath "dist" -Force
+
+      - name: Run app, screenshot, and check for errors
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $log = "run.log"
+          function Log($m) { $ts = Get-Date -Format 'yyyy-MM-dd HH:mm:ss.fff'; "$ts  $m" | Tee-Object -File $log -Append | Out-Null }
+
+          Log "Start"
+          $exe = Get-ChildItem -Path dist -Recurse -Filter PALMS.exe | Select-Object -First 1
+          if (-not $exe) { throw "PALMS.exe not found under dist/" }
+          $exePath = $exe.FullName
+
+          $args = @('--smoke-test','Experiments/Byrom-Murphy.rw')
+          $p = Start-Process -FilePath $exePath -ArgumentList $args -PassThru
+
+          Start-Sleep -Seconds 30
+          Log "Making screenshot"
+          Add-Type -AssemblyName System.Windows.Forms
+          Add-Type -AssemblyName System.Drawing
+          $bounds = [System.Windows.Forms.SystemInformation]::VirtualScreen
+          $bmp = New-Object System.Drawing.Bitmap($bounds.Width, $bounds.Height)
+          $g = [System.Drawing.Graphics]::FromImage($bmp)
+          $g.CopyFromScreen($bounds.Location, [System.Drawing.Point]::Empty, $bounds.Size)
+          $bmp.Save("screenshot-windows.png", [System.Drawing.Imaging.ImageFormat]::Png)
+          $g.Dispose(); $bmp.Dispose()
+
+          Wait-Process -Id $p.Id
+          $exitCode = $p.ExitCode
+          Log "End  (exit=$exitCode)"
+          if ($exitCode -ne 0) { throw "App failed with exit code $exitCode" }
+
+      - name: Upload screenshot artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshot-windows
+          path: screenshot-windows.png
+
+      - name: Add screenshot and logs to Job Summary
+        if: always()
+        shell: powershell
+        run: |
+          Add-Content $env:GITHUB_STEP_SUMMARY "## Windows Smoke Test"
+          if (Test-Path "screenshot-windows.png") {
+            $b64 = [Convert]::ToBase64String([IO.File]::ReadAllBytes("screenshot-windows.png"))
+            Add-Content $env:GITHUB_STEP_SUMMARY ""
+            Add-Content $env:GITHUB_STEP_SUMMARY "### Screenshot"
+            Add-Content $env:GITHUB_STEP_SUMMARY "<details><summary>Show screenshot</summary>"
+            Add-Content $env:GITHUB_STEP_SUMMARY ""
+            Add-Content $env:GITHUB_STEP_SUMMARY "<img alt=""screenshot-windows"" src=""data:image/png;base64,$b64"" />"
+            Add-Content $env:GITHUB_STEP_SUMMARY ""
+            Add-Content $env:GITHUB_STEP_SUMMARY "</details>"
+          } else {
+            Add-Content $env:GITHUB_STEP_SUMMARY "> (No screenshot produced)"
+          }
+          Add-Content $env:GITHUB_STEP_SUMMARY ""
+          Add-Content $env:GITHUB_STEP_SUMMARY "### Logs"
+          Add-Content $env:GITHUB_STEP_SUMMARY '```text'
+          if (Test-Path run.log) { Get-Content run.log | ForEach-Object { Add-Content $env:GITHUB_STEP_SUMMARY $_ } }
+          Add-Content $env:GITHUB_STEP_SUMMARY '```'
+
+  publish-windows:
+    name: Publish Windows
+    needs: [bump, test-windows]
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-latest-release
+          path: release/
+
+      - name: Upload to versioned GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.bump.outputs.tag }}
+          files: release/PALMS_windows.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-macos:
+    name: Build + Notarize macOS
+    needs: bump
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Write tag into version.py
+        uses: eball/write-tag-to-version-file@latest
+        with:
+          filename: "version.py"
+          placeholder: "${VERSION}"
+          tag: "${{ needs.bump.outputs.tag }}"
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12.6'
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pyinstaller
+
+      - name: Build app bundle (macOS)
+        shell: bash
+        run: |
+          set -euo pipefail
+          EXCLUDED_MODULE_OPTIONS=" \
+            --exclude-module PySide5  \
+            --exclude-module PySide6.Qt6.translations  \
+            --exclude-module PySide6.Qt6.lib.libQt6Pdf  \
+            --exclude-module PySide6.Qt6.Qt6Network \
+            --collect-data PySide6.Qt6.plugins
+          "
+          COMMON_OPTIONS="--windowed --noconfirm --clean"
+
+          pyinstaller ${EXCLUDED_MODULE_OPTIONS} ${COMMON_OPTIONS} \
+            --add-data "resources:resources" \
+            --onedir \
+            --icon resources/palms.icns \
+            PALMS.py
+
+          # Keep your existing naming tweak
+          mv dist/PALMS 'dist/PALMS Code'
+
+      - name: Import Developer ID Cert
+        env:
+          MACOS_CERT_P12: ${{ secrets.MACOS_CERT_P12 }}
+          MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+        shell: bash
+        run: |
+          set -euxo pipefail
+          KEYCHAIN_PATH="$RUNNER_TEMP/build.keychain-db"
+          echo "$MACOS_CERT_P12" | base64 -D > cert.p12
+          security create-keychain -p "" "$KEYCHAIN_PATH"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+          security unlock-keychain -p "" "$KEYCHAIN_PATH"
+          security list-keychains -d user -s "$KEYCHAIN_PATH"
+          security default-keychain -d user -s "$KEYCHAIN_PATH"
+          security import cert.p12 -k "$KEYCHAIN_PATH" -P "$MACOS_CERT_PASSWORD" -A
+          security set-key-partition-list -S apple-tool:,apple: -s -k "" "$KEYCHAIN_PATH"
+          security find-identity -v -p codesigning "$KEYCHAIN_PATH"
+
+      - name: Codesign
+        shell: bash
+        run: |
+          set -euxo pipefail
+          TARGET="dist/PALMS.app"
+          codesign --deep --force --options runtime --sign "Developer ID Application" "$TARGET"
+          codesign --verify --deep --strict "$TARGET"
+
+      - name: Zip for notarization
+        shell: bash
+        run: |
+          set -euxo pipefail
+          TARGET="dist/PALMS.app"
+          ditto -c -k --keepParent "$TARGET" release_macos_candidate.zip
+
+      - name: Notarize
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        shell: bash
+        run: |
+          set -euxo pipefail
+          xcrun notarytool submit release_macos_candidate.zip \
+            --apple-id "$APPLE_ID" \
+            --password "$APPLE_APP_PASSWORD" \
+            --team-id "$APPLE_TEAM_ID" \
+            --wait
+
+      - name: Staple ticket
+        shell: bash
+        run: |
+          set -euxo pipefail
+          TARGET="dist/PALMS.app"
+          xcrun stapler staple "$TARGET"
+          spctl --assess --type execute -vv "$TARGET"
+
+      - name: Create final zip
+        shell: bash
+        run: |
+          set -euxo pipefail
+          rm -f release_macos_candidate.zip
+          mkdir -p release
+          mv Experiments/ dist/
+          (cd dist && ditto -c -k . ../release/PALMS_macos.zip)
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-latest-release
+          path: release/
+
+      - name: Upload to versioned GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.bump.outputs.tag }}
+          files: release/PALMS_macos.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
