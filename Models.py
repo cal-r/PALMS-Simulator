@@ -18,7 +18,7 @@ class RunParameters:
     maxAssocRest: float
     trial_num: int
 
-class AdaptiveType:
+class Model:
     image_filename: ClassVar[str] = ''
 
     betan: float
@@ -41,7 +41,7 @@ class AdaptiveType:
         self.kay = kay
 
     @classmethod
-    def types(cls) -> dict[str, Type[AdaptiveType]]:
+    def types(cls) -> dict[str, Type[Model]]:
         return {
             'Rescorla Wagner': RescorlaWagner,
             'Pearce Kaye Hall': PearceKayeHall,
@@ -52,11 +52,11 @@ class AdaptiveType:
         }
 
     @classmethod
-    def base(cls, adaptive_type_name) -> Type[AdaptiveType]:
+    def base(cls, adaptive_type_name) -> Type[Model]:
         return cls.types()[adaptive_type_name]
 
     @classmethod
-    def get(cls, adaptive_type_name, *args, **kwargs) -> AdaptiveType:
+    def get(cls, adaptive_type_name, *args, **kwargs) -> Model:
         return cls.base(adaptive_type_name)(*args, **kwargs)
 
     @classmethod
@@ -142,7 +142,7 @@ class AdaptiveType:
     def step(self, s: Stimulus, rp: RunParameters):
         raise NotImplementedError('Calling step in abstract function is undefined.')
 
-class RescorlaWagner(AdaptiveType):
+class RescorlaWagner(Model):
     image_filename: ClassVar[str] = 'RW.png'
 
     @classmethod
@@ -160,7 +160,7 @@ class RescorlaWagner(AdaptiveType):
     def step(self, s: Stimulus, rp: RunParameters):
         s.assoc += s.alpha * self.delta_v_factor
 
-class RescorlaWagnerLinear(AdaptiveType):
+class RescorlaWagnerLinear(Model):
     image_filename: ClassVar[str] = 'RW-Linear.png'
 
     @classmethod
@@ -186,7 +186,7 @@ class RescorlaWagnerLinear(AdaptiveType):
         s.alpha = min(max(s.alpha, 0.05), 1)
         s.assoc += s.alpha * self.delta_v_factor
 
-class PearceHall(AdaptiveType):
+class PearceHall(Model):
     @classmethod
     def parameters(cls) -> list[str]:
         return ['alpha', 'lamda', 'sigma', 'salience']
@@ -196,7 +196,7 @@ class PearceHall(AdaptiveType):
         s.alpha = abs(rp.lamda - rp.sigma)
         s.assoc += s.salience * s.alpha * abs(rp.lamda)
 
-class PearceKayeHall(AdaptiveType):
+class PearceKayeHall(Model):
     image_filename: ClassVar[str] = 'PKH.png'
 
     @classmethod
@@ -225,7 +225,7 @@ class PearceKayeHall(AdaptiveType):
         s.alpha = self.gamma * abs(rho) + (1 - self.gamma) * s.alpha
         s.assoc = s.Ve - s.Vi
 
-class MackExtended(AdaptiveType):
+class MackExtended(Model):
     image_filename: ClassVar[str] = 'Extended_Mack.png'
 
     @classmethod
@@ -266,7 +266,7 @@ class MackExtended(AdaptiveType):
         s.Vi += DVi
         s.assoc = s.Ve - s.Vi
 
-class LePelleyHybrid(AdaptiveType):
+class LePelleyHybrid(Model):
     image_filename: ClassVar[str] = 'LePelley.png'
 
     @classmethod
@@ -323,7 +323,7 @@ class LePelleyHybrid(AdaptiveType):
         s.Vi += DVi
         s.assoc = s.Ve - s.Vi
 
-class RescorlaWagnerExponential(AdaptiveType):
+class RescorlaWagnerExponential(Model):
     @classmethod
     def parameters(cls) -> list[str]:
         return ['alpha', 'beta', 'betan', 'lamda']
@@ -333,7 +333,7 @@ class RescorlaWagnerExponential(AdaptiveType):
             s.alpha *= (s.alpha ** 0.05) ** rp.sign
         s.assoc += s.alpha * self.delta_v_factor
 
-class Mack(AdaptiveType):
+class Mack(Model):
     @classmethod
     def parameters(cls) -> list[str]:
         return ['alpha', 'beta', 'betan', 'lamda']
@@ -343,7 +343,7 @@ class Mack(AdaptiveType):
         s.alpha = s.alpha_mack
         s.assoc = s.assoc * self.delta_v_factor + self.delta_v_factor/2*rp.beta
 
-class Hall(AdaptiveType):
+class Hall(Model):
     @classmethod
     def parameters(cls) -> list[str]:
         return ['alpha', 'beta', 'betan', 'lamda']
@@ -354,7 +354,7 @@ class Hall(AdaptiveType):
         self.delta_v_factor = 0.5 * abs(rp.lamda)
         s.assoc += s.alpha * rp.beta * (rp.lamda - rp.sigma)
 
-class Macknhall(AdaptiveType):
+class Macknhall(Model):
     @classmethod
     def parameters(cls) -> list[str]:
         return ['alpha', 'beta', 'betan', 'lamda']
@@ -365,7 +365,7 @@ class Macknhall(AdaptiveType):
         s.alpha = (1 - abs(rp.lamda - rp.sigma)) * s.alpha_mack + s.alpha_hall
         s.assoc += s.alpha * self.delta_v_factor
 
-class Dualmack(AdaptiveType):
+class Dualmack(Model):
     @classmethod
     def parameters(cls) -> list[str]:
         return ['alpha', 'beta', 'betan', 'lamda']
@@ -384,7 +384,7 @@ class Dualmack(AdaptiveType):
         s.alpha = 1/2 * (1 + s.assoc - (VXe - VXi))
         s.assoc = s.Ve - s.Vi
 
-class OldHybrid(AdaptiveType):
+class OldHybrid(Model):
     @classmethod
     def parameters(cls) -> list[str]:
         return ['alpha', 'beta', 'betan', 'lamda', 'alpha_mack', 'alpha_hall', 'thetaE', 'thetaI', 'gamma']
@@ -418,7 +418,7 @@ class OldHybrid(AdaptiveType):
 
         s.assoc = s.alpha_mack * (s.Ve - s.Vi)
 
-class MlabHybrid(AdaptiveType):
+class MlabHybrid(Model):
     @classmethod
     def parameters(cls) -> list[str]:
         return ['alpha','salience', 'habituation', 'lamda','rho', 'nu', 'kay']

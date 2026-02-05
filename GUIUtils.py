@@ -13,7 +13,7 @@ from PySide6.QtWidgets import *
 from PIL import Image
 from pathlib import Path
 from datetime import datetime
-from AdaptiveType import AdaptiveType
+from Models import Model
 from Environment import StimulusHistory
 
 # Putting this here so mypy stops complaining.
@@ -579,14 +579,14 @@ Selecting "separate legend" removes the legend from these plots, and creates a n
             return
 
         self.parent.tableWidget.clearAll()
-        defaults = AdaptiveType.types()[self.parent.current_adaptive_type].defaults()
+        defaults = Model.types()[self.parent.current_adaptive_type].defaults()
         self.parent.parametersGroupBox.clearFields(defaults)
         self.parent.alphasBox.clearFields(vals = self.parent.params)
         self.parent.refreshExperiment()
 
     def showModelInfo(self):
         root = getattr(sys, '_MEIPASS', '.')
-        image_filename = AdaptiveType.types()[self.parent.current_adaptive_type].image_filename
+        image_filename = Model.types()[self.parent.current_adaptive_type].image_filename
         image_path = os.path.join(root, 'resources', image_filename)
         try:
             image = Image.open(image_path)
@@ -652,7 +652,7 @@ class ParametersGroupBox(QGroupBox):
 
         layout = QFormLayout()
         layout.setSpacing(10)
-        for key, val in AdaptiveType.initial_defaults().items():
+        for key, val in Model.initial_defaults().items():
             label = parent.DualLabel(short_names[key], parent, str(val), hoverText = descriptions[key], long_name = key).addRow(layout)
             self.params[key] = label
 
@@ -868,10 +868,10 @@ class AdaptiveTypeButtons(QGroupBox):
     def changeAdaptiveType(self, adaptive_type):
         parent = self.parent
         parent.current_adaptive_type = adaptive_type
-        parent.enabled_params = set(AdaptiveType.types()[parent.current_adaptive_type].parameters())
+        parent.enabled_params = set(Model.types()[parent.current_adaptive_type].parameters())
         parent.enableParams()
 
-        defaults = AdaptiveType.types()[self.parent.current_adaptive_type].defaults()
+        defaults = Model.types()[self.parent.current_adaptive_type].defaults()
         parent.parametersGroupBox.clearFields(defaults = defaults, only_unmodified = True)
         parent.alphasBox.clearFields(vals = parent.params, only_unmodified = True)
 
