@@ -7,7 +7,7 @@ import sys
 from Experiment import Experiment, Phase, RWArgs
 from Environment import StimulusHistory
 from Plots import generate_figures, save_plots
-from AdaptiveType import AdaptiveType
+from Models import Model
 
 # Given a list of arguments, matches the ones corresponding to a particular name
 # combined with a CS and returns them as a dictionary, along with the remaining
@@ -57,7 +57,7 @@ def parse_args():
     plot.add_argument('--part-stimuli', default = False, action = argparse.BooleanOptionalAction, help = 'Whether to plot part stimuli with US in addition to the regular plot.')
 
     experiment = parser.add_argument_group('Experiment Parameters')
-    experiment.add_argument("--adaptive-type", choices = AdaptiveType.types().keys(), default = 'Rescorla Wagner', help = 'Type of adaptive attention mode to use')
+    experiment.add_argument("--adaptive-type", choices = Model.types().keys(), default = 'Rescorla Wagner', help = 'Type of adaptive attention mode to use')
     experiment.add_argument('--alpha', metavar = 'α', type = float, default = .1, help = 'Alpha for all other stimuli')
     experiment.add_argument('--alpha-mack', metavar = 'αᴹ', type = float, default = .1, help = 'Alpha_mack for all other stimuli')
     experiment.add_argument('--alpha-hall', metavar = 'αᴴ', type = float, default = .1, help = 'Alpha_hall for all other stimuli')

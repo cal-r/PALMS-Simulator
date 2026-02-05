@@ -3,7 +3,7 @@ from __future__ import annotations
 from math import prod
 
 from Environment import Environment, StimulusHistory, Stimulus
-from AdaptiveType import AdaptiveType, RunParameters
+from Models import Model, RunParameters
 
 class Group:
     name: str
@@ -11,7 +11,7 @@ class Group:
     s: Environment
     configural_cues: bool
 
-    adaptive_type: AdaptiveType
+    adaptive_type: Model
 
     @staticmethod
     def set_vals(cs: set[str], vals: dict[str, float], default: None | float) -> dict[str, float]:
@@ -84,7 +84,7 @@ class Group:
         # ideally remove the class variable altogether.
         self.configural_cues = Environment.configural_cues
 
-        self.adaptive_type = AdaptiveType.get(
+        self.adaptive_type = Model.get(
             adaptive_type,
             betan = betan,
             betap = betap,

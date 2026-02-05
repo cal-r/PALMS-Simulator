@@ -19,7 +19,7 @@ from PySide6.QtWidgets import *
 from Experiment import RWArgs, Experiment, Phase
 from Plots import generate_figures, save_plots
 from Environment import StimulusHistory, Stimulus
-from AdaptiveType import AdaptiveType
+from Models import Model
 from CoolTable import CoolTable
 from GUIUtils import *
 
@@ -72,7 +72,7 @@ class PavlovianApp(QMainWindow):
 
         self.initial_file = initial_file
 
-        self.adaptive_types = list(AdaptiveType.types().keys())
+        self.adaptive_types = list(Model.types().keys())
         self.current_adaptive_type = None
 
         self.figures = []
@@ -283,7 +283,7 @@ class PavlovianApp(QMainWindow):
 
         def checkBounds(self):
             adaptive_type = self.parent.current_adaptive_type
-            lower, upper = AdaptiveType.base(adaptive_type).bounds().get(self.long_name, (-float('inf'), float('inf')))
+            lower, upper = Model.base(adaptive_type).bounds().get(self.long_name, (-float('inf'), float('inf')))
             value = float(self.box.text())
 
             if not self.box.isEnabled() or value >= lower and value <= upper:
@@ -298,7 +298,7 @@ class PavlovianApp(QMainWindow):
             self.parent.refreshExperiment()
 
     def enableParams(self):
-        for key in AdaptiveType.parameters():
+        for key in Model.parameters():
             self.params[key].setDisabled(True)
 
             if key in self.per_cs_box:
@@ -334,7 +334,7 @@ class PavlovianApp(QMainWindow):
         return {cs: self.floatOr(pair.box.text(), value) for cs, pair in self.per_cs_param[perc].items()}
 
     def packArgs(self) -> RWArgs:
-        should_plot_macknhall = AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall()
+        should_plot_macknhall = Model.types()[self.current_adaptive_type].should_plot_macknhall()
         return RWArgs(
             adaptive_type = self.current_adaptive_type,
 
@@ -433,8 +433,8 @@ class PavlovianApp(QMainWindow):
             self.strengths,
             phases = self.phases,
             plot_V = not args.plot_alpha and not args.plot_macknhall,
-            plot_alpha = args.plot_alpha and not AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
-            plot_macknhall = args.plot_macknhall and AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
+            plot_alpha = args.plot_alpha and not Model.types()[self.current_adaptive_type].should_plot_macknhall(),
+            plot_macknhall = args.plot_macknhall and Model.types()[self.current_adaptive_type].should_plot_macknhall(),
             dpi = self.dpi,
             singular_legend = not self.show_legend,
             plot_stimuli = [k for k, v in self.line_hidden.items() if not v],
@@ -511,8 +511,8 @@ class PavlovianApp(QMainWindow):
         self.figures = generate_figures(
             self.strengths,
             plot_V = not args.plot_alpha and not args.plot_macknhall,
-            plot_alpha = args.plot_alpha and not AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
-            plot_macknhall = args.plot_macknhall and AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
+            plot_alpha = args.plot_alpha and not Model.types()[self.current_adaptive_type].should_plot_macknhall(),
+            plot_macknhall = args.plot_macknhall and Model.types()[self.current_adaptive_type].should_plot_macknhall(),
             dpi = self.dpi,
             singular_legend = not self.show_legend,
             legend_locs = self.legend_locs,
@@ -644,8 +644,8 @@ class PavlovianApp(QMainWindow):
             self.strengths,
             phases = self.phases,
             plot_V = not args.plot_alpha and not args.plot_macknhall,
-            plot_alpha = args.plot_alpha and not AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
-            plot_macknhall = args.plot_macknhall and AdaptiveType.types()[self.current_adaptive_type].should_plot_macknhall(),
+            plot_alpha = args.plot_alpha and not Model.types()[self.current_adaptive_type].should_plot_macknhall(),
+            plot_macknhall = args.plot_macknhall and Model.types()[self.current_adaptive_type].should_plot_macknhall(),
             dpi = self.dpi,
             filename = filename,
             plot_width = width,
