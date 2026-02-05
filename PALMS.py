@@ -607,7 +607,7 @@ class PavlovianApp(QMainWindow):
     def resizeAndCenterWindow(self):
         available = self.screen().availableGeometry()
 
-        margin = 5
+        margin = 75
         self.resize(min(self.width(), available.width() - margin), min(self.height(), available.height() - margin))
 
         QTimer.singleShot(0, self.centerWindow)
