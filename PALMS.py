@@ -286,10 +286,12 @@ class PavlovianApp(QMainWindow):
             lower, upper = Model.base(model).bounds().get(self.long_name, (-float('inf'), float('inf')))
             value = float(self.box.text())
 
-            if not self.box.isEnabled() or value >= lower and value <= upper:
+            if not self.box.isVisible() or not self.box.isEnabled() or value >= lower and value <= upper:
                 self.parent.removeOutOfRange(self.label.text())
-            else:
-                self.parent.addOutOfRange(self.label.text(), value, lower, upper)
+                return True
+
+            self.parent.addOutOfRange(self.label.text(), value, lower, upper)
+            return False
 
         # Connected function to text change.
         def changeText(self):
