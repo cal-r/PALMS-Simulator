@@ -42,13 +42,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Write tag into version.py
-      # version.py must contain: __version__ = "${VERSION}"
-        uses: eball/write-tag-to-version-file@latest
-        with:
-          filename: "version.py"
-          placeholder: "${VERSION}"
-          tag: "${{ needs.bump.outputs.tag }}"
+      - name: Write version.py from tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG='${{ needs.bump.outputs.tag }}'
+          VER="${TAG#v}"
+          printf '__version__ = "%s"\n__version_tag__ = "%s"\n' "$VER" "$TAG" > version.py
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -110,12 +110,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Write tag into version.py
-        uses: eball/write-tag-to-version-file@latest
-        with:
-          filename: "version.py"
-          placeholder: "${VERSION}"
-          tag: "${{ needs.bump.outputs.tag }}"
+      - name: Write version.py from tag
+        shell: pwsh
+        run: |
+          $tag = '${{ needs.bump.outputs.tag }}'
+          $ver = $tag.TrimStart('v')
+          "__version__ = `"$ver`"`n__version_tag__ = `"$tag`"`n" | Set-Content -Encoding UTF8 version.py
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -273,12 +273,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Write tag into version.py
-        uses: eball/write-tag-to-version-file@latest
-        with:
-          filename: "version.py"
-          placeholder: "${VERSION}"
-          tag: "${{ needs.bump.outputs.tag }}"
+      - name: Write version.py from tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG='${{ needs.bump.outputs.tag }}'
+          VER="${TAG#v}"
+          printf '__version__ = "%s"\n__version_tag__ = "%s"\n' "$VER" "$TAG" > version.py
 
       - name: Set up Python
         uses: actions/setup-python@v4
