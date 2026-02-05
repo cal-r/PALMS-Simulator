@@ -84,9 +84,10 @@ class PhaseBox(QGroupBox):
         parent.refreshCurrentFigure()
 
 class AboutButton(QPushButton):
-    def __init__(self, parent = None):
+    def __init__(self, parent):
         super().__init__('About', parent = parent)
 
+        self.parent = parent
         self.icon = parent.getPixmap('palms.png', scale = .5)
 
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
@@ -94,19 +95,7 @@ class AboutButton(QPushButton):
         self.setFocusPolicy(Qt.FocusPolicy.NoFocus)
 
     def aboutPALMS(self):
-        about = '''\
-**PALMS: Pavlovian Associative Learning Models Simulator**\\
-Version 0.xx
-
-Built by Team Alpha from City, University of London: Martin Fixman,
-Alessandro Abati, Julián Jimenez Nimmo, Sean Lim and Esther Mondragón.
-
-For any questions add an issue to the Github page:
-[github.com/cal-r/PALMS-Simulator](https://github.com/cal-r/PALMS-Simulator)
-or contact any of the authors.
-
-2024–2025. All rights reserved. Licensed under the LGPL v3. See LICENSE for details.\
-        '''
+        about = self.parent.aboutMessage()
         box = QMessageBox(QMessageBox.Information, 'About', about)
         box.setTextFormat(Qt.TextFormat.MarkdownText)
         box.setIconPixmap(self.icon)

@@ -5,6 +5,7 @@ from itertools import zip_longest
 from pathlib import Path
 from typing import Optional
 import logging
+import datetime
 
 from PySide6.QtCore import QTimer, Qt, QSize
 from PySide6.QtGui import QFont, QPixmap, QGuiApplication, QCursor
@@ -17,6 +18,8 @@ from Models import Model
 from CoolTable import CoolTable
 from GUIUtils import *
 from PySide6.QtWidgets import QLabel, QLineEdit, QMainWindow, QMessageBox, QWidget
+
+from version import __version__
 
 class PavlovianApp(QMainWindow):
     models: list[str]
@@ -649,3 +652,19 @@ class PavlovianApp(QMainWindow):
             plot_stimuli = {k for k, v in self.line_hidden.items() if not v},
             legend_locs = self.legend_locs,
         )
+
+    @staticmethod
+    def aboutMessage():
+        return f'''\
+**PALMS: Pavlovian Associative Learning Models Simulator**
+Version {__version__}
+
+Built by Team Alpha from City, University of London: Martin Fixman,
+Alessandro Abati, Julián Jimenez Nimmo, Sean Lim and Esther Mondragón.
+
+For any questions add an issue to the Github page:
+[github.com/cal-r/PALMS-Simulator](https://github.com/cal-r/PALMS-Simulator)
+or contact any of the authors.
+
+2024–{datetime.today().year}. All rights reserved. Licensed under the LGPL v3. See LICENSE for details.\
+'''
