@@ -14,6 +14,8 @@ from PySide6.QtGui import QGuiApplication
 import Simulator
 from PavlovianApp import PavlovianApp
 
+from version import __version__
+
 def parse_args():
     if len(sys.argv) > 1 and sys.argv[1].lower() == 'cli':
         sys.argv[0] = f'{sys.argv[0]} {sys.argv[1]}'
@@ -26,6 +28,8 @@ def parse_args():
 
     cli_parser = subparsers.add_parser('cli', help = f'Run PALMS command-line interface. {sys.argv[0]} cli --help for mode information.')
     gui_parser = subparsers.add_parser('gui', help = f'Run PALMS GUI interface. This is the default if no mode is selected.')
+
+    gui_parser.add_argument('--version', action = 'store_true', help = 'Show program version and exit.')
 
     gui_parser.add_argument('--dpi', type = int, help = 'DPI for shown and outputted figures.')
     gui_parser.add_argument('--fontsize', type = int, default = None, help = 'Fontsize of the GUI; screenshots are taken in fontsize 16.')
@@ -41,7 +45,12 @@ def parse_args():
     if len(sys.argv) > 1 and sys.argv[1] in ['-h', '--help']:
         print(parser.format_help())
 
-    return gui_parser.parse_args()
+    args = gui_parser.parse_args()
+    if args.version:
+        print(PavlovianApp.aboutMessage())
+        exit(0)
+
+    return args
 
 def logScreenInfo(app: QApplication):
     logging.info(f'Logical DPI: {app.primaryScreen().logicalDotsPerInch()}.')

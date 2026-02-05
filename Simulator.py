@@ -9,6 +9,8 @@ from Environment import StimulusHistory
 from Plots import generate_figures, save_plots
 from Models import Model
 
+from version import __version__
+
 # Given a list of arguments, matches the ones corresponding to a particular name
 # combined with a CS and returns them as a dictionary, along with the remaining
 # arguments.
@@ -77,6 +79,7 @@ def parse_args():
     experiment.add_argument("--kay", metavar = 'κ', type = float, default = 2)
     experiment.add_argument('--max-workers', type = int, help = 'Maximum number of multiprocessing cores used in randomised phases. This is constrained by the total CPU count and number of trials.')
 
+    parser.add_argument('--version', action = 'store_true', help = 'Show program version and exit.')
 
     parser.add_argument(
         "experiment_file",
@@ -88,6 +91,11 @@ def parse_args():
 
     # Accept parameters for alphas, saliences, and habituations.
     args, rest = parser.parse_known_args()
+
+    if args.version:
+        print(PavlovianApp.aboutMessage())
+        exit(0)
+
     args.alphas, rest = match_args('alpha', rest)
     args.saliences, rest = match_args('salience', rest)
     args.habituations, rest = match_args('habituation', rest)
