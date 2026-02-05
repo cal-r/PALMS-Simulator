@@ -656,7 +656,7 @@ class PavlovianApp(QMainWindow):
     @staticmethod
     def aboutMessage():
         return f'''\
-**PALMS: Pavlovian Associative Learning Models Simulator**
+**PALMS: Pavlovian Associative Learning Models Simulator**\\
 Version {__version__}
 
 Built by Team Alpha from City, University of London: Martin Fixman,
