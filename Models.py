@@ -1,3 +1,8 @@
+# This file defines all models used in the simulator.
+# Instructions to add a new model are found in the "Adding new Models" section of the paper.
+# The models in the simulator are contained in the return dictionary of the
+# `types` classmethod in the Model class.
+
 from __future__ import annotations
 from dataclasses import dataclass
 
@@ -18,6 +23,8 @@ class RunParameters:
     maxAssocRest: float
     trial_num: int
 
+# Base class for all models. New models can be added by sub-classing this
+# class, and defining an overloaded `step` method.
 class Model:
     image_filename: ClassVar[str] = ''
 
@@ -30,16 +37,11 @@ class Model:
     thetaI: float
     kay: float
 
-    def __init__(self, betan: float, betap: float, lamda: float, xi_hall: None | float, gamma: float, thetaE: float, thetaI: float, kay: float):
-        self.betan = betan
-        self.betap = betap
-        self.lamda = lamda
-        self.xi_hall = xi_hall
-        self.gamma = gamma
-        self.thetaE = thetaE
-        self.thetaI = thetaI
-        self.kay = kay
-
+    # `types` contains the active models in the simulator.
+    # Adding a new name/Model pair to this dictionary here will
+    # automatically add this to the next run of the simulator,
+    # without requiring any other change.
+    # The model must have a `step` function at minimum.
     @classmethod
     def types(cls) -> dict[str, Type[Model]]:
         return {
@@ -47,18 +49,21 @@ class Model:
             'Pearce Kaye Hall': PearceKayeHall,
             'Mackintosh Extended': MackExtended,
             'Le Pelley\'s Hybrid': LePelleyHybrid,
-            'MLAB Model': RescorlaWagnerLinear,
-            # 'MLAB Hybrid': MlabHybrid,
+            'MLAB Model': MLABModel,
         }
 
-    @classmethod
-    def base(cls, model_name) -> Type[Model]:
-        return cls.types()[model_name]
+    # Run a step of a certain adaptive type. This is the only function that
+    # requires being overloaded by subclasses of Model.
+    # Arguments:
+    #   s: Stimulus, definition of the stimulus at a certain point (see Environment.py).
+    #      This parameter must be modified by the class.
+    #  rp: RunPArameters, parameters passed to the model.
+    def step(self, s: Stimulus, rp: RunParameters):
+        raise NotImplementedError('Step method not overloaded.')
 
-    @classmethod
-    def get(cls, model_name, *args, **kwargs) -> Model:
-        return cls.base(model_name)(*args, **kwargs)
-
+    # List of parameters enabled by this model. Parameters not enabled will
+    # be marked as gray on the GUI.
+    # By default, enable all parameters.
     @classmethod
     def parameters(cls) -> list[str]:
         return [
@@ -72,11 +77,40 @@ class Model:
             'thetaE',
             'thetaI',
             'salience',
-            # 'habituation',
-            # 'rho',
-            # 'nu',
-            # 'kay',
         ]
+
+    # Dictionary of default values for certain parameters.
+    # If these parameters are not changed manually, then when changing
+    # to this model the parameter in each key will take the form of the value.
+    @classmethod
+    def defaults(cls) -> dict[str, float]:
+        return {}
+
+    # Dictionary of bounds for certain parameters.
+    # If a parameter is here, the GUI will warn when its value is outside
+    # the [min, max] bounds returned by this function.
+    @classmethod
+    def bounds(cls) -> dict[str, tuple[float, float]]:
+        return {}
+
+    # Private method of Models; these should not be overloaded by subclasses.
+    def __init__(self, betan: float, betap: float, lamda: float, xi_hall: None | float, gamma: float, thetaE: float, thetaI: float, kay: float):
+        self.betan = betan
+        self.betap = betap
+        self.lamda = lamda
+        self.xi_hall = xi_hall
+        self.gamma = gamma
+        self.thetaE = thetaE
+        self.thetaI = thetaI
+        self.kay = kay
+
+    @classmethod
+    def base(cls, model_name) -> Type[Model]:
+        return cls.types()[model_name]
+
+    @classmethod
+    def get(cls, model_name, *args, **kwargs) -> Model:
+        return cls.base(model_name)(*args, **kwargs)
 
     @classmethod
     def should_plot_macknhall(cls) -> bool:
@@ -103,14 +137,6 @@ class Model:
         )
 
         return {k: v for k, v in inits.items() if k in {'num_trials'} | set(cls.parameters())}
-
-    @classmethod
-    def defaults(cls) -> dict[str, float]:
-        return {}
-
-    @classmethod
-    def bounds(cls) -> dict[str, tuple[float, float]]:
-        return {}
 
     def get_alpha_mack(self, s: Stimulus, sigma: float) -> float:
         return 1/2 * (1 + 2*s.assoc - sigma)
@@ -139,9 +165,6 @@ class Model:
         for prop, (lower, upper) in self.bounds().items():
             setattr(s, prop, min(upper, max(lower, getattr(s, prop))))
 
-    def step(self, s: Stimulus, rp: RunParameters):
-        raise NotImplementedError('Calling step in abstract function is undefined.')
-
 class RescorlaWagner(Model):
     image_filename: ClassVar[str] = 'RW.png'
 
@@ -159,42 +182,6 @@ class RescorlaWagner(Model):
 
     def step(self, s: Stimulus, rp: RunParameters):
         s.assoc += s.alpha * self.delta_v_factor
-
-class RescorlaWagnerLinear(Model):
-    image_filename: ClassVar[str] = 'RW-Linear.png'
-
-    @classmethod
-    def parameters(cls) -> list[str]:
-        return ['alpha', 'beta', 'betan', 'lamda']
-
-    @classmethod
-    def defaults(cls) -> dict[str, float]:
-        return dict(
-            alpha = .2,
-            beta = .5,
-            betan = .4,
-        )
-
-    def step(self, s: Stimulus, rp: RunParameters):
-        d = 0.05
-
-        if rp.lamda > 0:
-            s.alpha = s.alpha * (1 - d) + s.alpha_0 * s.assoc * (rp.lamda - rp.sigma)
-        else:
-            s.alpha = s.alpha * (1 - d) - s.alpha_0 * s.assoc * (rp.lamda - rp.sigma)
-
-        s.alpha = min(max(s.alpha, 0.05), 1)
-        s.assoc += s.alpha * self.delta_v_factor
-
-class PearceHall(Model):
-    @classmethod
-    def parameters(cls) -> list[str]:
-        return ['alpha', 'lamda', 'sigma', 'salience']
-
-
-    def step(self, s: Stimulus, rp: RunParameters):
-        s.alpha = abs(rp.lamda - rp.sigma)
-        s.assoc += s.salience * s.alpha * abs(rp.lamda)
 
 class PearceKayeHall(Model):
     image_filename: ClassVar[str] = 'PKH.png'
@@ -296,7 +283,7 @@ class LePelleyHybrid(Model):
         # Ignore likely dummy stimuli
         if s.assoc == 0 and s.alpha_mack == 0 and s.alpha_hall == 0:
             return
-            
+
         rho = rp.lamda - (rp.sigmaE - rp.sigmaI)
 
         VXe = rp.sigmaE - s.Ve
@@ -323,16 +310,58 @@ class LePelleyHybrid(Model):
         s.Vi += DVi
         s.assoc = s.Ve - s.Vi
 
-class RescorlaWagnerExponential(Model):
+class MlabHybrid(Model):
+    @classmethod
+    def parameters(cls) -> list[str]:
+        return ['alpha','salience', 'habituation', 'lamda','rho', 'nu', 'kay']
+
+    @classmethod
+    def defaults(cls) -> dict[str, float]:
+        return dict(
+            alpha = 0.5,
+            salience = .1,
+            habituation = 1,
+            lamda = 1,
+            rho = 0.5,
+            nu = 0.5,
+            kay = 0.005,
+        )
+
+    def step(self, s: Stimulus, rp: RunParameters):
+        s.habituation = s.habituation * math.exp(-self.kay * s.salience)
+        DV = s.alpha * s.salience * (rp.lamda - rp.sigma)
+        s.alpha = (1-s.habituation) * (rp.lamda - rp.sigma)**2 * (s.nu + s.rho * ((rp.sigma - s.assoc) + (rp.sigma - rp.maxAssocRest))) + s.habituation * s.alpha
+
+        s.assoc = s.assoc + DV
+
+class MLABModel(Model):
+    image_filename: ClassVar[str] = 'RW-Linear.png'
+
     @classmethod
     def parameters(cls) -> list[str]:
         return ['alpha', 'beta', 'betan', 'lamda']
 
+    @classmethod
+    def defaults(cls) -> dict[str, float]:
+        return dict(
+            alpha = .2,
+            beta = .5,
+            betan = .4,
+        )
+
     def step(self, s: Stimulus, rp: RunParameters):
-        if rp.sign == 1:
-            s.alpha *= (s.alpha ** 0.05) ** rp.sign
+        d = 0.05
+
+        if rp.lamda > 0:
+            s.alpha = s.alpha * (1 - d) + s.alpha_0 * s.assoc * (rp.lamda - rp.sigma)
+        else:
+            s.alpha = s.alpha * (1 - d) - s.alpha_0 * s.assoc * (rp.lamda - rp.sigma)
+
+        s.alpha = min(max(s.alpha, 0.05), 1)
         s.assoc += s.alpha * self.delta_v_factor
 
+# Extra models, not used in the simulator.
+# These can be added by adding an extra line to the `types` class method in the `Model` class.
 class Mack(Model):
     @classmethod
     def parameters(cls) -> list[str]:
@@ -418,26 +447,3 @@ class OldHybrid(Model):
 
         s.assoc = s.alpha_mack * (s.Ve - s.Vi)
 
-class MlabHybrid(Model):
-    @classmethod
-    def parameters(cls) -> list[str]:
-        return ['alpha','salience', 'habituation', 'lamda','rho', 'nu', 'kay']
-
-    @classmethod
-    def defaults(cls) -> dict[str, float]:
-        return dict(
-            alpha = 0.5,
-            salience = .1,
-            habituation = 1,
-            lamda = 1,
-            rho = 0.5,
-            nu = 0.5,
-            kay = 0.005,
-        )
-
-    def step(self, s: Stimulus, rp: RunParameters):
-        s.habituation = s.habituation * math.exp(-self.kay * s.salience)
-        DV = s.alpha * s.salience * (rp.lamda - rp.sigma)
-        s.alpha = (1-s.habituation) * (rp.lamda - rp.sigma)**2 * (s.nu + s.rho * ((rp.sigma - s.assoc) + (rp.sigma - rp.maxAssocRest))) + s.habituation * s.alpha
-
-        s.assoc = s.assoc + DV 
