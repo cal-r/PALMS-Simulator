@@ -655,9 +655,13 @@ class PavlovianApp(QMainWindow):
 
     @staticmethod
     def aboutMessage():
+        version = f'Version {__version__}'
+        if version == 'Version ${VERSION}':
+            version = 'Executed from Source'
+
         return f'''\
 **PALMS: Pavlovian Associative Learning Models Simulator**\\
-Version {__version__}
+{version}.
 
 Built by Team Alpha from City, University of London: Martin Fixman,
 Alessandro Abati, Julián Jimenez Nimmo, Sean Lim and Esther Mondragón.
