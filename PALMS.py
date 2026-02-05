@@ -130,8 +130,8 @@ class PavlovianApp(QMainWindow):
 
         aboutButton = AboutButton(self)
 
-        self.adaptiveTypeButtons = AdaptiveTypeButtons(self)
-        self.adaptiveTypeButtons.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.modelButtons = ModelButtons(self)
+        self.modelButtons.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         iconLabel = QLabel(self)
         iconLabel.setPixmap(self.getPixmap('palms.png'))
@@ -156,7 +156,7 @@ class PavlovianApp(QMainWindow):
         mainLayout.setSpacing(0)
         mainLayout.addWidget(self.tableWidget, 0, 0, 1, 4)
         mainLayout.addWidget(iconLabel, 0, 4, 1, 1, alignment = Qt.AlignmentFlag.AlignCenter)
-        mainLayout.addWidget(self.adaptiveTypeButtons, 1, 0, 4, 1)
+        mainLayout.addWidget(self.modelButtons, 1, 0, 4, 1)
         mainLayout.addWidget(self.parametersGroupBox, 1, 1, 4, 1)
         mainLayout.addWidget(self.alphasBox, 1, 2, 4, 1)
         mainLayout.addWidget(self.plotBox, 1, 3, 4, 1)
@@ -179,7 +179,7 @@ class PavlovianApp(QMainWindow):
 
         self.setWindowTitle("PALMS Simulator")
         self.setWindowFlags(Qt.WindowType.Window | Qt.WindowType.WindowCloseButtonHint | Qt.WindowType.WindowMaximizeButtonHint)
-        self.adaptiveTypeButtons.buttonGroup.button(0).click()
+        self.modelButtons.buttonGroup.button(0).click()
 
     def loadFile(self, filename):
         logging.info(f'Load file with DPI {self.dpi}.')
@@ -205,7 +205,7 @@ class PavlovianApp(QMainWindow):
                 if name == 'model':
                     value = value.replace('LePelley', 'Le Pelley')
                     value = value.replace('Rescorla Wagner w/ Variable Learning Rate', 'MLAB Model')
-                    self.adaptiveTypeButtons.clickAdaptiveTypeButton(value)
+                    self.modelButtons.clickModelButton(value)
                 elif name == 'configural_cues':
                     self.actionButtons.configuralButton.click()
                 elif '_' in name and name not in ('alpha_mack', 'alpha_hall', 'num_trials'):
