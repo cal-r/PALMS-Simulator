@@ -36,7 +36,7 @@ jobs:
       - name: Move latest tag to this commit
         shell: bash
         run: |
-          set -euo pipefail
+          set -euxo pipefail
           git tag -f latest
           git push origin latest --force
 
@@ -52,7 +52,7 @@ jobs:
       - name: Write version.py from tag
         shell: bash
         run: |
-          set -euo pipefail
+          set -euxo pipefail
           TAG='${{ needs.bump.outputs.tag }}'
           VER="${TAG#v}"
           printf '__version__ = "%s"\n__version_tag__ = "%s"\n' "$VER" "$TAG" > version.py
@@ -72,7 +72,7 @@ jobs:
       - name: Build executable (Linux)
         shell: bash
         run: |
-          set -euo pipefail
+          set -euxo pipefail
           EXCLUDED_MODULE_OPTIONS=" \
             --exclude-module PySide5  \
             --exclude-module PySide6.Qt6.translations  \
@@ -139,7 +139,7 @@ jobs:
       - name: Build executable (Windows)
         shell: bash
         run: |
-          set -euo pipefail
+          set -euxo pipefail
           EXCLUDED_MODULE_OPTIONS=" \
             --exclude-module PySide5  \
             --exclude-module PySide6.Qt6.translations  \
@@ -283,7 +283,7 @@ jobs:
       - name: Write version.py from tag
         shell: bash
         run: |
-          set -euo pipefail
+          set -euxo pipefail
           TAG='${{ needs.bump.outputs.tag }}'
           VER="${TAG#v}"
           printf '__version__ = "%s"\n__version_tag__ = "%s"\n' "$VER" "$TAG" > version.py
@@ -303,7 +303,7 @@ jobs:
       - name: Build app bundle (macOS)
         shell: bash
         run: |
-          set -euo pipefail
+          set -euxo pipefail
           EXCLUDED_MODULE_OPTIONS=" \
             --exclude-module PySide5  \
             --exclude-module PySide6.Qt6.translations  \
