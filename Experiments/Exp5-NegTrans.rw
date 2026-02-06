@@ -1,5 +1,0 @@
-@model=Pearce Kaye Hall
-@alpha=0.7;alpha_mack=0.9;alpha_hall=0.9;salience=0.1;lamda=1;beta=0.8;betan=0.1;gamma=0.05
-T+ then T++|lambda=0.25/beta=0.15/15T+|lambda=1/beta=0.5/10T+
-L+ then T++|lambda=0.25/beta=0.15/15L+|lambda=1/beta=0.5/10T+
-T then T++|lambda=0.25/beta=0.15/15T-|lambda=1/beta=0.5/10T+

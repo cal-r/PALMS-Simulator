@@ -1,0 +1,5 @@
+@model=Pearce Kaye Hall
+@alpha=0.5;alpha_mack=0.8;alpha_hall=0.8;salience=0.1;lamda=1;beta=0.8;betan=0.1;gamma=0.1
+T+|lambda=0.25/beta=0.05/66T+|beta=0.8/lambda=1/6T+
+L+|lambda=0.25/beta=0.05/66L+|beta=0.8/lambda=1/6T+
+T-|lambda=0.25/beta=0.05/66T-|beta=0.8/lambda=1/6T+

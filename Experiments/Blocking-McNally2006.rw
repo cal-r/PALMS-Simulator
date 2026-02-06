@@ -1,5 +1,5 @@
-@model=Rescorla Wagner
+@model=Mackintosh Extended
 @alpha=0.15;alpha_mack=0.15;alpha_hall=0.15;beta=0.5;betan=0.3;gamma=0.2;thetaE=0.25;thetaI=0.2;num_trials=500
 @alpha_A'=0.15;alpha_B'=0.3;alpha_C=0.15;alpha_C'=0.15;alpha_D=0.15;alpha_D'=0.3;alpha_mack_A'=0.15;alpha_mack_B'=0.3;alpha_mack_C=0.15;alpha_mack_C'=0.15;alpha_mack_D=0.15;alpha_mack_D'=0.5;alpha_hall_A'=0.15;alpha_hall_B'=0.3;alpha_hall_C=0.15;alpha_hall_C'=0.15;alpha_hall_D=0.15;alpha_hall_D'=0.5;salience_A=0.2;salience_A'=0.2;salience_B=0.2;salience_B'=0.2;salience_C=0.2;salience_C'=0.2;salience_D=0.2;salience_D'=0.2
-Blk Exp1 McN|12A+|4AB+/4CD+|4B-/4D-
-Blk HS Target|12A'+|4A'B'+/4C'D'+|4B'-/4D'-
+Blk Exp1 McN|12A+|rand/4AB+/4CD+|rand/4B-/4D-
+Blk HS Target|12A'+|rand/4A'B'+/4C'D'+|rand/4B'-/4D'-

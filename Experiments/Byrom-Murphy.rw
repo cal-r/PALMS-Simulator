@@ -1,6 +1,0 @@
-@model=Rescorla Wagner
-@configural_cues=True
-@lamda=1;beta=0.5;betan=0.3;num_trials=500
-@alpha_S'=0.25;alpha_X=0.5;alpha_X^1=0.5;alpha_Y=0.5;alpha_Y^1=0.5;alpha_S=0.25;alpha_(B^1SY^1)=0.01;alpha_mack_S'=0.1;alpha_mack_X=0.5;alpha_mack_X^1=0.5;alpha_mack_Y=0.5;alpha_mack_Y^1=0.5;alpha_hall_S'=0.1;alpha_hall_X=0.5;alpha_hall_X^1=0.5;alpha_hall_Y=0.5;alpha_hall_Y^1=0.5
-Bicond|rand/12AXR'+/12AYR'-/12BXR'-/12BYR'+/12AXS'+/12AYS'-/12BXS'-/12BYS'+/12AX^1R+/12AY^1R+/12BX^1R-/12BY^1R-/12AX^1S-/12AY^1S-/12BX^1S+/12BY^1S+
-Unicond|rand/12AX^1R'+/12AY^1R'+/12BX^1R'-/12BY^1R'-/12AX^1S'+/12AY^1S'+/12BX^1S'-/12BY^1S'-/12A^1X^1R+/12A^1Y^1R+/12B^1X^1R+/12B^1Y^1R+/12A^1X^1S-/12A^1Y^1S-/12B^1X^1S-/12B^1Y^1S-

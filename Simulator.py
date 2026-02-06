@@ -112,7 +112,7 @@ def parse_args():
 
     return args
 
-def runExperiment(experiment_file, experiment_args, plot_experiments, max_workers):
+def runExperiment(experiment_file, experiment_args, plot_experiments = None, max_workers = None):
     groups_strengths = None
     phases: dict[str, list[Phase]] = dict()
 
