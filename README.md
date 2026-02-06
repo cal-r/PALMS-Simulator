@@ -1,11 +1,20 @@
 # PALMS: **P**avlovian **A**ssociative **L**earning **M**odels **S**imulator
 
-Associative learning simulator, originally cased on the **extra task** of
-INM703 Computational Cognitive Systems.
+The Pavlovian Associative Learning Models Simulator (PALMS) is a unified Python environment to simulate Pavlovian conditioning experiments.
 
-This simulator will be presented in the paper ``PALMS: Pavlovian Associative
-Learning Models Simulator`` by Martin Fixman, Alessandro Abati,
-Julián Jiménez Nimmo, Sean Lim, and Esther Mondragón.
+PALMS incorporates several attentional learning approaches, including
+Pearce-Kaye-Hall, Mackintosh Extended, Le Pelley's Hybrid, and a novel
+extension of the Rescorla-Wagner model with a unified variable learning rate.
+
+The simulator’s graphical interface allows for the input of entire experimental
+designs in an alphanumeric format, akin to that used by experimental neuroscientists.
+
+Moreover, it uniquely enables the simulation of experiments involving hundreds
+of stimuli, as well as the computation of configural cues and configural-cue
+compounds across all models, thereby considerably expanding their predictive
+capabilities.
+
+PALMS is licensed under the open-source GNU Lesser General Public License 3.0.
 
 ## Runnable executable bundled with the prerequisites.
 
@@ -84,3 +93,14 @@ source venv/bin/activate
 pip install -r requirements.txt
 python PALMS.py
 ```
+
+## Disclaimer
+IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, INDIRECT
+OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS
+ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+SOFTWARE. THE AUTHOR SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE, AND NON-INFRINGEMENT. THIS SOFTWARE AND ITS DOCUMENTATION ARE PROVIDED
+ON AN "AS IS" BASIS, AND THE AUTHORS HAVE NO OBLIGATION TO PROVIDE MAINTENANCE,
+SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
