@@ -112,16 +112,11 @@ def parse_args():
 
     return args
 
-def main() -> None:
-    args = parse_args()
-    experiment_args = RWArgs(
-        **{k: v for k, v in args.__dict__.items() if k in set(RWArgs.__match_args__) and v is not None}
-    )
-
+def runExperiment(experiment_file, experiment_args, plot_experiments, max_workers):
     groups_strengths = None
     phases: dict[str, list[Phase]] = dict()
 
-    for e, experiment in enumerate(args.experiment_file.readlines()):
+    for e, experiment in enumerate(experiment_file.readlines()):
         experiment = experiment.strip()
 
         if not experiment or experiment.startswith('#'):
@@ -146,15 +141,28 @@ def main() -> None:
         if groups_strengths is None:
             groups_strengths = [StimulusHistory.emptydict() for _ in phase_strs]
 
-        if args.plot_experiments is not None and name not in args.plot_experiments:
+        if plot_experiments is not None and name not in plot_experiments:
             continue
 
-        experiment = Experiment(name, phase_strs, max_workers = args.max_workers)
+        experiment = Experiment(name, phase_strs, max_workers = max_workers)
         local_strengths = experiment.run_all_phases(experiment_args)
         groups_strengths = [a | b for a, b in zip(groups_strengths, local_strengths)]
         phases[name] = experiment.phases
 
-    assert(groups_strengths is not None)
+    return groups_strengths, phases
+
+def main() -> None:
+    args = parse_args()
+    experiment_args = RWArgs(
+        **{k: v for k, v in args.__dict__.items() if k in set(RWArgs.__match_args__) and v is not None}
+    )
+
+    groups_strengths, phases = runExperiment(
+        experiment_file = args.experiment_file,
+        experiment_args = experiment_args,
+        plot_experiments = args.plot_experiments,
+        max_workers = args.max_workers,
+    )
 
     if args.savefig is None and args.save_results is None and not args.print_results:
         figures = generate_figures(
@@ -169,36 +177,37 @@ def main() -> None:
         for fig in figures:
             fig.show()
         input('Press any key to continue...')
-    else:
-        if args.savefig is not None:
-            save_plots(
-                groups_strengths,
-                phases = phases,
-                filename = args.savefig,
-                plot_phase = args.plot_phase,
-                plot_alpha = args.plot_alpha,
-                plot_macknhall = args.plot_macknhall,
-                show_title = args.show_title,
-                plot_stimuli = args.plot_stimuli,
-                singular_legend = args.singular_legend,
-                dpi = args.dpi,
-                plot_width = args.output_width,
-            )
+        return
 
-        if args.save_results is not None:
-            with open(args.save_results, 'w') as file:
-                StimulusHistory.exportData(
-                    groups_strengths,
-                    file = file,
-                    should_plot_macknhall = args.plot_macknhall,
-                )
+    if args.savefig is not None:
+        save_plots(
+            groups_strengths,
+            phases = phases,
+            filename = args.savefig,
+            plot_phase = args.plot_phase,
+            plot_alpha = args.plot_alpha,
+            plot_macknhall = args.plot_macknhall,
+            show_title = args.show_title,
+            plot_stimuli = args.plot_stimuli,
+            singular_legend = args.singular_legend,
+            dpi = args.dpi,
+            plot_width = args.output_width,
+        )
 
-        if args.print_results:
+    if args.save_results is not None:
+        with open(args.save_results, 'w') as file:
             StimulusHistory.exportData(
                 groups_strengths,
-                file = sys.stdout,
+                file = file,
                 should_plot_macknhall = args.plot_macknhall,
             )
+
+    if args.print_results:
+        StimulusHistory.exportData(
+            groups_strengths,
+            file = sys.stdout,
+            should_plot_macknhall = args.plot_macknhall,
+        )
 
 if __name__ == '__main__':
     main()
